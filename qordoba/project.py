@@ -508,6 +508,21 @@ class ProjectAPI(object):
         log.debug('Response body: {}'.format(resp.json()))
         return resp.json()
 
+    def _download_raw_file(self, token, filename):
+        params = (
+            'file',
+            'download'
+        )
+
+        query = {
+            'token': token,
+            'filename': filename
+        }
+
+        download_url = self.build_url(*params, **query)
+
+        return self.do_get(download_url, stream=True)
+
     def download_file(self, page_id, language_id, milestone=None):
         if milestone is None:
             milestone = DEFAULT_MILESTONE_ID
@@ -532,7 +547,7 @@ class ProjectAPI(object):
 
         return self._download_raw_file(data['token'], data['filename'])
 
-    def _download_raw_file(self, token, filename):
+    def create_download_url_for_zip(self, token, filename):
         params = (
             'file',
             'download'
@@ -543,11 +558,9 @@ class ProjectAPI(object):
             'filename': filename
         }
 
-        download_url = self.build_url(*params, **query)
+        return self.build_url(*params, **query)
 
-        return self.do_get(download_url, stream=True)
-
-    def download_files(self, page_ids, languages):
+    def download_files(self, page_ids, languages, milestone=None):
         """
         Download archive with translation for selected languages.
         :param list page_ids:
@@ -560,6 +573,7 @@ class ProjectAPI(object):
             'export_files_bulk'
         )
         download_url = self.build_url(*params)
+
         payload = {
             'bilingual': False,
             'language_ids': languages,
@@ -568,7 +582,8 @@ class ProjectAPI(object):
         }
 
         resp = self.do_post(download_url, json=payload)
-        return resp.json()
+        data = resp.json()
+        return self.create_download_url_for_zip(data['token'], data['filename'])
 
     @paginated('files')
     def get_pages(self, language_id, limit=50, offset=0):
@@ -953,7 +968,7 @@ class ProjectAPI(object):
             str(self._config['project_id']),
             'pages',
             str(page_id)
-        )
+        )git
 
         delete_url = self.build_url(*params)
 
