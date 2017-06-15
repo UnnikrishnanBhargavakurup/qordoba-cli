@@ -8,7 +8,8 @@ import requests, zipfile
 try:
     from StringIO import StringIO
 except ImportError:
-    from io import StringIO
+    import io
+    # from io import StringIO
 
 from qordoba.commands.utils import mkdirs, ask_select, ask_question
 from qordoba.languages import get_destination_languages, get_source_language, init_language_storage, normalize_language
@@ -56,17 +57,21 @@ def validate_languges_input(languages, project_languages):
     return list(selected_langs)
 
 
-def pull_bulk(api, src_to_dest_to_filename_paths, dest_languages_page_ids, dest_languages_ids):
-    # making request to our internal api: export_files_bulk (POST). This request downloads all files for given language
+def pull_bulk(api, src_to_dest_paths, dest_languages_page_ids, dest_languages_ids):
+    '''making request to our internal api: export_files_bulk (POST). This request downloads all files for given language'''
     res = api.download_files(dest_languages_page_ids, dest_languages_ids)
     #the api return a url and accesstoken for the google cloud server where Qordobas saves the translated files
     r = requests.get(res, stream=True)
-    # unzipping the returned zipfile
-    z = zipfile.ZipFile(StringIO.StringIO(r.content))
+    # unzipping the returned zipfile for python2 or python3
+    try:
+        z = zipfile.ZipFile(StringIO.StringIO(r.content))
+    except:
+        z = zipfile.ZipFile(io.BytesIO(r.content))
+
 
     # iterating through the src and dest languages of the project downloads step by step all files.
     # the files will be downloaded into earlier defined folder patterns for the poject
-    for src_path, dest_path, file_dest_name in src_to_dest_to_filename_paths:
+    for src_path, dest_path in set(src_to_dest_paths):
         log.info('Downloading tranlation files in bulks for language `{}` to destination `{}`'.format(
             src_path,
             dest_path,
@@ -84,10 +89,9 @@ def pull_bulk(api, src_to_dest_to_filename_paths, dest_languages_page_ids, dest_
 
         # first, the zip files are stored in the original zip-directory-name.
         # second, the project defined folder patterns are created if they were missing
-        # thirs, files are moved from zip folder to defined folder patterns
+        # third, files are moved from zip folder to defined folder patterns
         # zip folders are completely deleted
         for tuple_ in os.walk(root_src_dir):
-            print("Tuple {}".format(tuple_))
             src_dir, dirs, files = tuple_
             dest_dir = src_dir.replace(root_src_dir, root_dest_dir, 1)
             if not os.path.exists(dest_dir):
@@ -98,16 +102,10 @@ def pull_bulk(api, src_to_dest_to_filename_paths, dest_languages_page_ids, dest_
                 if os.path.exists(dest_file):
                     os.remove(dest_file)
                 shutil.move(src_file, dest_dir)
-                print("file_ name: {}".format(file_))
-                print(file_)
-                [os.rename(file_, file_.replace(file_, file_dest_name)) for file_ in os.listdir(dest_dir) if
-                 not file_.startswith('.')]
-            shutil.rmtree(root_src_dir)
 
 def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progress=False, update_action=None,
                  **kwargs):
     api = ProjectAPI(config)
-    control_number_one = 0
     init_language_storage(api)
     project = api.get_project()
     dest_languages = list(get_destination_languages(project))
@@ -116,15 +114,13 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
     else:
         languages = dest_languages
 
-    # prepare var for pull_bulk command
-    dest_languages = get_destination_languages(project)
+    # prepare variables for pull_bulk command
     src_language = get_source_language(project)
     src_language_id = src_language.id
-    control_number_two = 0
-    src_name = src_language.code
+    src_language_code = src_language.code
     dest_languages_page_ids = []
     dest_languages_ids = []
-    src_to_dest_to_filename_paths = []
+    src_to_dest_paths = []
 
     pattern = get_pull_pattern(config, default=None)
     status_filter = [PageStatus.enabled, ]
@@ -152,11 +148,12 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
                 milestone = page_status['status']['id']
                 log.debug('Selected status for page `{}` - {}'.format(page_status['id'], page_status['status']['name']))
 
+
             dest_path = create_target_path_by_pattern(curdir, language, pattern=pattern,
                                                       source_name=page_status['name'],
                                                       content_type_code=page_status['content_type_code'])
             stripped_dest_path = ((dest_path.native_path).rsplit('/', 1))[0]
-            src_to_dest_to_filename_paths = (language.code, stripped_dest_path, format(dest_path))
+            src_to_dest_paths.append(tuple((language.code, stripped_dest_path)))
 
             # adding the src langauge to the dest_path_of_src_language pattern so the src language will be also pulled
             dest_path_of_src_language = create_target_path_by_pattern(curdir, src_language, pattern=pattern,
@@ -165,8 +162,7 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
                                                                           'content_type_code'])
             src_page_status_id = page_status['id']
             stripped_dest_path_of_src_language = ((dest_path_of_src_language.native_path).rsplit('/', 1))[0]
-            src_to_dest_to_filename_paths = (
-            language.code, stripped_dest_path_of_src_language, format(dest_path_of_src_language))
+            src_to_dest_paths.append(tuple((src_language_code, stripped_dest_path_of_src_language)))
 
             if not bulk:
                 if os.path.exists(dest_path.native_path) and not force:
@@ -204,4 +200,4 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
             log.info('Nothing to download for language `{}`'.format(language.code))
 
     if bulk:
-        pull_bulk(api, src_to_dest_to_filename_paths, dest_languages_page_ids, dest_languages_ids)
+        pull_bulk(api, src_to_dest_paths, dest_languages_page_ids, dest_languages_ids)
