@@ -4,7 +4,11 @@ import logging
 import os
 import shutil
 from argparse import ArgumentTypeError
-import requests, zipfile, StringIO
+import requests, zipfile
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 from qordoba.commands.utils import mkdirs, ask_select, ask_question
 from qordoba.languages import get_destination_languages, get_source_language, init_language_storage, normalize_language
@@ -46,7 +50,7 @@ def validate_languges_input(languages, project_languages):
 
     not_valid = selected_langs.difference(set(project_languages))
     if not_valid:
-        raise ArgumentTypeError('Selected languages not configured in project as dst languages: `{}`'
+        raise ArgumentTypeError('Selected languages not configured in project as dest languages: `{}`'
                                 .format(','.join((str(i) for i in not_valid))))
 
     return list(selected_langs)
@@ -60,14 +64,13 @@ def pull_bulk(api, src_to_dest_to_filename_paths, dest_languages_page_ids, dest_
     # unzipping the returned zipfile
     z = zipfile.ZipFile(StringIO.StringIO(r.content))
 
-    # iterating through the src and dst languages of the project downloads step by step all files.
+    # iterating through the src and dest languages of the project downloads step by step all files.
     # the files will be downloaded into earlier defined folder patterns for the poject
     for src_path, dest_path, file_dest_name in src_to_dest_to_filename_paths:
         log.info('Downloading tranlation files in bulks for language `{}` to destination `{}`'.format(
             src_path,
             dest_path,
         ))
-
         root = os.getcwd()
 
         # extract zip folder to root folder
@@ -75,7 +78,7 @@ def pull_bulk(api, src_to_dest_to_filename_paths, dest_languages_page_ids, dest_
         dirs_to_extract = [d for d in zip_files if d.startswith(src_path)]
         z.extractall(root, dirs_to_extract)
 
-        # if dst directory doesn't exist, we created it
+        # if dest directory doesn't exist, we created it
         root_src_dir = os.path.join(os.getcwd(), src_path)
         root_dest_dir = os.path.join(os.getcwd(), dest_path)
 
@@ -99,9 +102,7 @@ def pull_bulk(api, src_to_dest_to_filename_paths, dest_languages_page_ids, dest_
                 print(file_)
                 [os.rename(file_, file_.replace(file_, file_dest_name)) for file_ in os.listdir(dest_dir) if
                  not file_.startswith('.')]
-
             shutil.rmtree(root_src_dir)
-
 
 def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progress=False, update_action=None,
                  **kwargs):
@@ -109,11 +110,11 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
     control_number_one = 0
     init_language_storage(api)
     project = api.get_project()
-    dst_languages = list(get_destination_languages(project))
+    dest_languages = list(get_destination_languages(project))
     if languages:
-        languages = validate_languges_input(languages, dst_languages)
+        languages = validate_languges_input(languages, dest_languages)
     else:
-        languages = dst_languages
+        languages = dest_languages
 
     # prepare var for pull_bulk command
     dest_languages = get_destination_languages(project)
@@ -157,17 +158,15 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
             stripped_dest_path = ((dest_path.native_path).rsplit('/', 1))[0]
             src_to_dest_to_filename_paths = (language.code, stripped_dest_path, format(dest_path))
 
-            if control_number_one == 0:
-                # adding the src langauge to the dest_path_of_src_language pattern so the src language will be also pulled
-                dest_path_of_src_language = create_target_path_by_pattern(curdir, src_language, pattern=pattern,
-                                                                          source_name=page_status['name'],
-                                                                          content_type_code=page_status[
-                                                                              'content_type_code'])
-                src_page_status_id = page_status['id']
-                stripped_dest_path_of_src_language = ((dest_path_of_src_language.native_path).rsplit('/', 1))[0]
-                src_to_dest_to_filename_paths = (
-                language.code, stripped_dest_path_of_src_language, format(dest_path_of_src_language))
-                control_number_one = 1
+            # adding the src langauge to the dest_path_of_src_language pattern so the src language will be also pulled
+            dest_path_of_src_language = create_target_path_by_pattern(curdir, src_language, pattern=pattern,
+                                                                      source_name=page_status['name'],
+                                                                      content_type_code=page_status[
+                                                                          'content_type_code'])
+            src_page_status_id = page_status['id']
+            stripped_dest_path_of_src_language = ((dest_path_of_src_language.native_path).rsplit('/', 1))[0]
+            src_to_dest_to_filename_paths = (
+            language.code, stripped_dest_path_of_src_language, format(dest_path_of_src_language))
 
             if not bulk:
                 if os.path.exists(dest_path.native_path) and not force:
@@ -181,15 +180,13 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
                         while os.path.exists(dest_path.native_path):
                             dest_path = ask_question('Set new filename: ', answer_type=dest_path.replace)
                             # pass to replace file
-                if control_number_two == 0:
-                    res = api.download_file(src_page_status_id, src_language_id, milestone=milestone)
-                    res.raw.decode_content = True  # required to decompress content
-                    # ensure to create all directories
-                    mkdirs(os.path.dirname(dest_path_of_src_language.native_path))
-                    # copy content to dest path
-                    with open(dest_path_of_src_language.native_path, 'wb') as f:
-                        shutil.copyfileobj(res.raw, f)
-                    control_number_two = 1
+                res = api.download_file(src_page_status_id, src_language_id, milestone=milestone)
+                res.raw.decode_content = True  # required to decompress content
+                # ensure to create all directories
+                mkdirs(os.path.dirname(dest_path_of_src_language.native_path))
+                # copy content to dest path
+                with open(dest_path_of_src_language.native_path, 'wb') as f:
+                    shutil.copyfileobj(res.raw, f)
 
                 res = api.download_file(page_status['id'], language.id, milestone=milestone)
                 res.raw.decode_content = True  # required to decompress content

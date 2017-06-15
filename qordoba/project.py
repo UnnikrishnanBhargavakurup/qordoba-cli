@@ -968,7 +968,7 @@ class ProjectAPI(object):
             str(self._config['project_id']),
             'pages',
             str(page_id)
-        )git
+        )
 
         delete_url = self.build_url(*params)
 
