@@ -91,7 +91,7 @@ def pull_command(curdir, config, force=False, languages=(), in_progress=False, u
             if os.path.exists(target_path.native_path) and not force:
                 log.warning('Translation file already exists. `{}`'.format(target_path.native_path))
                 answer = FileUpdateOptions.get_action(update_action) or ask_select(FileUpdateOptions.all,
-                                                                                   prompt='Choice: ')
+                                                                                    prompt='Choice: ')
                 if answer == FileUpdateOptions.skip:
                     log.info('Download translation file `{}` was skipped.'.format(target_path.native_path))
                     continue
