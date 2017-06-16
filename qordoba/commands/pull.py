@@ -60,17 +60,17 @@ def validate_languges_input(languages, project_languages):
 def pull_bulk(api, src_to_dest_paths, dest_languages_page_ids, dest_languages_ids, pattern):
     '''making request to our internal api: export_files_bulk (POST). This request downloads all files for given language'''
     res = api.download_files(dest_languages_page_ids, dest_languages_ids)
-    #the api return a url and accesstoken for the google cloud server where Qordobas saves the translated files
+    '''the api return a url and accesstoken for the google cloud server where Qordobas saves the translated files'''
     r = requests.get(res, stream=True)
-    # unzipping the returned zipfile for python2 or python3
+    '''unzipping the returned zipfile for python2 or python3'''
     try:
         z = zipfile.ZipFile(StringIO.StringIO(r.content))
     except:
         z = zipfile.ZipFile(io.BytesIO(r.content))
 
 
-    # iterating through the src and dest languages of the project downloads step by step all files.
-    # the files will be downloaded into earlier defined folder patterns for the poject
+    '''iterating through the src and dest languages of the project downloads step by step all files.
+     the files will be downloaded into earlier defined folder patterns for the poject'''
     for src_path, dest_path in set(src_to_dest_paths):
         log.info('Downloading translation files in bulks for language `{}` to destination `{}`'.format(
             src_path,
@@ -78,33 +78,31 @@ def pull_bulk(api, src_to_dest_paths, dest_languages_page_ids, dest_languages_id
         ))
         root = os.getcwd()
 
-        # extract zip folder to root folder
+        '''extract zip folder to root folder'''
         zip_files = z.namelist()
-        # dirs_to_extract = [d for d in zip_files if d.startswith(src_path)]
         z.extractall(root, zip_files)
 
-        # if dest directory doesn't exist, we created it
+        '''if dest directory doesn't exist, we created it'''
         root_src_dir = os.path.join(os.getcwd(), src_path)
         if dest_path[:1] == '.':
             dest_path = dest_path[2:]
         root_dest_dir = os.path.join(os.getcwd(), dest_path)
 
-        # first, the zip files are stored in the original zip-directory-name.
-        # second, the project defined folder patterns are created if they were missing
-        # third, files are moved from zip folder to defined folder patterns
-        # zip folders are completely deleted
-        if pattern is not None:
-            for tuple_ in os.walk(root_src_dir):
-                src_dir, dirs, files = tuple_
-                dest_dir = src_dir.replace(root_src_dir, root_dest_dir, 1)
-                if not os.path.exists(dest_dir):
-                    os.makedirs(dest_dir)
-                for file_ in files:
-                    src_file = os.path.join(src_dir, file_)
-                    dest_file = os.path.join(dest_dir, file_)
-                    if os.path.exists(dest_file):
-                        os.remove(dest_file)
-                    shutil.move(src_file, dest_dir)
+        '''first, the zip files are stored in the original zip-directory-name.
+         second, the project defined folder patterns are created if they were missing
+         third, files are moved from zip folder to defined folder patterns
+         zip folders are completely deleted'''
+        # if pattern is not None:
+        #     if not os.path.exists(root_dest_dir):
+        #         os.makedirs(root_dest_dir)
+        #     for src_dir, dirs, files in os.walk(root_src_dir):
+        #         for file_ in files:
+        #             src_file = os.path.join(root_src_dir, file_)
+        #             dest_file = os.path.join(root_dest_dir, file_)
+        #             shutil.move(src_file, dest_file)
+        #         if os.path.exists(root_src_dir):
+        #             shutil.rmtree(root_src_dir)
+
 
 def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progress=False, update_action=None,
                  **kwargs):
@@ -117,7 +115,7 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
     else:
         languages = dest_languages
 
-    # prepare variables for pull_bulk command
+    '''prepare variables for pull_bulk command'''
     src_language = get_source_language(project)
     src_language_code = src_language.code
     src_language_id = src_language.id
@@ -160,7 +158,7 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
                 src_to_dest_paths.append(tuple((language.code, stripped_dest_path)))
             src_to_dest_paths.append(tuple((language.code, language.code)))
 
-            # adding the src langauge to the dest_path_of_src_language pattern so the src language will be also pulled
+            '''adding the src langauge to the dest_path_of_src_language pattern so the src language will be also pulled'''
             dest_path_of_src_language = create_target_path_by_pattern(curdir, src_language, pattern=pattern,
                                                                       source_name=page_status['name'],
                                                                       content_type_code=page_status[
@@ -182,13 +180,13 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
                     elif answer == FileUpdateOptions.new_name:
                         while os.path.exists(dest_path.native_path):
                             dest_path = ask_question('Set new filename: ', answer_type=dest_path.replace)
-                            # pass to replace file
+                            ''' pass to replace file'''
 
                 res = api.download_file(page_status['id'], language.id, milestone=milestone)
                 res.raw.decode_content = True  # required to decompress content
-                # ensure to create all directories
+                '''ensure to create all directories'''
                 mkdirs(os.path.dirname(dest_path.native_path))
-                # copy content to dest path
+                '''copy content to dest path'''
                 with open(dest_path.native_path, 'wb') as f:
                     shutil.copyfileobj(res.raw, f)
 
