@@ -85,13 +85,14 @@ def pull_bulk(api, src_to_dest_paths, dest_languages_page_ids, dest_languages_id
 
         # if dest directory doesn't exist, we created it
         root_src_dir = os.path.join(os.getcwd(), src_path)
+        if dest_path[:1] == '.':
+            dest_path = dest_path[2:]
         root_dest_dir = os.path.join(os.getcwd(), dest_path)
 
         # first, the zip files are stored in the original zip-directory-name.
         # second, the project defined folder patterns are created if they were missing
         # third, files are moved from zip folder to defined folder patterns
         # zip folders are completely deleted
-
         if pattern is not None:
             for tuple_ in os.walk(root_src_dir):
                 src_dir, dirs, files = tuple_
