@@ -161,6 +161,9 @@ def create_target_path_by_pattern(curdir, language, source_name, pattern=None, c
             'Pull pattern is not valid. Pattern should contain one of the values: {}'.format(
                 ', '.join(PatternVariables.all)))
 
+    if pattern is None:
+        pattern = language.code + '-' + source_name
+
     pattern = pattern or DEFAULT_PATTERN
 
     target_path = pattern.replace('<{}>'.format(PatternVariables.language_code), language.code)

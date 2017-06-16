@@ -57,7 +57,7 @@ def validate_languges_input(languages, project_languages):
     return list(selected_langs)
 
 
-def pull_bulk(api, src_to_dest_paths, dest_languages_page_ids, dest_languages_ids):
+def pull_bulk(api, src_to_dest_paths, dest_languages_page_ids, dest_languages_ids, pattern):
     '''making request to our internal api: export_files_bulk (POST). This request downloads all files for given language'''
     res = api.download_files(dest_languages_page_ids, dest_languages_ids)
     #the api return a url and accesstoken for the google cloud server where Qordobas saves the translated files
@@ -72,7 +72,7 @@ def pull_bulk(api, src_to_dest_paths, dest_languages_page_ids, dest_languages_id
     # iterating through the src and dest languages of the project downloads step by step all files.
     # the files will be downloaded into earlier defined folder patterns for the poject
     for src_path, dest_path in set(src_to_dest_paths):
-        log.info('Downloading tranlation files in bulks for language `{}` to destination `{}`'.format(
+        log.info('Downloading translation files in bulks for language `{}` to destination `{}`'.format(
             src_path,
             dest_path,
         ))
@@ -80,8 +80,8 @@ def pull_bulk(api, src_to_dest_paths, dest_languages_page_ids, dest_languages_id
 
         # extract zip folder to root folder
         zip_files = z.namelist()
-        dirs_to_extract = [d for d in zip_files if d.startswith(src_path)]
-        z.extractall(root, dirs_to_extract)
+        # dirs_to_extract = [d for d in zip_files if d.startswith(src_path)]
+        z.extractall(root, zip_files)
 
         # if dest directory doesn't exist, we created it
         root_src_dir = os.path.join(os.getcwd(), src_path)
@@ -91,17 +91,19 @@ def pull_bulk(api, src_to_dest_paths, dest_languages_page_ids, dest_languages_id
         # second, the project defined folder patterns are created if they were missing
         # third, files are moved from zip folder to defined folder patterns
         # zip folders are completely deleted
-        for tuple_ in os.walk(root_src_dir):
-            src_dir, dirs, files = tuple_
-            dest_dir = src_dir.replace(root_src_dir, root_dest_dir, 1)
-            if not os.path.exists(dest_dir):
-                os.makedirs(dest_dir)
-            for file_ in files:
-                src_file = os.path.join(src_dir, file_)
-                dest_file = os.path.join(dest_dir, file_)
-                if os.path.exists(dest_file):
-                    os.remove(dest_file)
-                shutil.move(src_file, dest_dir)
+
+        if pattern is not None:
+            for tuple_ in os.walk(root_src_dir):
+                src_dir, dirs, files = tuple_
+                dest_dir = src_dir.replace(root_src_dir, root_dest_dir, 1)
+                if not os.path.exists(dest_dir):
+                    os.makedirs(dest_dir)
+                for file_ in files:
+                    src_file = os.path.join(src_dir, file_)
+                    dest_file = os.path.join(dest_dir, file_)
+                    if os.path.exists(dest_file):
+                        os.remove(dest_file)
+                    shutil.move(src_file, dest_dir)
 
 def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progress=False, update_action=None,
                  **kwargs):
@@ -116,10 +118,10 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
 
     # prepare variables for pull_bulk command
     src_language = get_source_language(project)
-    src_language_id = src_language.id
     src_language_code = src_language.code
+    src_language_id = src_language.id
     dest_languages_page_ids = []
-    dest_languages_ids = []
+    dest_languages_ids = [src_language_id]
     src_to_dest_paths = []
 
     pattern = get_pull_pattern(config, default=None)
@@ -138,7 +140,7 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
             dest_languages_page_ids.append(page['page_id'])
             dest_languages_ids.append(language.id)
 
-            log.info('Starting Download of tranlation file(s) for src `{}` and language `{}`'.format(
+            log.info('Starting Download of translation file(s) for src `{}` and language `{}`'.format(
                 format_file_name(page),
                 language.code,
             ))
@@ -152,17 +154,21 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
             dest_path = create_target_path_by_pattern(curdir, language, pattern=pattern,
                                                       source_name=page_status['name'],
                                                       content_type_code=page_status['content_type_code'])
-            stripped_dest_path = ((dest_path.native_path).rsplit('/', 1))[0]
-            src_to_dest_paths.append(tuple((language.code, stripped_dest_path)))
+            if pattern is not None:
+                stripped_dest_path = ((dest_path.native_path).rsplit('/', 1))[0]
+                src_to_dest_paths.append(tuple((language.code, stripped_dest_path)))
+            src_to_dest_paths.append(tuple((language.code, language.code)))
 
             # adding the src langauge to the dest_path_of_src_language pattern so the src language will be also pulled
             dest_path_of_src_language = create_target_path_by_pattern(curdir, src_language, pattern=pattern,
                                                                       source_name=page_status['name'],
                                                                       content_type_code=page_status[
                                                                           'content_type_code'])
-            src_page_status_id = page_status['id']
-            stripped_dest_path_of_src_language = ((dest_path_of_src_language.native_path).rsplit('/', 1))[0]
-            src_to_dest_paths.append(tuple((src_language_code, stripped_dest_path_of_src_language)))
+            if pattern is not None:
+                src_page_status_id = page_status['id']
+                stripped_dest_path_of_src_language = ((dest_path_of_src_language.native_path).rsplit('/', 1))[0]
+                src_to_dest_paths.append(tuple((src_language_code, stripped_dest_path_of_src_language)))
+            src_to_dest_paths.append(tuple((src_language_code, src_language_code)))
 
             if not bulk:
                 if os.path.exists(dest_path.native_path) and not force:
@@ -176,13 +182,6 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
                         while os.path.exists(dest_path.native_path):
                             dest_path = ask_question('Set new filename: ', answer_type=dest_path.replace)
                             # pass to replace file
-                res = api.download_file(src_page_status_id, src_language_id, milestone=milestone)
-                res.raw.decode_content = True  # required to decompress content
-                # ensure to create all directories
-                mkdirs(os.path.dirname(dest_path_of_src_language.native_path))
-                # copy content to dest path
-                with open(dest_path_of_src_language.native_path, 'wb') as f:
-                    shutil.copyfileobj(res.raw, f)
 
                 res = api.download_file(page_status['id'], language.id, milestone=milestone)
                 res.raw.decode_content = True  # required to decompress content
@@ -200,4 +199,4 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
             log.info('Nothing to download for language `{}`'.format(language.code))
 
     if bulk:
-        pull_bulk(api, src_to_dest_paths, dest_languages_page_ids, dest_languages_ids)
+        pull_bulk(api, src_to_dest_paths, dest_languages_page_ids, dest_languages_ids, pattern=pattern)
