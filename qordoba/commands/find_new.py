@@ -5,14 +5,39 @@ from qordoba.languages import get_source_language, init_language_storage
 from qordoba.project import ProjectAPI
 from qordoba.settings import get_push_pattern
 from qordoba.sources import find_files_by_pattern
+import yaml
+import re
+
+
+class FilesNotFound(Exception):
+    """
+    Files not found
+    """
+
 
 log = logging.getLogger('qordoba')
 
-def vendored(file):
+def regex_file_match(regexFile, string):
+    with open(regexFile, 'r') as stream:
+        try:
+            output = yaml.load(stream)
+            result = [re.match(pattern, str(string)) for pattern in output]
+            if any(result) is not None:
+                return False
+            return True
+        except yaml.YAMLError as exc:
+            print(exc)
+
+def vendored_or_documented(file):
+    if regex_file_match("../vendor.yml", file) and regex_file_match("../documentation.yml", file):
+        return True
+    return False
+
+def documentation(file):
     pass
 
 
-def find_new_command(curdir, config, files=() ):
+def find_new_command(curdir, config, files=()):
     api = ProjectAPI(config)
     init_language_storage(api)
 
@@ -26,4 +51,5 @@ def find_new_command(curdir, config, files=() ):
             raise FilesNotFound('Files not found by pattern `{}`'.format(pattern))
 
     for file in files:
-        vendored(file)
+        if not vendored_or_documented(file):
+            print("yeah")
