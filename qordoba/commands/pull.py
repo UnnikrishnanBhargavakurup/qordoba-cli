@@ -60,7 +60,7 @@ def validate_languges_input(languages, project_languages):
 def pull_bulk(api, src_to_dest_paths, dest_languages_page_ids, dest_languages_ids, pattern):
     '''making request to our internal api: export_files_bulk (POST). This request downloads all files for given language'''
     res = api.download_files(dest_languages_page_ids, dest_languages_ids)
-    '''the api return a url and accesstoken for the google cloud server where Qordobas saves the translated files'''
+    '''the api return a url and accesstoken for the Google Cloud server where Qordoba saves the translated files'''
     r = requests.get(res, stream=True)
     '''unzipping the returned zipfile for python2 or python3'''
     try:
@@ -72,7 +72,7 @@ def pull_bulk(api, src_to_dest_paths, dest_languages_page_ids, dest_languages_id
     '''iterating through the src and dest languages of the project downloads step by step all files.
      the files will be downloaded into earlier defined folder patterns for the poject'''
     for src_path, dest_path in set(src_to_dest_paths):
-        log.info('Downloading translation files in bulks for language `{}` to destination `{}`'.format(
+        log.info('Downloading translation files in bulk for language `{}` to destination `{}`'.format(
             src_path,
             dest_path,
         ))
@@ -158,7 +158,7 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
                 src_to_dest_paths.append(tuple((language.code, stripped_dest_path)))
             src_to_dest_paths.append(tuple((language.code, language.code)))
 
-            '''adding the src langauge to the dest_path_of_src_language pattern so the src language will be also pulled'''
+            '''adding the src langauge to the dest_path_of_src_language pattern'''
             dest_path_of_src_language = create_target_path_by_pattern(curdir, src_language, pattern=pattern,
                                                                       source_name=page_status['name'],
                                                                       content_type_code=page_status[
@@ -180,7 +180,7 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
                     elif answer == FileUpdateOptions.new_name:
                         while os.path.exists(dest_path.native_path):
                             dest_path = ask_question('Set new filename: ', answer_type=dest_path.replace)
-                            ''' pass to replace file'''
+                            # pass to replace file
 
                 res = api.download_file(page_status['id'], language.id, milestone=milestone)
                 res.raw.decode_content = True  # required to decompress content

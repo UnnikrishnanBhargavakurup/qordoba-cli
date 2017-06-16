@@ -173,7 +173,7 @@ class PullHandler(BaseHandler):
         parser.add_argument('-f', '--force', dest='force', action='store_true',
                             help='Force to update local translation files. Do not ask approval.')
         parser.add_argument('-b', '--bulk', dest='bulk', action='store_true',
-                            help="Force to download languages in bulks, incl. source language.")
+                            help="Force to download languages in bulk, incl. source language.")
 
         group = parser.add_mutually_exclusive_group()
         group.add_argument('--skip', dest='skip', action='store_true', help='Skip downloading if file exists.')
