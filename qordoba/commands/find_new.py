@@ -7,15 +7,50 @@ from qordoba.settings import get_push_pattern
 from qordoba.sources import find_files_by_pattern
 import yaml
 import re
+import sys
+# import magic
 
+log = logging.getLogger('qordoba')
 
 class FilesNotFound(Exception):
     """
     Files not found
     """
 
+def _text_characters():
+    PY3 = sys.version_info[0] == 3
+    int2byte = (lambda x: bytes((x,))) if PY3 else chr
+    txt = (b''.join(int2byte(i) for i in range(32, 127)) + b'\n\r\t\f\b')
+    return txt
 
-log = logging.getLogger('qordoba')
+def likely_binary(fileobj, blocksize=512):
+    x_file = open(fileobj)
+    block = x_file.read(blocksize)
+    if b'\x00' in block:
+        # Files with null bytes are binary
+        return True
+    elif not block:
+        # An empty file is considered a valid text file
+        return False
+    # Use translate's 'deletechars' argument to efficiently remove all
+    # occurrences of _text_characters from the block
+    txt_characters = self._text_characters()
+    nontext = block.translate(None, txt_characters)
+    # if nontext is more than 30%, than file considered binary
+    return float(len(nontext)) / len(block) >= 0.30
+
+def encoding_binary(fileobj):
+    blob = open(fileobj).read()
+    m = magic.Magic(mime_encoding=True)
+    encoding = m.from_buffer(blob)
+    return encoding == 'binary'
+
+def empty(fileobj, blocksize=512):
+    y_file = open(fileobj)
+    block = y_file.read(blocksize)
+    if not block:
+        return True
+
 
 def regex_file_match(regexFile, string):
     with open(regexFile, 'r') as stream:
@@ -28,13 +63,23 @@ def regex_file_match(regexFile, string):
         except yaml.YAMLError as exc:
             print(exc)
 
+
 def vendored_or_documented(file):
     if regex_file_match("../vendor.yml", file) and regex_file_match("../documentation.yml", file):
         return True
     return False
 
-def documentation(file):
-    pass
+
+def not_valid(fileobj):
+    conditions = [
+        likely_binary(fileobj),
+        encoding_binary(fileobj),
+        empty(fileobj),
+    ]
+    if any(condition == True for condition in conditions):
+        print(True)
+    else:
+        return False
 
 
 def find_new_command(curdir, config, files=()):
@@ -51,5 +96,6 @@ def find_new_command(curdir, config, files=()):
             raise FilesNotFound('Files not found by pattern `{}`'.format(pattern))
 
     for file in files:
-        if not vendored_or_documented(file):
+        print(not_valid(file))
+        if not vendored_or_documented(file) and not_valid(file):
             print("yeah")
