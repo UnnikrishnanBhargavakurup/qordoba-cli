@@ -5,12 +5,23 @@ from qordoba.languages import get_source_language, init_language_storage
 from qordoba.project import ProjectAPI
 from qordoba.settings import get_push_pattern
 from qordoba.sources import find_files_by_pattern
+from qordoba.strategies import Extension, Shebang
+
+
 import yaml
 import re
 import sys
-# import magic
+import magic
 
 log = logging.getLogger('qordoba')
+
+
+STRATEGIES = [
+                Extension(),
+                Shebang(),
+            ]
+
+RESULTS = list()
 
 class FilesNotFound(Exception):
     """
@@ -23,8 +34,9 @@ def _text_characters():
     txt = (b''.join(int2byte(i) for i in range(32, 127)) + b'\n\r\t\f\b')
     return txt
 
+
 def likely_binary(fileobj, blocksize=512):
-    x_file = open(fileobj)
+    x_file = open(fileobj, 'r')
     block = x_file.read(blocksize)
     if b'\x00' in block:
         # Files with null bytes are binary
@@ -32,9 +44,7 @@ def likely_binary(fileobj, blocksize=512):
     elif not block:
         # An empty file is considered a valid text file
         return False
-    # Use translate's 'deletechars' argument to efficiently remove all
-    # occurrences of _text_characters from the block
-    txt_characters = self._text_characters()
+    txt_characters = _text_characters()
     nontext = block.translate(None, txt_characters)
     # if nontext is more than 30%, than file considered binary
     return float(len(nontext)) / len(block) >= 0.30
@@ -45,11 +55,12 @@ def encoding_binary(fileobj):
     encoding = m.from_buffer(blob)
     return encoding == 'binary'
 
+
 def empty(fileobj, blocksize=512):
-    y_file = open(fileobj)
-    block = y_file.read(blocksize)
-    if not block:
+    y_file = open(fileobj).read(blocksize)
+    if not y_file:
         return True
+    return False
 
 
 def regex_file_match(regexFile, string):
@@ -77,7 +88,7 @@ def not_valid(fileobj):
         empty(fileobj),
     ]
     if any(condition == True for condition in conditions):
-        print(True)
+        return True
     else:
         return False
 
@@ -88,14 +99,17 @@ def find_new_command(curdir, config, files=()):
 
     project = api.get_project()
     source_lang = get_source_language(project)
+    pattern = get_push_pattern(config)
 
     if not files:
-        pattern = get_push_pattern(config)
         files = list(find_files_by_pattern(curdir, pattern, source_lang))
+
         if not files:
             raise FilesNotFound('Files not found by pattern `{}`'.format(pattern))
 
-    for file in files:
-        print(not_valid(file))
-        if not vendored_or_documented(file) and not_valid(file):
-            print("yeah")
+    for file_name in files:
+        blob = curdir + '/' + ''.join(pattern.split('/')[:-1]) +  '/' + str(file_name)
+        if not vendored_or_documented(blob) and not not_valid(blob):
+            language = [strategy.find(blob) for strategy in STRATEGIES]
+            RESULTS.append(language)
+        print(RESULTS)
