@@ -129,3 +129,10 @@ def get_pull_pattern(config, default=NOTDEFINED):
         if default is not NOTDEFINED:
             return None
         raise PatternNotFound('Pattern not found for target files')
+
+
+def get_project_file_formats(config, default=None):
+    try:
+        return config['file_formats']
+    except (KeyError, IndexError):
+        return None

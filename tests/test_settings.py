@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from qordoba.settings import load_settings, SettingsError
+from qordoba.settings import load_settings, SettingsError, get_project_file_formats
 
 
 @pytest.fixture
@@ -76,3 +76,9 @@ def test_load_settings_overrite(mock_change_dir):
     assert loaded is True
     assert config['access_token'] == test_access_token
     assert config['project_id'] == test_project_id
+
+
+def test_get_project_file_formats(mock_change_dir):
+    settings, loaded = load_settings(access_token='22', project_id='33')
+    result = get_project_file_formats(settings)
+    assert result['resx'] == ['resx', 'txt']

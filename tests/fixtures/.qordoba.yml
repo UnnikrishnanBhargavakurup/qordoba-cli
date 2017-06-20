@@ -1,6 +1,10 @@
 qordoba:
   access_token: 'aaaaaaa-bbbb-cccc-dddd-fffffffff'
   project_id: 1111
+  file_formats:
+    resx:
+      - resx
+      - txt
   push:
     sources:
       - file: 'sources/*'
