@@ -252,10 +252,10 @@ def add_project_file_formats(formats, target_dict=ALLOWED_EXTENSIONS):
     Adds items from the qordoba.yml file_formats key to the list of allowed
     extensions. This is to support per-project file formats (eg, txt, resx, etc)
     """
-
-    for key, val in formats.items():
-        for item in val:
-            target_dict[item] = key
+    if formats is not None:
+        for key, val in formats.items():
+            for item in val:
+                target_dict[item] = key
 
     return target_dict
 

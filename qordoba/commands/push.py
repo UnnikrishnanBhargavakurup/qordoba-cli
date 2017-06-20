@@ -136,7 +136,7 @@ def push_command(curdir, config, update=False, version=None, files=()):
     source_lang = get_source_language(project)
     lang = next(get_destination_languages(project))
 
-    # add_project_file_formats(get_project_file_formats(config))
+    add_project_file_formats(get_project_file_formats(config))
 
     if not files:
         pattern = get_push_pattern(config)
