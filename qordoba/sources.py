@@ -71,7 +71,7 @@ class TranslationFile(object):
     @property
     def extension(self):
         try:
-            _, extension = self.name.split('.', 1)
+            extension = os.path.splitext(self.name)[1][1:]
         except ValueError:
             extension = None
         return extension
