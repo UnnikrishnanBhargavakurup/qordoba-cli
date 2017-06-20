@@ -71,7 +71,7 @@ class TranslationFile(object):
     @property
     def extension(self):
         try:
-            _, extension = self.name.split('.', 1)
+            extension = os.path.splitext(self.name)[1][1:]
         except ValueError:
             extension = None
         return extension
@@ -150,15 +150,19 @@ pull_pattern_validate_regexp = re.compile('\<({})\>'.format('|'.join(PatternVari
 
 
 def validate_push_pattern(pattern):
-    if not glob.has_magic(pattern):
-        raise PatternNotValid('Push pattern is not valid. Pattern should contain one of the values: *,?')
-
+    '''uncommenting allows users to configure the config.yml so they can push files with the same name'''
+    # if not glob.has_magic(pattern):
+    #     raise PatternNotValid('Push pattern is not valid. Pattern should contain one of the values: *,?')
+    pass
 
 def create_target_path_by_pattern(curdir, language, source_name, pattern=None, content_type_code=None):
     if pattern is not None and not pull_pattern_validate_regexp.search(pattern):
         raise PatternNotValid(
             'Pull pattern is not valid. Pattern should contain one of the values: {}'.format(
                 ', '.join(PatternVariables.all)))
+
+    if pattern is None:
+        pattern = language.code + '-' + source_name
 
     pattern = pattern or DEFAULT_PATTERN
 
@@ -241,6 +245,19 @@ def find_files_by_pattern(curpath, pattern, lang):
             continue
 
         yield path
+
+
+def add_project_file_formats(formats, target_dict=ALLOWED_EXTENSIONS):
+    """
+    Adds items from the qordoba.yml file_formats key to the list of allowed
+    extensions. This is to support per-project file formats (eg, txt, resx, etc)
+    """
+    if formats is not None:
+        for key, val in formats.items():
+            for item in val:
+                target_dict[item] = key
+
+    return target_dict
 
 
 def get_content_type_code(path):

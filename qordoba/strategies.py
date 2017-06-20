@@ -62,3 +62,25 @@ class Shebang():
         if self.spot_shebang(blob):
             pass
         log.info('Strategy Shebang does not apply for file `{}`'.format(blob.split('/')[-1:][0]))
+
+
+def Filename():
+    def __init__():
+        pass
+
+    def reveal_filename(self, blob):
+        filename, file_extension = os.path.splitext(blob)
+        return filename
+
+    def find(self, blob):
+        filename = self.reveal_filename(blob)
+
+        with open("language.yml", 'r') as stream:
+            try:
+                data = (yaml.load(stream))
+                languages = []
+                for filename_key_value in self.find_ext(data, 'filenames'):
+                    assert isinstance(ext_key_value, object)
+                    (filename_key, filename_value) = filename_key_value
+                    if filename == filename_value:
+                        languages.append()

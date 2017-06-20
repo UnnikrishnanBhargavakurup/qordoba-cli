@@ -93,6 +93,9 @@ def not_valid(fileobj):
         return False
 
 
+
+
+
 def find_new_command(curdir, config, files=()):
     api = ProjectAPI(config)
     init_language_storage(api)
