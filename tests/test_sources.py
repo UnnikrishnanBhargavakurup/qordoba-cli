@@ -1,10 +1,10 @@
 import os
 
 import pytest
-
+from collections import OrderedDict
 from qordoba.languages import Language
 from qordoba.sources import validate_push_pattern, PatternNotValid, create_target_path_by_pattern, to_native, \
-    find_files_by_pattern
+    find_files_by_pattern, TranslationFile, add_project_file_formats
 
 PATTERN1 = 'i18n/<language_code>/translations.json'
 PATTERN2 = 'folder1/values-<language_lang_code>/strings.xml'
@@ -114,4 +114,24 @@ def test_find_files_by_pattern(mock_change_dir, mock_lang_storage, pattern, expe
         assert path.posix_path in expected
 
 
+@pytest.mark.parametrize('path,expected', [
+    ('./path/some-path/Resource.Name.resx', 'resx'),
+    ('./path/some-path/Resource.json', 'json'),
+    ('./path/some-path/Resource.That.Has.Many.Extensions.json.yml', 'yml'),
+])
+def test_file_extension(path, expected):
+    f = TranslationFile(path, "en-nz", "./")
+    assert f.extension == expected
+
+
+def test_add_project_file_formats():
+    inbound = {
+        'resx': ('resx',),
+        'plaintext': ('txt', 'text',),
+    }
+
+    result = add_project_file_formats(inbound)
+
+    assert result['resx'] == 'resx'
+    assert result['txt'] == 'plaintext'
 

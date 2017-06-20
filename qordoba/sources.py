@@ -71,7 +71,7 @@ class TranslationFile(object):
     @property
     def extension(self):
         try:
-            _, extension = self.name.split('.', 1)
+            extension = os.path.splitext(self.name)[1][1:]
         except ValueError:
             extension = None
         return extension
@@ -245,6 +245,19 @@ def find_files_by_pattern(curpath, pattern, lang):
             continue
 
         yield path
+
+
+def add_project_file_formats(formats, target_dict=ALLOWED_EXTENSIONS):
+    """
+    Adds items from the qordoba.yml file_formats key to the list of allowed
+    extensions. This is to support per-project file formats (eg, txt, resx, etc)
+    """
+    if formats is not None:
+        for key, val in formats.items():
+            for item in val:
+                target_dict[item] = key
+
+    return target_dict
 
 
 def get_content_type_code(path):
