@@ -277,5 +277,4 @@ def get_content_type_code(path):
     if path_ext in ADJUST_EXTENSION.keys():
         return ADJUST_EXTENSION[path_ext]
 
-
     return ALLOWED_EXTENSIONS[path_ext]
