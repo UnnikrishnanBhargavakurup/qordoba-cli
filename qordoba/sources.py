@@ -32,6 +32,10 @@ ALLOWED_EXTENSIONS = OrderedDict(
     {extension: k for k, extensions in CONTENT_TYPE_CODES.items() for extension in extensions}
 )
 
+ADJUST_EXTENSION = {
+    "resx": "regex",
+}
+
 MIMETYPES = {
     'excel': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 }
@@ -269,5 +273,9 @@ def get_content_type_code(path):
     if path_ext not in ALLOWED_EXTENSIONS:
         raise FileExtensionNotAllowed("File format `{}` not in allowed list of file formats: {}"
                                       .format(path_ext, ', '.join(ALLOWED_EXTENSIONS)))
+
+    if path_ext in ADJUST_EXTENSION.keys():
+        return ADJUST_EXTENSION[path_ext]
+
 
     return ALLOWED_EXTENSIONS[path_ext]
