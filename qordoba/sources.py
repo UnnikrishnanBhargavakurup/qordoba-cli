@@ -295,5 +295,9 @@ def get_content_type_code(path):
                                       .format(path_ext, ', '.join(ALLOWED_EXTENSIONS)))
 
 
+
     if path_ext in ADJUST_EXTENSION:
         return ADJUST_EXTENSION[path_ext]
+
+
+    return ALLOWED_EXTENSIONS[path_ext]
