@@ -5,18 +5,16 @@ import logging
 from qordoba.commands.utils import ask_question, ask_select_multiple, ask_select
 from qordoba.languages import get_source_language, init_language_storage, get_destination_languages
 from qordoba.project import ProjectAPI
-from qordoba.settings import get_push_pattern
+from qordoba.settings import get_push_pattern, get_project_file_formats
 from qordoba.sources import find_files_by_pattern, validate_path, validate_push_pattern, get_content_type_code, \
-    get_mimetype
+    get_mimetype, add_project_file_formats
 
 log = logging.getLogger('qordoba')
-
 
 class FilesNotFound(Exception):
     """
     Files not found
     """
-
 
 def select_version_tag(file_name, version_tags):
     log.info('File `{}` already exists with tags {}. Please setup new version tag:'
@@ -135,6 +133,8 @@ def push_command(curdir, config, update=False, version=None, files=()):
     project = api.get_project()
     source_lang = get_source_language(project)
     lang = next(get_destination_languages(project))
+
+    add_project_file_formats(get_project_file_formats(config))
 
     if not files:
         pattern = get_push_pattern(config)

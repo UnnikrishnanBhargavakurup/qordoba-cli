@@ -6,7 +6,7 @@ import shutil
 from argparse import ArgumentTypeError
 import requests, zipfile
 try:
-    from StringIO import StringIO
+    import StringIO
 except ImportError:
     import io
     # from io import StringIO
@@ -148,7 +148,6 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
             if in_progress:
                 milestone = page_status['status']['id']
                 log.debug('Selected status for page `{}` - {}'.format(page_status['id'], page_status['status']['name']))
-
 
             dest_path = create_target_path_by_pattern(curdir, language, pattern=pattern,
                                                       source_name=page_status['name'],
