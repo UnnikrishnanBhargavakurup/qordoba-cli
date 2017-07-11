@@ -6,7 +6,7 @@ import shutil
 from argparse import ArgumentTypeError
 import requests, zipfile
 try:
-    from StringIO import StringIO
+    import StringIO
 except ImportError:
     import io
     # from io import StringIO
@@ -148,38 +148,6 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
             if in_progress:
                 milestone = page_status['status']['id']
                 log.debug('Selected status for page `{}` - {}'.format(page_status['id'], page_status['status']['name']))
-
-<<<<<<< HEAD
-            target_path = create_target_path_by_pattern(curdir, language, pattern=pattern,
-                                                        source_name=page_status['name'],
-                                                        content_type_code=page_status['content_type_code'])
-
-            if os.path.exists(target_path.native_path) and not force:
-                log.warning('Translation file already exists. `{}`'.format(target_path.native_path))
-                answer = FileUpdateOptions.get_action(update_action) or ask_select(FileUpdateOptions.all,
-                                                                                    prompt='Choice: ')
-                if answer == FileUpdateOptions.skip:
-                    log.info('Download translation file `{}` was skipped.'.format(target_path.native_path))
-                    continue
-                elif answer == FileUpdateOptions.new_name:
-                    while os.path.exists(target_path.native_path):
-                        target_path = ask_question('Set new filename: ', answer_type=target_path.replace)
-                # pass to replace file
-
-            res = api.download_file(page_status['id'], language.id, milestone=milestone)
-            res.raw.decode_content = True  # required to decompress content
-            # ensure to create all directories
-            mkdirs(os.path.dirname(target_path.native_path))
-            # copy content to dest path
-            with open(target_path.native_path, 'wb') as f:
-                shutil.copyfileobj(res.raw, f)
-
-            log.info('Downloaded translation file `{}` for source `{}` and language `{}`'
-                     .format(target_path.native_path,
-                             format_file_name(page),
-                             language.code))
-=======
->>>>>>> origin/master
 
             dest_path = create_target_path_by_pattern(curdir, language, pattern=pattern,
                                                       source_name=page_status['name'],

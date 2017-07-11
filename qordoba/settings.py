@@ -114,6 +114,17 @@ def save_settings(config):
 
     return config
 
+def get_find_new_pattern(config):
+    try:
+        return [pattern_row for pattern_row in config['search']['paths']]
+    except (KeyError, IndexError):
+        raise PatternNotFound('Pattern not found for source files')
+
+
+def get_find_new_blacklist_pattern(config):
+    exclude_list = config['search'].get('exclude', [])
+    return [exception_row for exception_row in exclude_list]
+
 
 def get_push_pattern(config):
     try:

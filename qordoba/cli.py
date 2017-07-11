@@ -16,7 +16,6 @@ from qordoba.commands.ls import ls_command
 from qordoba.commands.pull import pull_command
 from qordoba.commands.push import push_command
 from qordoba.commands.status import status_command
-from qordoba.commands.find_new import find_new_command
 from qordoba.settings import load_settings, SettingsError
 from qordoba.utils import with_metaclass, FilePathType, CommaSeparatedSet
 from qordoba.log import init
@@ -237,28 +236,7 @@ class ListHandler(BaseHandler):
         table = AsciiTable(rows).table
         print(table)
 
-class FindnewHandler(BaseHandler):
-    name = 'find-new'
-    help = """
-    Use the find-new command to analyse source content.
-    """
-
-    def load_settings(self):
-        config = super(FindnewHandler, self).load_settings()
-        config.validate(keys=('organization_id',))
-        return config
-
-    @classmethod
-    def register(cls, *args, **kwargs):
-        parser = super(FindnewHandler, cls).register(*args, **kwargs)
-        parser.add_argument('files', nargs='*', metavar='PATH', default=None, type=FilePathType(), help="")
-        parser.add_argument('--find-new', dest='find-new', action='store_true', help="Analyzes source content.")
-        return parser
-
-    def main(self):
-        config = self.load_settings()
-        find_new_command(self._curdir, config, files=self.files)
-
+        
 class DeleteHandler(BaseHandler):
     name = 'delete'
     help = """
@@ -308,7 +286,6 @@ def parse_arguments():
     PushHandler.register(subparsers, **args)
     ListHandler.register(subparsers, **args)
     DeleteHandler.register(subparsers, **args)
-    FindnewHandler.register(subparsers, **args)
 
     args = parser.parse_args()
     return args, parser

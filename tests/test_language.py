@@ -21,9 +21,7 @@ def lang_en_gb():
 
 def test_get_source_language(project_response, lang_en_us):
     lang = get_source_language(project_response)
-
     assert lang == lang_en_us
-
 
 def test_get_destination_language(project_response, lang_en_gb):
     langs = list(get_destination_languages(project_response))

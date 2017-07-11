@@ -70,13 +70,14 @@ def test_validate_push_pattern(pattern):
     res = validate_push_pattern(pattern)
 
 
-@pytest.mark.parametrize('invalid_pattern', [PATTERN_PUSH_INVALID1,
-                                             PATTERN_PUSH_INVALID2,
-                                             PATTERN_PUSH_INVALID3,
-                                             ])
-def test_validate_push_pattern_invalid(invalid_pattern):
-    with pytest.raises(PatternNotValid):
-        validate_push_pattern(invalid_pattern)
+# @pytest.mark.parametrize('invalid_pattern', [PATTERN_PUSH_INVALID1,
+#                                              PATTERN_PUSH_INVALID2,
+#                                              PATTERN_PUSH_INVALID3,
+#                                              ])
+
+# def test_validate_push_pattern_invalid(invalid_pattern):
+#     with pytest.raises(PatternNotValid):
+#         validate_push_pattern(invalid_pattern)
 
 
 @pytest.mark.parametrize('invalid_pattern', [PATTERN_PUSH_INVALID1,

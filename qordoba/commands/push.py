@@ -11,7 +11,6 @@ from qordoba.sources import find_files_by_pattern, validate_path, validate_push_
 
 log = logging.getLogger('qordoba')
 
-
 class FilesNotFound(Exception):
     """
     Files not found
