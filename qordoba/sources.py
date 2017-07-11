@@ -294,8 +294,6 @@ def get_content_type_code(path):
         raise FileExtensionNotAllowed("File format `{}` not in allowed list of file formats: {}"
                                       .format(path_ext, ', '.join(ALLOWED_EXTENSIONS)))
 
-
-
     if path_ext in ADJUST_EXTENSION:
         return ADJUST_EXTENSION[path_ext]
 

@@ -236,6 +236,7 @@ class ListHandler(BaseHandler):
         table = AsciiTable(rows).table
         print(table)
 
+        
 class DeleteHandler(BaseHandler):
     name = 'delete'
     help = """
