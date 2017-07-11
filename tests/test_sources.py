@@ -1,7 +1,6 @@
 import os
 
 import pytest
-from collections import OrderedDict
 from qordoba.languages import Language
 from qordoba.sources import validate_push_pattern, PatternNotValid, create_target_path_by_pattern, to_native, \
     find_files_by_pattern, TranslationFile, add_project_file_formats
@@ -70,13 +69,14 @@ def test_validate_push_pattern(pattern):
     res = validate_push_pattern(pattern)
 
 
-@pytest.mark.parametrize('invalid_pattern', [PATTERN_PUSH_INVALID1,
-                                             PATTERN_PUSH_INVALID2,
-                                             PATTERN_PUSH_INVALID3,
-                                             ])
-def test_validate_push_pattern_invalid(invalid_pattern):
-    with pytest.raises(PatternNotValid):
-        validate_push_pattern(invalid_pattern)
+# @pytest.mark.parametrize('invalid_pattern', [PATTERN_PUSH_INVALID1,
+#                                              PATTERN_PUSH_INVALID2,
+#                                              PATTERN_PUSH_INVALID3,
+#                                              ])
+
+# def test_validate_push_pattern_invalid(invalid_pattern):
+#     with pytest.raises(PatternNotValid):
+#         validate_push_pattern(invalid_pattern)
 
 
 @pytest.mark.parametrize('invalid_pattern', [PATTERN_PUSH_INVALID1,

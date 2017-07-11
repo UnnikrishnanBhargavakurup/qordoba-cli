@@ -19,9 +19,11 @@ lib64/
 parts/
 sdist/
 var/
+.qordoba.yml
 *.egg-info/
 .installed.cfg
 *.egg
+.DS_Store
 .qordoba.yml
 
 # PyInstaller

@@ -245,7 +245,7 @@ def find_files_by_pattern(curpath, pattern, lang):
         try:
             _ = get_content_type_code(path)
         except FileExtensionNotAllowed as e:
-            log.debug('File path ignored: {}'.format(e))
+            log.info('File path ignored: {}'.format(e))
             continue
 
         yield path

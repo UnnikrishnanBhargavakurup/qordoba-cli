@@ -11,12 +11,10 @@ from qordoba.sources import find_files_by_pattern, validate_path, validate_push_
 
 log = logging.getLogger('qordoba')
 
-
 class FilesNotFound(Exception):
     """
     Files not found
     """
-
 
 def select_version_tag(file_name, version_tags):
     log.info('File `{}` already exists with tags {}. Please setup new version tag:'

@@ -149,7 +149,6 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
                 milestone = page_status['status']['id']
                 log.debug('Selected status for page `{}` - {}'.format(page_status['id'], page_status['status']['name']))
 
-
             dest_path = create_target_path_by_pattern(curdir, language, pattern=pattern,
                                                       source_name=page_status['name'],
                                                       content_type_code=page_status['content_type_code'])
