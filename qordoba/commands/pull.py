@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function
 
+import errno
 import logging
 import os
 import shutil
@@ -9,7 +10,6 @@ try:
     import StringIO
 except ImportError:
     import io
-    # from io import StringIO
 
 from qordoba.commands.utils import mkdirs, ask_select, ask_question
 from qordoba.languages import get_destination_languages, get_source_language, init_language_storage, normalize_language
@@ -58,6 +58,7 @@ def validate_languges_input(languages, project_languages):
 
 
 def pull_bulk(api, src_to_dest_paths, dest_languages_page_ids, dest_languages_ids, pattern):
+    log.info('Starting bulk download for all files and languages in project')
     '''making request to our internal api: export_files_bulk (POST). This request downloads all files for given language'''
     res = api.download_files(dest_languages_page_ids, dest_languages_ids)
     '''the api return a url and accesstoken for the Google Cloud server where Qordoba saves the translated files'''
@@ -68,16 +69,16 @@ def pull_bulk(api, src_to_dest_paths, dest_languages_page_ids, dest_languages_id
     except:
         z = zipfile.ZipFile(io.BytesIO(r.content))
 
+    if not os.path.exists('Bulk_Download'):
+        os.makedirs('Bulk_Download')
+
 
     '''iterating through the src and dest languages of the project downloads step by step all files.
      the files will be downloaded into earlier defined folder patterns for the poject'''
     for src_path, dest_path in set(src_to_dest_paths):
-        log.info('Downloading translation files in bulk for language `{}` to destination `{}`'.format(
-            src_path,
-            dest_path,
-        ))
-        root = os.getcwd()
+        log.info('Downloading files...')
 
+        root = os.getcwd() + '/' + 'Bulk_Download'
         '''extract zip folder to root folder'''
         zip_files = z.namelist()
         z.extractall(root, zip_files)
@@ -130,19 +131,17 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
         log.debug('Pull only completed translations.')
         status_filter = [PageStatus.completed, ]
 
+
     for language in languages:
+
         is_started = False
+        current_page_path = None
 
         for page in api.page_search(language.id, status=status_filter):
             is_started = True
             page_status = api.get_page_details(language.id, page['page_id'], )
             dest_languages_page_ids.append(page['page_id'])
             dest_languages_ids.append(language.id)
-
-            log.info('Starting Download of translation file(s) for src `{}` and language `{}`'.format(
-                format_file_name(page),
-                language.code,
-            ))
 
             milestone = None
             if in_progress:
@@ -158,24 +157,31 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
             src_to_dest_paths.append(tuple((language.code, language.code)))
 
             '''adding the src langauge to the dest_path_of_src_language pattern'''
-            dest_path_of_src_language = create_target_path_by_pattern(curdir, src_language, pattern=pattern,
-                                                                      source_name=page_status['name'],
-                                                                      content_type_code=page_status[
-                                                                          'content_type_code'])
+            dest_path_of_src_language = create_target_path_by_pattern(curdir, src_language, pattern=pattern, source_name=page_status['name'], content_type_code=page_status['content_type_code'])
+
             if pattern is not None:
-                src_page_status_id = page_status['id']
                 stripped_dest_path_of_src_language = ((dest_path_of_src_language.native_path).rsplit('/', 1))[0]
                 src_to_dest_paths.append(tuple((src_language_code, stripped_dest_path_of_src_language)))
             src_to_dest_paths.append(tuple((src_language_code, src_language_code)))
 
+
             if not bulk:
+                '''checking if file extension wanted in config file matches downloaded file. If not, continue'''
+                valid_extension = pattern.split('.')[-1]
+                file_extension = page['url'].split('.')[-1]
+                if valid_extension != file_extension:
+                    continue
+
+                log.info('Starting Download of translation file(s) for src `{}` and language `{}`'.format(format_file_name(page), language.code))
                 if os.path.exists(dest_path.native_path) and not force:
+
                     log.warning('Translation file already exists. `{}`'.format(dest_path.native_path))
-                    answer = FileUpdateOptions.get_action(update_action) or ask_select(FileUpdateOptions.all,
-                                                                                       prompt='Choice: ')
+                    answer = FileUpdateOptions.get_action(update_action) or ask_select(FileUpdateOptions.all, prompt='Choice: ')
+
                     if answer == FileUpdateOptions.skip:
                         log.info('Download translation file `{}` was skipped.'.format(dest_path.native_path))
                         continue
+
                     elif answer == FileUpdateOptions.new_name:
                         while os.path.exists(dest_path.native_path):
                             dest_path = ask_question('Set new filename: ', answer_type=dest_path.replace)
@@ -183,16 +189,19 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
 
                 res = api.download_file(page_status['id'], language.id, milestone=milestone)
                 res.raw.decode_content = True  # required to decompress content
-                '''ensure to create all directories'''
-                mkdirs(os.path.dirname(dest_path.native_path))
-                '''copy content to dest path'''
+
+                if not os.path.exists(os.path.dirname(dest_path.native_path)):
+                    try:
+                        os.makedirs(os.path.dirname(dest_path.native_path))
+                    except OSError as exc:  # Guard against race condition
+                        if exc.errno != errno.EEXIST:
+                            raise
+
                 with open(dest_path.native_path, 'wb') as f:
                     shutil.copyfileobj(res.raw, f)
 
-                log.info('Downloaded translation file `{}` for src `{}` and language `{}`'
-                         .format(dest_path.native_path,
-                                 format_file_name(page),
-                                 language.code))
+                log.info('Downloaded translation file `{}` for src `{}` and language `{}`'.format(dest_path.native_path, format_file_name(page), language.code))
+
         if not is_started:
             log.info('Nothing to download for language `{}`'.format(language.code))
 
