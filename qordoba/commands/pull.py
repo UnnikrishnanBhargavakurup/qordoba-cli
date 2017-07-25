@@ -88,21 +88,23 @@ def pull_bulk(api, src_to_dest_paths, dest_languages_page_ids, dest_languages_id
         if dest_path[:1] == '.':
             dest_path = dest_path[2:]
         root_dest_dir = os.path.join(os.getcwd(), dest_path)
+    log.info('Finished with bulk download.')
 
-        '''first, the zip files are stored in the original zip-directory-name.
-         second, the project defined folder patterns are created if they were missing
-         third, files are moved from zip folder to defined folder patterns
-         zip folders are completely deleted'''
-        # if pattern is not None:
-        #     if not os.path.exists(root_dest_dir):
-        #         os.makedirs(root_dest_dir)
-        #     for src_dir, dirs, files in os.walk(root_src_dir):
-        #         for file_ in files:
-        #             src_file = os.path.join(root_src_dir, file_)
-        #             dest_file = os.path.join(root_dest_dir, file_)
-        #             shutil.move(src_file, dest_file)
-        #         if os.path.exists(root_src_dir):
-        #             shutil.rmtree(root_src_dir)
+
+    '''first, the zip files are stored in the original zip-directory-name.
+     second, the project defined folder patterns are created if they were missing
+     third, files are moved from zip folder to defined folder patterns
+     zip folders are completely deleted'''
+    # if pattern is not None:
+    #     if not os.path.exists(root_dest_dir):
+    #         os.makedirs(root_dest_dir)
+    #     for src_dir, dirs, files in os.walk(root_src_dir):
+    #         for file_ in files:
+    #             src_file = os.path.join(root_src_dir, file_)
+    #             dest_file = os.path.join(root_dest_dir, file_)
+    #             shutil.move(src_file, dest_file)
+    #         if os.path.exists(root_src_dir):
+    #             shutil.rmtree(root_src_dir)
 
 
 def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progress=False, update_action=None,
@@ -167,10 +169,12 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
 
             if not bulk:
                 '''checking if file extension wanted in config file matches downloaded file. If not, continue'''
-                valid_extension = pattern.split('.')[-1]
-                file_extension = page['url'].split('.')[-1]
-                if valid_extension != file_extension:
-                    continue
+
+                # if pattern is not None:
+                #     valid_extension = pattern.split('.')[-1]
+                #     file_extension = page['url'].split('.')[-1]
+                #     if valid_extension != file_extension:
+                #         continue
 
                 log.info('Starting Download of translation file(s) for src `{}` and language `{}`'.format(format_file_name(page), language.code))
                 if os.path.exists(dest_path.native_path) and not force:
