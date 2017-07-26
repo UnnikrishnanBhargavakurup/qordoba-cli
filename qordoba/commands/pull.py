@@ -170,11 +170,12 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
             if not bulk:
                 '''checking if file extension wanted in config file matches downloaded file. If not, continue'''
 
-                # if pattern is not None:
-                #     valid_extension = pattern.split('.')[-1]
-                #     file_extension = page['url'].split('.')[-1]
-                #     if valid_extension != file_extension:
-                #         continue
+                if pattern is not None:
+                    valid_extension = pattern.split('.')[-1]
+                    file_extension = page['url'].split('.')[-1]
+                    if  valid_extension != "<extension>" and valid_extension != file_extension:
+                        log.info('{} is not a valid file extension'.format(file_extension))
+                        continue
 
                 log.info('Starting Download of translation file(s) for src `{}` and language `{}`'.format(format_file_name(page), language.code))
                 if os.path.exists(dest_path.native_path) and not force:
@@ -197,9 +198,10 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
                 if not os.path.exists(os.path.dirname(dest_path.native_path)):
                     try:
                         os.makedirs(os.path.dirname(dest_path.native_path))
+                        log.info("Creating folder path {}".format(dest_path.native_path))
                     except OSError as exc:  # Guard against race condition
                         if exc.errno != errno.EEXIST:
-                            raise
+                            pass
 
                 with open(dest_path.native_path, 'wb') as f:
                     shutil.copyfileobj(res.raw, f)
