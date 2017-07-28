@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function
 
 import logging
-
+import os
 from qordoba.commands.utils import ask_question, ask_select_multiple, ask_select
 from qordoba.languages import get_source_language, init_language_storage, get_destination_languages
 from qordoba.project import ProjectAPI
@@ -123,24 +123,26 @@ def update_file(api, path, remote_files, version=None):
 
     resp = api.apply_upload_file(resp['id'], remote_file['page_id'])
 
-    log.info('Updated {} successfully.'.format(file_name))
+    log.info('Updated {} from {} successfully.'.format(file_name))
 
+def find_directories(pattern):
+    directory = pattern.split('/')
+    del directory[-1]
+    directory = '/'.join(directory)
+    directory_list = list()
+    for root, dirs, files in os.walk(directory, topdown=False):
+        for name in dirs:
+            directory_list.append(os.path.join(root, name))
+    return directory_list
 
-def push_command(curdir, config, update=False, version=None, files=()):
-    api = ProjectAPI(config)
-    init_language_storage(api)
+def final_push(project, curdir, pattern, api,  update, version):
 
-    project = api.get_project()
     source_lang = get_source_language(project)
     lang = next(get_destination_languages(project))
-
-    add_project_file_formats(get_project_file_formats(config))
+    files = list(find_files_by_pattern(curdir, pattern, source_lang))
 
     if not files:
-        pattern = get_push_pattern(config)
-        files = list(find_files_by_pattern(curdir, pattern, source_lang))
-        if not files:
-            raise FilesNotFound('Files not found by pattern `{}`'.format(pattern))
+        log.info('Files for the given push pattern `{}` do not exists.' .format(pattern))
 
     for file in files:
         path = validate_path(curdir, file, source_lang)
@@ -153,3 +155,30 @@ def push_command(curdir, config, update=False, version=None, files=()):
             update_file(api, path, remote_file_pages, version=version)
         else:
             upload_file(api, path, version=version)
+
+
+def push_command(curdir, config, update=False, version=None, files=()):
+    api = ProjectAPI(config)
+    project = api.get_project()
+    init_language_storage(api)
+    add_project_file_formats(get_project_file_formats(config))
+
+
+    if not files:
+        pattern_list = get_push_pattern(config)
+        if pattern_list is None:
+            pattern_list = [None]
+
+        for pattern in pattern_list:
+
+            if pattern is not None and find_directories(pattern):
+                    pattern_extension = pattern.split('/')[-1]
+                    directory_list = find_directories(pattern)
+                    for dir_ in directory_list:
+                        dir_ = dir_ + '/' + pattern_extension
+                        final_push(project, curdir, dir_, api,  update=False, version=None)
+            else:
+                final_push(project, curdir, pattern, api, update=False, version=None)
+
+
+

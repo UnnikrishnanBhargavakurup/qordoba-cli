@@ -128,14 +128,14 @@ def get_find_new_blacklist_pattern(config):
 
 def get_push_pattern(config):
     try:
-        return config['push']['sources'][0]['file']
+        return config['push']['sources']
     except (KeyError, IndexError):
         raise PatternNotFound('Pattern not found for source files')
 
 
 def get_pull_pattern(config, default=NOTDEFINED):
     try:
-        return config['pull']['targets'][0]['file']
+        return config['pull']['targets']
     except (KeyError, IndexError):
         if default is not NOTDEFINED:
             return None

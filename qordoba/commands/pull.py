@@ -109,8 +109,8 @@ def pull_bulk(api, src_to_dest_paths, dest_languages_page_ids, dest_languages_id
     #             shutil.rmtree(root_src_dir)
 
 
-def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progress=False, update_action=None,
-                 files=(), **kwargs):
+def pull_command(curdir, config, force=False, bulk=False, distinct=False, languages=(), in_progress=False, update_action=None,**kwargs):
+
     api = ProjectAPI(config)
     init_language_storage(api)
     project = api.get_project()
@@ -128,114 +128,107 @@ def pull_command(curdir, config, force=False, bulk=False, languages=(), in_progr
     dest_languages_ids = [src_language_id]
     src_to_dest_paths = []
 
-    pattern = get_pull_pattern(config, default=None)
-    status_filter = [PageStatus.enabled, ]
+    pattern_list = get_pull_pattern(config, default=None)
+    if pattern_list is None:
+        pattern_list=[None]
 
-    if in_progress is False:
-        log.debug('Pull only completed translations.')
-        status_filter = [PageStatus.completed, ]
+    for pattern in pattern_list:
+        status_filter = [PageStatus.enabled, ]
 
+        if in_progress is False:
+            log.debug('Pull only completed translations.')
+            status_filter = [PageStatus.completed, ]
 
-    for language in languages:
+        for language in languages:
 
-        is_started = False
-        current_page_path = None
+            is_started = False
+            for page in api.page_search(language.id, status=status_filter):
+                is_started = True
+                page_status = api.get_page_details(language.id, page['page_id'], )
+                dest_languages_page_ids.append(page['page_id'])
+                dest_languages_ids.append(language.id)
 
-        if not files:
-            pages = api.page_search(language.id, status=status_filter)
-        else:
-            pages = []
-            for search_term in files:
-                result = api.page_search(language.id, status=status_filter, search_string=search_term)
-                pages = itertools.chain(pages, result)
+                milestone = None
+                if in_progress:
+                    milestone = page_status['status']['id']
+                    log.debug('Selected status for page `{}` - {}'.format(page_status['id'], page_status['status']['name']))
 
-        for page in pages:
-            is_started = True
-            page_status = api.get_page_details(language.id, page['page_id'], )
+                dest_path = create_target_path_by_pattern(curdir, language, pattern=pattern,
+                                                          distinct=distinct,
+                                                          version_tag=page_status['version_tag'],
+                                                          source_name=page_status['name'],
+                                                          content_type_code=page_status['content_type_code'],)
 
-            """
-            If searching for specific files, skip those that don't match the search criteria.
-            """
-            if files:
-                needle = None
-                for file_name in files:
-                    remote_file_name = page_status['url'].partition('_')[2]
-                    if file_name in remote_file_name:
-                        needle = page_status['url']
-                if needle is None:
-                    continue
-                else:
-                    log.info('Found matching translation file src `{}` language `{}`'.format(
-                        format_file_name(page),
-                        language.code,
-                    ))
+                if pattern is not None:
+                    stripped_dest_path = ((dest_path.native_path).rsplit('/', 1))[0]
+                    src_to_dest_paths.append(tuple((language.code, stripped_dest_path)))
+                src_to_dest_paths.append(tuple((language.code, language.code)))
 
-            dest_languages_page_ids.append(page['page_id'])
-            dest_languages_ids.append(language.id)
+                '''adding the src langauge to the dest_path_of_src_language pattern'''
+                dest_path_of_src_language = create_target_path_by_pattern(curdir, src_language, pattern=pattern, distinct=distinct, version_tag=page_status['version_tag'], source_name=page_status['name'], content_type_code=page_status['content_type_code'])
 
-            milestone = None
-            if in_progress:
-                milestone = page_status['status']['id']
-                log.debug('Selected status for page `{}` - {}'.format(page_status['id'], page_status['status']['name']))
+                if pattern is not None:
+                    stripped_dest_path_of_src_language = ((dest_path_of_src_language.native_path).rsplit('/', 1))[0]
+                    src_to_dest_paths.append(tuple((src_language_code, stripped_dest_path_of_src_language)))
+                src_to_dest_paths.append(tuple((src_language_code, src_language_code)))
 
-            dest_path = create_target_path_by_pattern(curdir, language, pattern=pattern,
-                                                      source_name=page_status['name'],
-                                                      content_type_code=page_status['content_type_code'])
-            if pattern is not None:
-                stripped_dest_path = ((dest_path.native_path).rsplit('/', 1))[0]
-                src_to_dest_paths.append(tuple((language.code, stripped_dest_path)))
-            src_to_dest_paths.append(tuple((language.code, language.code)))
-
-            '''adding the src langauge to the dest_path_of_src_language pattern'''
-            dest_path_of_src_language = create_target_path_by_pattern(curdir, src_language, pattern=pattern, source_name=page_status['name'], content_type_code=page_status['content_type_code'])
-
-            if pattern is not None:
-                stripped_dest_path_of_src_language = ((dest_path_of_src_language.native_path).rsplit('/', 1))[0]
-                src_to_dest_paths.append(tuple((src_language_code, stripped_dest_path_of_src_language)))
-            src_to_dest_paths.append(tuple((src_language_code, src_language_code)))
-
-
-            if not bulk:
-                '''checking if file extension wanted in config file matches downloaded file. If not, continue'''
-                valid_extension = pattern.split('.')[-1] if pattern else None
-                file_extension = page['url'].split('.')[-1]
-                if pattern and valid_extension != "<extension>" and valid_extension != file_extension:
-                        log.info('{} is not a valid file extension'.format(file_extension))
-                        continue
-            
-                log.info('Starting Download of translation file(s) for src `{}` and language `{}`'.format(format_file_name(page), language.code))
-                if os.path.exists(dest_path.native_path) and not force:
-
-                    log.warning('Translation file already exists. `{}`'.format(dest_path.native_path))
-                    answer = FileUpdateOptions.get_action(update_action) or ask_select(FileUpdateOptions.all, prompt='Choice: ')
-
-                    if answer == FileUpdateOptions.skip:
-                        log.info('Download translation file `{}` was skipped.'.format(dest_path.native_path))
+                if not bulk:
+                    """
+                    Checking if file extension in config file matches downloaded file.
+                    If not, continue e.g. *.resx should only download resx files from Qordoba
+                    """
+                    valid_extension = pattern.split('.')[-1] if pattern else None:
+                    file_extension = page['url'].split('.')[-1]
+                    if pattern and valid_extension != "<extension>" and valid_extension != file_extension:
+                        # log.info('{} is not a valid file extension'.format(file_extension))
                         continue
 
-                    elif answer == FileUpdateOptions.new_name:
-                        while os.path.exists(dest_path.native_path):
-                            dest_path = ask_question('Set new filename: ', answer_type=dest_path.replace)
-                            # pass to replace file
+                    if distinct:
+                        source_name = page_status['name']
+                        tag = page_status['version_tag']
+                        pattern_name = pattern.split('/')[-1]
+                        if tag:
+                            real_filename = tag + '_' + source_name
+                        else:
+                            real_filename = source_name
+                            
+                        if real_filename != pattern_name:
+                            continue
 
-                res = api.download_file(page_status['id'], language.id, milestone=milestone)
-                res.raw.decode_content = True  # required to decompress content
 
-                if not os.path.exists(os.path.dirname(dest_path.native_path)):
-                    try:
-                        os.makedirs(os.path.dirname(dest_path.native_path))
-                        log.info("Creating folder path {}".format(dest_path.native_path))
-                    except OSError as exc:  # Guard against race condition
-                        if exc.errno != errno.EEXIST:
-                            pass
+                    log.info('Starting Download of translation file(s) for src `{}`, language `{}` and pattern {}'.format(format_file_name(page), language.code, pattern))
+                    if os.path.exists(dest_path.native_path) and not force:
 
-                with open(dest_path.native_path, 'wb') as f:
-                    shutil.copyfileobj(res.raw, f)
+                        log.warning('Translation file already exists. `{}`'.format(dest_path.native_path))
+                        answer = FileUpdateOptions.get_action(update_action) or ask_select(FileUpdateOptions.all, prompt='Choice: ')
 
-                log.info('Downloaded translation file `{}` for src `{}` and language `{}`'.format(dest_path.native_path, format_file_name(page), language.code))
+                        if answer == FileUpdateOptions.skip:
+                            log.info('Download translation file `{}` was skipped.'.format(dest_path.native_path))
+                            continue
 
-        if not is_started:
-            log.info('Nothing to download for language `{}`'.format(language.code))
+                        elif answer == FileUpdateOptions.new_name:
+                            while os.path.exists(dest_path.native_path):
+                                dest_path = ask_question('Set new filename: ', answer_type=dest_path.replace)
+                                # pass to replace file
+
+                    res = api.download_file(page_status['id'], language.id, milestone=milestone)
+                    res.raw.decode_content = True  # required to decompress content
+
+                    if not os.path.exists(os.path.dirname(dest_path.native_path)):
+                        try:
+                            os.makedirs(os.path.dirname(dest_path.native_path))
+                            log.info("Creating folder path {}".format(dest_path.native_path))
+                        except OSError as exc:  # Guard against race condition
+                            if exc.errno != errno.EEXIST:
+                                pass
+
+                    with open(dest_path.native_path, 'wb') as f:
+                        shutil.copyfileobj(res.raw, f)
+
+                    log.info('Downloaded translation file `{}` for src `{}` and language `{}`'.format(dest_path.native_path, format_file_name(page), language.code))
+
+            if not is_started:
+                log.info('Nothing to download for language `{}`. Check if your file translation status is `completed`.'.format(language.code))
 
     if bulk:
         pull_bulk(api, src_to_dest_paths, dest_languages_page_ids, dest_languages_ids, pattern=pattern)

@@ -170,14 +170,17 @@ def validate_push_pattern(pattern):
     #     raise PatternNotValid('Push pattern is not valid. Pattern should contain one of the values: *,?')
     pass
 
-def create_target_path_by_pattern(curdir, language, source_name, pattern=None, content_type_code=None):
-    if pattern is not None and not pull_pattern_validate_regexp.search(pattern):
+def create_target_path_by_pattern(curdir, language, version_tag, source_name,  pattern=None, distinct=False, content_type_code=None):
+
+    if not distinct and pattern is not None and not pull_pattern_validate_regexp.search(pattern):
         raise PatternNotValid(
             'Pull pattern is not valid. Pattern should contain one of the values: {}'.format(
                 ', '.join(PatternVariables.all)))
 
     if pattern is None:
         pattern = language.code + '-' + source_name
+        if version_tag:
+            pattern = language.code + '-' + version_tag + '_' +source_name
 
     pattern = pattern or DEFAULT_PATTERN
 
@@ -199,14 +202,21 @@ def create_target_path_by_pattern(curdir, language, source_name, pattern=None, c
         target_path = target_path.replace('<{}>'.format(PatternVariables.language_name_allcap),
                                           language.name.upper())
 
+
     if '<{}>'.format(PatternVariables.extension) in target_path \
             or '<{}>'.format(PatternVariables.filename) in target_path:
         try:
             filename, extension = os.path.splitext(source_name)
             extension = extension.strip('.')
+            if version_tag:
+                filename, extension = os.path.splitext(source_name)
+                filename = version_tag + '_' + filename
+                extension = extension.strip('.')
         except (ValueError, AttributeError):
             extension = ''
             filename = source_name
+            if version_tag:
+                filename = version_tag + '_' + filename
 
         target_path = target_path.replace('<{}>'.format(PatternVariables.extension), extension)
         target_path = target_path.replace('<{}>'.format(PatternVariables.filename), filename)
