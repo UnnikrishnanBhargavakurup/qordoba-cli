@@ -130,6 +130,7 @@ def find_directories(pattern):
     del directory[-1]
     directory = '/'.join(directory)
     directory_list = list()
+    directory_list.append(directory)
     for root, dirs, files in os.walk(directory, topdown=False):
         for name in dirs:
             directory_list.append(os.path.join(root, name))
