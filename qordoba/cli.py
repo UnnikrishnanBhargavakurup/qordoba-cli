@@ -182,6 +182,7 @@ class PullHandler(BaseHandler):
         group.add_argument('--replace', dest='replace', action='store_true', help='Replace existing file.')
         group.add_argument('--set-new', dest='set_new', action='store_true',
                            help='Ask to set new filename if file exists.')
+
         return parser
 
     def get_update_action(self):
@@ -197,11 +198,8 @@ class PullHandler(BaseHandler):
     def main(self):
         config = self.load_settings()
         languages = []
-        files = []
         if isinstance(self.languages, (list, tuple, set)):
             languages.extend(self.languages)
-        if isinstance(self.files, (list, tuple, set)):
-            files.extend(self.files)
         pull_command(self._curdir, config, languages=set(itertools.chain(*languages)),
                      in_progress=self.in_progress, update_action=self.get_update_action(), force=self.force, bulk=self.bulk, distinct=self.distinct)
 

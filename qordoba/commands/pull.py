@@ -109,7 +109,7 @@ def pull_bulk(api, src_to_dest_paths, dest_languages_page_ids, dest_languages_id
     #             shutil.rmtree(root_src_dir)
 
 
-def pull_command(curdir, config, force=False, bulk=False, distinct=False, languages=(), in_progress=False, update_action=None,**kwargs):
+def pull_command(curdir, config, force=False, bulk=False, distinct=False,  files=(), languages=(), in_progress=False, update_action=None,**kwargs):
 
     api = ProjectAPI(config)
     init_language_storage(api)
@@ -177,7 +177,7 @@ def pull_command(curdir, config, force=False, bulk=False, distinct=False, langua
                     Checking if file extension in config file matches downloaded file.
                     If not, continue e.g. *.resx should only download resx files from Qordoba
                     """
-                    valid_extension = pattern.split('.')[-1] if pattern else None:
+                    valid_extension = pattern.split('.')[-1] if pattern else None
                     file_extension = page['url'].split('.')[-1]
                     if pattern and valid_extension != "<extension>" and valid_extension != file_extension:
                         # log.info('{} is not a valid file extension'.format(file_extension))
