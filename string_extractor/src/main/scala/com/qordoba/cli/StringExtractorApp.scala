@@ -1,60 +1,98 @@
 package com.qordoba.cli
 
-import java.io.{File, FileInputStream}
+import java.io._
 
-import com.qordoba.cli.grammar.{StringExtractorLexer, StringExtractorParser}
-import org.antlr.v4.runtime.tree.{ParseTree, ParseTreeWalker}
-import org.antlr.v4.runtime.{ANTLRInputStream, CommonTokenStream}
+import com.opencsv.CSVWriter
+import com.qordoba.cli.grammar.StringExtractorLexer
+import com.typesafe.scalalogging.slf4j.LazyLogging
+import org.antlr.v4.runtime.{ANTLRInputStream, CommonTokenStream, Token}
+
+import scala.collection.JavaConversions._
+import scala.collection.mutable.ListBuffer
 
 /**
   * Application that uses a precompiled ANTLR grammar to extract string literals from a given file
   */
-object StringExtractorApp extends App {
+object StringExtractorApp extends App with LazyLogging {
 
   override def main(args: Array[String]) {
 
-    // TODO: Add support for -f & -d
-    val filename = if (args.size > 0) {
+    val argMissingText = "Infile and outfile arguments required"
+    val usageText = "Usage: StringExtractorApp <infile> <outfile>"
+
+    // TODO: Add support for -f, -d, -o
+    val infileName = if (args.size > 0) {
       args.head
     } else {
-      println("Filename argument required")
+      println(argMissingText)
+      println(usageText)
       return
     }
 
+    val outfileName = if (args.size > 1) {
+      args(1)
+    } else {
+      println(argMissingText)
+      println(usageText)
+      return
+    }
+
+    // A place to store everything that should go in the output file
+    val allStringLiterals: ListBuffer[StringLiteral] = scala.collection.mutable.ListBuffer.empty[StringLiteral]
+
     try {
-      val file = new File(filename)
-      val fis = new FileInputStream(file)
+      val infile: File = new File(infileName)
+      val fis = new FileInputStream(infile)
       val input: ANTLRInputStream = new ANTLRInputStream(fis)
-
       val lexer: StringExtractorLexer = new StringExtractorLexer(input)
+      val tokenStream: CommonTokenStream = new CommonTokenStream(lexer)
 
-      val tokens: CommonTokenStream = new CommonTokenStream(lexer)
+      // Activate the lexer
+      tokenStream.fill()
 
-      val parser: StringExtractorParser = new StringExtractorParser(tokens)
+      // Inspect each token for something interesting
+      val tokens = tokenStream.getTokens().iterator()
+      while (tokens.hasNext()) {
+        val token: Token = tokens.next()
 
-      val tree: ParseTree = parser.textfile()
+        // Look for StringLiteral (value of 1 in StringExtractorLexer.tokens)
+        if (token.getType() == 1) {
+          val stringLiteral: StringLiteral = new StringLiteral(
+            filename = infileName,
+            text = token.getText(),
+            startLineNumber = token.getLine(),
+            startCharIdx = token.getCharPositionInLine(),
+            endLineNumber = token.getLine(),
+            endCharIdx = token.getCharPositionInLine() + token.getText().size - 1  // 0-based index, inclusive
+          )
+          allStringLiterals += stringLiteral
+        }
+      }
 
-      println(tree.toStringTree(parser))
-
-      val walker: ParseTreeWalker = new ParseTreeWalker()
-
-      // TODO: Generate an output file
-      walker.walk(new StringExtractor(), tree)
+      // Send our treasures to a file
+      writeToCsv(allStringLiterals.toList, outfileName)
     } catch {
-      case e: Exception => println(s"Unable to parse ${filename}: ${e}")
+      case e: Exception => println(s"Unable to parse ${infileName}: ${e}")
     }
   }
 
-  /*
-  ANTLRInputStream input = new ANTLRFileStream(args[0]);
-  14                 RLexer lexer = new RLexer(input);
-  15                 CommonTokenStream tokens = new CommonTokenStream(lexer);
-  16                 RParser parser = new RParser(tokens);
-  17                 parser.setBuildParseTree(true);
-  18                 RuleContext tree = parser.prog();
-  19                 tree.inspect(parser); // show in gui
-  20                 //tree.save(parser, "/tmp/R.ps"); // Generate postscript
-  21                 System.out.println(tree.toStringTree(parser));
-  */
+  private def writeToCsv(allStringLiterals: List[StringLiteral], outfileName: String) = {
+    val writer = new StringWriter()
+    val csvWriter = new CSVWriter(writer)
 
+    // Convert to a format the OpenCVS can do something with
+    val toWrite: List[Array[String]] = allStringLiterals.map(stringLiteral => stringLiteral.toStringArray())
+
+    csvWriter.writeAll(toWrite, false)
+    csvWriter.close()
+
+    logger.debug(writer.toString())
+
+    val outfile = new File(outfileName)
+    val bw = new BufferedWriter(new FileWriter(outfile))
+    bw.write(writer.toString())
+    bw.close()
+
+    logger.debug(s"String literals written to ${outfileName}")
+  }
 }
