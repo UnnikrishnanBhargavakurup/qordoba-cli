@@ -5,7 +5,7 @@ import java.io._
 import com.opencsv.CSVWriter
 import com.qordoba.cli.grammar.StringExtractorLexer
 import com.typesafe.scalalogging.slf4j.LazyLogging
-import org.antlr.v4.runtime.{ANTLRInputStream, CommonTokenStream, Token}
+import org.antlr.v4.runtime.{CharStream, CharStreams, CommonTokenStream, Token}
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
@@ -41,9 +41,7 @@ object StringExtractorApp extends App with LazyLogging {
     val allStringLiterals: ListBuffer[StringLiteral] = scala.collection.mutable.ListBuffer.empty[StringLiteral]
 
     try {
-      val infile: File = new File(infileName)
-      val fis = new FileInputStream(infile)
-      val input: ANTLRInputStream = new ANTLRInputStream(fis)
+      val input: CharStream = CharStreams.fromFileName(infileName)
       val lexer: StringExtractorLexer = new StringExtractorLexer(input)
       val tokenStream: CommonTokenStream = new CommonTokenStream(lexer)
 
