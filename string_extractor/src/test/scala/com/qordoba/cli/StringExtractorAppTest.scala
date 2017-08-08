@@ -1,8 +1,8 @@
 package com.qordoba.cli
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
+import java.io.File
 import org.scalatest.{FeatureSpec, ShouldMatchers}
-
 import scala.io.Source
 
 /**
@@ -14,25 +14,57 @@ class StringExtractorAppTest extends FeatureSpec with ShouldMatchers with LazyLo
   val knownGoodFileUrl = getClass.getResource("/merge_spark_pr_string_literals.csv")
   val args = Array(infile, outfile)
 
-  scenario(s"Full application, generated file") {
-    StringExtractorApp.main(args)
+  feature(s"File generation") {
 
-    val outfileContents = Source.fromFile(outfile).getLines.toList
-    val knownGoodContents = Source.fromURL(knownGoodFileUrl).getLines.toList
+    scenario(s"Full application") {
+      StringExtractorApp.main(args)
+      compareFiles
+    }
 
-    logger.debug(s"outfileContents: ${outfileContents}")
-    logger.debug(s"knownGoodContents: ${knownGoodContents}")
+    scenario(s"Write to CSV") {
+      val app = new StringExtractorApp(infile, outfile)
+      val tokens = app.getTokens()
+      val stringLiterals = app.findStringLiterals(tokens)
+      app.generateCsv(stringLiterals, outfile)
 
-    outfileContents.length shouldBe knownGoodContents.length
+      compareFiles
+    }
 
-    // TODO: Cleanup output file
+    def compareFiles = {
+      new File(outfile).exists() shouldBe true
+
+      val outfileContents = Source.fromFile(outfile).getLines.toList
+      val knownGoodContents = Source.fromURL(knownGoodFileUrl).getLines.toList
+
+      logger.debug(s"outfileContents: ${outfileContents}")
+      logger.debug(s"knownGoodContents: ${knownGoodContents}")
+
+      outfileContents.length shouldBe knownGoodContents.length
+
+      logger.debug(s"Removing temp file ${outfile}")
+      new File(outfile).delete
+    }
   }
 
-  scenario(s"Tokenization") {
-    val app = new StringExtractorApp(infile, outfile)
-    val tokens = app.getTokens()
+  feature(s"Lexer") {
+    scenario(s"Tokenization") {
+      val app = new StringExtractorApp(infile, outfile)
+      val tokens = app.getTokens()
 
-    tokens.size shouldBe 14257
+      tokens.size shouldBe 14257
+    }
+  }
+
+  feature(s"Token filter") {
+    scenario(s"Find string literals") {
+      val app = new StringExtractorApp(infile, outfile)
+      val tokens = app.getTokens()
+      val stringLiterals = app.findStringLiterals(tokens)
+
+      stringLiterals.length shouldBe 220
+      stringLiterals.head.filename shouldBe infile
+      stringLiterals.head.text shouldBe "\"License\""
+    }
   }
 
 }
