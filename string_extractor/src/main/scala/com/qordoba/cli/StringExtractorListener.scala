@@ -6,7 +6,7 @@ import com.qordoba.cli.grammar.StringExtractorParser.StringLiteralContext
 /**
   * Listener callbacks for processing parser nodes in a useful way
   */
-class StringExtractor extends StringExtractorBaseListener {
+class StringExtractorListener extends StringExtractorBaseListener {
   override def enterStringLiteral(ctx: StringLiteralContext): Unit = {
     val literal: String = ctx.StringLiteral().toString
 

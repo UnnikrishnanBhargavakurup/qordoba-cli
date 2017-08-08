@@ -8,5 +8,6 @@ libraryDependencies ++= Seq(
   "org.antlr" % "antlr4-runtime" % "4.7",
   "com.opencsv" % "opencsv" % "3.10",
   "com.typesafe.scala-logging" %% "scala-logging-slf4j" % "2.1.2",
-  "ch.qos.logback" % "logback-classic" % "1.2.3"
+  "ch.qos.logback" % "logback-classic" % "1.2.3",
+  "org.scalatest" %% "scalatest" % "2.2.4" % Test
 )
