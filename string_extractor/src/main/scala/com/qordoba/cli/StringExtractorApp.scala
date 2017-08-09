@@ -2,6 +2,7 @@ package com.qordoba.cli
 
 import com.opencsv.CSVWriter
 import com.qordoba.cli.grammar.StringExtractorLexer
+import com.qordoba.cli.grammar.StringExtractorLexer.{DOCSTRING, STRING_LITERAL}
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import java.io.{BufferedWriter, File, FileWriter, StringWriter}
 import org.antlr.v4.runtime.{CharStream, CharStreams, CommonTokenStream, Token}
@@ -111,14 +112,15 @@ class StringExtractorApp(infileName: String, outfileName: String) extends LazyLo
       while (tokens.hasNext()) {
         val token: Token = tokens.next()
 
-        // Look for StringLiteral (value of 1 in StringExtractorLexer.tokens)
-        if (token.getType() == 1) {
+        // Only process string literals & docstrings (do we really want to include docstrings?)
+        if (token.getType() == STRING_LITERAL || token.getType() == DOCSTRING) {
+          // TODO: Support CR+LF for endLineNumber
           val stringLiteral: StringLiteral = new StringLiteral(
             filename = infileName,
             text = token.getText(),
             startLineNumber = token.getLine(),
             startCharIdx = token.getCharPositionInLine(),
-            endLineNumber = token.getLine(),
+            endLineNumber = token.getLine() + token.getText().count(_ == '\u000A'), // startLineNumber + newline count
             endCharIdx = token.getCharPositionInLine() + token.getText().size - 1  // 0-based index, inclusive
           )
           allStringLiterals += stringLiteral

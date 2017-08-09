@@ -39,6 +39,7 @@ class StringExtractorAppTest extends FeatureSpec with ShouldMatchers with LazyLo
       logger.debug(s"outfileContents: ${outfileContents}")
       logger.debug(s"knownGoodContents: ${knownGoodContents}")
 
+      logger.debug(s"outfile length: ${outfileContents.length}")
       outfileContents.length shouldBe knownGoodContents.length
 
       logger.debug(s"Removing temp file ${outfile}")
@@ -51,7 +52,7 @@ class StringExtractorAppTest extends FeatureSpec with ShouldMatchers with LazyLo
       val app = new StringExtractorApp(infile, outfile)
       val tokens = app.getTokens()
 
-      tokens.size shouldBe 14257
+      tokens.size shouldBe 10807
     }
   }
 
@@ -61,9 +62,9 @@ class StringExtractorAppTest extends FeatureSpec with ShouldMatchers with LazyLo
       val tokens = app.getTokens()
       val stringLiterals = app.findStringLiterals(tokens)
 
-      stringLiterals.length shouldBe 220
+      stringLiterals.length shouldBe 189
       stringLiterals.head.filename shouldBe infile
-      stringLiterals.head.text shouldBe "\"License\""
+      stringLiterals.head.text shouldBe "\"SPARK_HOME\""
     }
   }
 

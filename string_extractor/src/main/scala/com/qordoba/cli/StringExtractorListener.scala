@@ -8,7 +8,7 @@ import com.qordoba.cli.grammar.StringExtractorParser.StringLiteralContext
   */
 class StringExtractorListener extends StringExtractorBaseListener {
   override def enterStringLiteral(ctx: StringLiteralContext): Unit = {
-    val literal: String = ctx.StringLiteral().toString
+    val literal: String = ctx.STRING_LITERAL().toString
 
     println(s"StringLiteral found: ${literal}")
   }

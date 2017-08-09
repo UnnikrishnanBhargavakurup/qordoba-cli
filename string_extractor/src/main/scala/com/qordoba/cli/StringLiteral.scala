@@ -14,11 +14,11 @@ class StringLiteral(val filename: String,
   def toStringArray(): Array[String] = {
     Array[String](
       this.filename,
-      this.text,
       this.startLineNumber.toString(),
       this.startCharIdx.toString(),
       this.endLineNumber.toString(),
-      this.endCharIdx.toString()
+      this.endCharIdx.toString(),
+      this.text
     )
   }
 }

@@ -1,4 +1,6 @@
-package com.qordoba.cli.grammar;// Generated from StringExtractor.g4 by ANTLR 4.7
+package com.qordoba.cli.grammar;
+
+// Generated from StringExtractor.g4 by ANTLR 4.7
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
 /**
@@ -26,6 +28,16 @@ public interface StringExtractorListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitLine(StringExtractorParser.LineContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link StringExtractorParser#docstring}.
+	 * @param ctx the parse tree
+	 */
+	void enterDocstring(StringExtractorParser.DocstringContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link StringExtractorParser#docstring}.
+	 * @param ctx the parse tree
+	 */
+	void exitDocstring(StringExtractorParser.DocstringContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link StringExtractorParser#stringLiteral}.
 	 * @param ctx the parse tree

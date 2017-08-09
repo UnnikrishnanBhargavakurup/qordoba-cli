@@ -4,29 +4,59 @@ textfile: line+;
 
 // Split stringLiterals from the rest of the line
 line
-    : (stringLiteral | ANY)+ NEWLINE
+    : docstring NEWLINE
+    | COMMENT NEWLINE
+    | (stringLiteral | ANY | EMPTY_STRING)+ COMMENT NEWLINE
+    | (stringLiteral | ANY | EMPTY_STRING)+ NEWLINE
     | NEWLINE
     ;
 
-stringLiteral: StringLiteral;
+docstring: DOCSTRING;
 
-StringLiteral 
-    : '"' StringElement+? '"'
-    | '\'' StringElement+? '\''
+DOCSTRING
+    : (' '|CHAR_ESC_SEQ)* DOCSTRING_DELIMITER  (STRING_ELEMENT|'"'|'\'')+? (CHAR_ESC_SEQ|' ')* DOCSTRING_DELIMITER
+    ;
+
+EMPTY_STRING
+    : '""'
+    | '" "'
+    | '"' CHAR_ESC_SEQ+ '"'
+    | '\'\''
+    | '\' \''
+    | '\'' CHAR_ESC_SEQ+ '\''
+    ;
+
+COMMENT
+    :  '#' ~( '\r' | '\n' )*
+    ;
+
+stringLiteral: STRING_LITERAL;
+
+STRING_LITERAL 
+    : '"' (STRING_ELEMENT|'\'')+? '"'
+    | '\'' (STRING_ELEMENT|'"')+? '\''
     ;
 
 NEWLINE
     : '\r'? '\n'
     ;
 
+DOCSTRING_DELIMITER
+    : '"""'
+    ;
+
 ANY : .;
 
 // fragments
 
-fragment StringElement
-   : '\u0020' | '\u0021' | '\u0023' .. '\u007F'
-   | CharEscapeSeq
+fragment STRING_ELEMENT
+   : '\u0020'
+   | '\u0021'
+   | '\u0023' .. '\u0026'
+   | '\u0028' .. '\u007F'
+   | CHAR_ESC_SEQ
+   | '\u000A'
    ;
 
-fragment CharEscapeSeq: '\\' ('b' | 't' | 'n' | 'f' | 'r' | '"' | '\'' | '\\');
+fragment CHAR_ESC_SEQ: '\\' ('b' | 't' | 'f' | '"' | '\'' | '\\');
 

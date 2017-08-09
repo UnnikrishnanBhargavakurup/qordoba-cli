@@ -1,4 +1,6 @@
-package com.qordoba.cli.grammar;// Generated from StringExtractor.g4 by ANTLR 4.7
+package com.qordoba.cli.grammar;
+
+// Generated from StringExtractor.g4 by ANTLR 4.7
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -34,6 +36,18 @@ public class StringExtractorBaseListener implements StringExtractorListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitLine(StringExtractorParser.LineContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterDocstring(StringExtractorParser.DocstringContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitDocstring(StringExtractorParser.DocstringContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
