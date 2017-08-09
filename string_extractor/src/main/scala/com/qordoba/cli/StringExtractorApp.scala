@@ -20,28 +20,45 @@ object StringExtractorApp extends App with LazyLogging {
     */
   override def main(args: Array[String]) {
 
-    val argMissingText = "Infile and outfile arguments required"
-    val usageText = "Usage: StringExtractorApp <infile> <outfile>"
+    // Parse command-line arguments
+    val parser = new scopt.OptionParser[Config]("string-extractor") {
+      head("string-extractor", "0.1")
 
-    // TODO: Add support for -f, -d, -o
-    val infileName = if (args.size > 0) {
-      args.head
-    } else {
-      println(argMissingText)
-      println(usageText)
-      return
+      opt[String]('i', "infile")
+        .required()
+        .valueName("<file>")
+        .action( (x, c) => c.copy(infile = x) )
+        .text("out is a required file property")
+
+      opt[String]('o', "outfile")
+        .required()
+        .valueName("<file>")
+        .action( (x, c) => c.copy(outfile = x) )
+        .text("out is a required file property")
+
+      opt[Unit]('v', "verbose").action( (_, c) =>
+        c.copy(verbose = true) ).text("verbose is a flag")
+
+      opt[Unit]('d', "debug").hidden().action( (_, c) =>
+        c.copy(debug = true) ).text("this option is hidden in the usage text")
+
+      help("help").text("prints this usage text")
+
+      note("some notes.")
+
     }
 
-    val outfileName = if (args.size > 1) {
-      args(1)
-    } else {
-      println(argMissingText)
-      println(usageText)
-      return
+    parser.parse(args, Config()) match {
+      case Some(config) =>
+      // do stuff
+        logger.debug(s"infile: ${config.infile}")
+        logger.debug(s"outfile: ${config.outfile}")
+        new StringExtractorApp(config.infile, config.outfile).extractStrings()
+
+      case None =>
+      // arguments are bad, error message will have been displayed
+        logger.error("Bad config")
     }
-
-    new StringExtractorApp(infileName, outfileName).extractStrings()
-
   }
 }
 
@@ -117,11 +134,11 @@ class StringExtractorApp(infileName: String, outfileName: String) extends LazyLo
           // TODO: Support CR+LF for endLineNumber
           val stringLiteral: StringLiteral = new StringLiteral(
             filename = infileName,
-            text = token.getText(),
             startLineNumber = token.getLine(),
             startCharIdx = token.getCharPositionInLine(),
             endLineNumber = token.getLine() + token.getText().count(_ == '\u000A'), // startLineNumber + newline count
-            endCharIdx = token.getCharPositionInLine() + token.getText().size - 1  // 0-based index, inclusive
+            endCharIdx = token.getCharPositionInLine() + token.getText().size - 1,  // 0-based index, inclusive
+            text = token.getText()
           )
           allStringLiterals += stringLiteral
         }
@@ -160,6 +177,7 @@ class StringExtractorApp(infileName: String, outfileName: String) extends LazyLo
 
     logger.debug(s"String literals written to ${outfileName}")
   }
+
 
 }
 

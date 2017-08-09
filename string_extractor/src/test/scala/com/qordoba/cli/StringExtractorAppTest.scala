@@ -12,7 +12,8 @@ class StringExtractorAppTest extends FeatureSpec with ShouldMatchers with LazyLo
   val infile = getClass.getResource("/merge_spark_pr.py").getPath
   val outfile = "string_literals.csv"
   val knownGoodFileUrl = getClass.getResource("/merge_spark_pr_string_literals.csv")
-  val args = Array(infile, outfile)
+  val args = Array("-i", infile,
+                   "-o", outfile)
 
   feature(s"File generation") {
 
