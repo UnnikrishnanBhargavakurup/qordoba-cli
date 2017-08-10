@@ -48,7 +48,7 @@ object StringExtractorApp extends App with LazyLogging {
 
       help("help").text("prints this usage text")
 
-      note("some notes.")
+      note("Application that uses a precompiled ANTLR grammar to extract string literals from a given file or directory")
 
     }
 

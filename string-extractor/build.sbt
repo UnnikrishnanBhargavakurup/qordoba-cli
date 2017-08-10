@@ -1,4 +1,4 @@
-name := "string_extractor"
+name := "qordoba-string-extractor"
 
 version := "1.0"
 
