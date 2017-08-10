@@ -78,16 +78,8 @@ class StringExtractorApp(infileName: String, outfileName: String) extends LazyLo
     try {
       val infile = new File(infileName)
       val stringLiterals: List[StringLiteral] = {
-        // Gather a list of all files if a directory is given
-        val files: List[File] = if (infile.exists) {
-          if (infile.isDirectory) {
-            infile.listFiles.filter(_.isFile).toList
-          } else {
-            List[File](infile)
-          }
-        } else {
-          List[File]()
-        }
+        // Gather a list of all files
+        val files: List[File] = this.getFilesRecursive(infile).toList
 
         // Fetch tokens, then string literals for each file & concatenate into a single list
         files.map { f =>
@@ -106,6 +98,26 @@ class StringExtractorApp(infileName: String, outfileName: String) extends LazyLo
         logger.error(s"Unable to parse ${infileName}: ${e}")
         throw e
       }
+    }
+  }
+
+  /**
+    * Compiles a list of files in a given directory, recursively. Also handles a non-directory argument.
+    * List includes only files, not directories.
+    *
+    * @param dir
+    * @return
+    */
+  def getFilesRecursive(dir: File): Array[File] = {
+    if (dir.exists()) {
+      if (dir.isDirectory) {
+        val these = dir.listFiles
+        these.filter(!_.isDirectory) ++ these.filter(_.isDirectory).flatMap(getFilesRecursive)
+      } else {
+        Array[File](dir)
+      }
+    } else {
+      Array[File]()
     }
   }
 
@@ -200,7 +212,6 @@ class StringExtractorApp(infileName: String, outfileName: String) extends LazyLo
 
     logger.debug(s"String literals written to ${outfileName}")
   }
-
 
 }
 
