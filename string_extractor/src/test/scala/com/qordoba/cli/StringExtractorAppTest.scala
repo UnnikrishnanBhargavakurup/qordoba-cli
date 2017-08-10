@@ -9,7 +9,7 @@ import scala.io.Source
   * Tests expected functionality of the StringExtractorApp
   */
 class StringExtractorAppTest extends FeatureSpec with ShouldMatchers with LazyLogging {
-  val infile = getClass.getResource("/merge_spark_pr.py").getPath
+  val infile = getClass.getResource("/python/merge_spark_pr.py").getPath
   val outfile = "string_literals.csv"
   val knownGoodFileUrl = getClass.getResource("/merge_spark_pr_string_literals.csv")
   val args = Array("-i", infile,
@@ -24,8 +24,8 @@ class StringExtractorAppTest extends FeatureSpec with ShouldMatchers with LazyLo
 
     scenario(s"Write to CSV") {
       val app = new StringExtractorApp(infile, outfile)
-      val tokens = app.getTokens()
-      val stringLiterals = app.findStringLiterals(tokens)
+      val tokens = app.getTokens(infile)
+      val stringLiterals = app.findStringLiterals(infile, tokens)
       app.generateCsv(stringLiterals, outfile)
 
       compareFiles
@@ -37,10 +37,6 @@ class StringExtractorAppTest extends FeatureSpec with ShouldMatchers with LazyLo
       val outfileContents = Source.fromFile(outfile).getLines.toList
       val knownGoodContents = Source.fromURL(knownGoodFileUrl).getLines.toList
 
-      logger.debug(s"outfileContents: ${outfileContents}")
-      logger.debug(s"knownGoodContents: ${knownGoodContents}")
-
-      logger.debug(s"outfile length: ${outfileContents.length}")
       outfileContents.length shouldBe knownGoodContents.length
 
       logger.debug(s"Removing temp file ${outfile}")
@@ -49,19 +45,19 @@ class StringExtractorAppTest extends FeatureSpec with ShouldMatchers with LazyLo
   }
 
   feature(s"Lexer") {
-    scenario(s"Tokenization") {
+    scenario(s"Tokenization single file") {
       val app = new StringExtractorApp(infile, outfile)
-      val tokens = app.getTokens()
+      val tokens = app.getTokens(infile)
 
       tokens.size shouldBe 10807
     }
   }
 
   feature(s"Token filter") {
-    scenario(s"Find string literals") {
+    scenario(s"Find string literals single file") {
       val app = new StringExtractorApp(infile, outfile)
-      val tokens = app.getTokens()
-      val stringLiterals = app.findStringLiterals(tokens)
+      val tokens = app.getTokens(infile)
+      val stringLiterals = app.findStringLiterals(infile, tokens)
 
       stringLiterals.length shouldBe 189
       stringLiterals.head.filename shouldBe infile

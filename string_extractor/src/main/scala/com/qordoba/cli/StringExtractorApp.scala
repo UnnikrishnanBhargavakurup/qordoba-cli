@@ -24,17 +24,21 @@ object StringExtractorApp extends App with LazyLogging {
     val parser = new scopt.OptionParser[Config]("string-extractor") {
       head("string-extractor", "0.1")
 
+      opt[String]('d', "input directory")
+        .valueName("<directory>")
+        .action( (x, c) => c.copy(directory = x) )
+        .text("input directory is a required argument")
+
       opt[String]('i', "infile")
-        .required()
         .valueName("<file>")
         .action( (x, c) => c.copy(infile = x) )
-        .text("out is a required file property")
+        .text("infile is a required argument")
 
       opt[String]('o', "outfile")
         .required()
         .valueName("<file>")
         .action( (x, c) => c.copy(outfile = x) )
-        .text("out is a required file property")
+        .text("outfile is a required argument")
 
       opt[Unit]('v', "verbose").action( (_, c) =>
         c.copy(verbose = true) ).text("verbose is a flag")
@@ -50,13 +54,15 @@ object StringExtractorApp extends App with LazyLogging {
 
     parser.parse(args, Config()) match {
       case Some(config) =>
-      // do stuff
-        logger.debug(s"infile: ${config.infile}")
-        logger.debug(s"outfile: ${config.outfile}")
-        new StringExtractorApp(config.infile, config.outfile).extractStrings()
+        // Either input file or input directory must be provided
+        val infileName: String = if (config.directory.length > 0) {
+          config.directory
+        } else {
+          config.infile
+        }
+        new StringExtractorApp(infileName, config.outfile).extractStrings()
 
       case None =>
-      // arguments are bad, error message will have been displayed
         logger.error("Bad config")
     }
   }
@@ -70,11 +76,27 @@ class StringExtractorApp(infileName: String, outfileName: String) extends LazyLo
     */
   def extractStrings() = {
     try {
-      // Kick off the lexer
-      val tokens: Iterator[Token] = this.getTokens()
+      val infile = new File(infileName)
+      val stringLiterals: List[StringLiteral] = {
+        // Gather a list of all files if a directory is given
+        val files: List[File] = if (infile.exists) {
+          if (infile.isDirectory) {
+            infile.listFiles.filter(_.isFile).toList
+          } else {
+            List[File](infile)
+          }
+        } else {
+          List[File]()
+        }
 
-      // Inspect each token for something interesting
-      val stringLiterals: List[StringLiteral] = this.findStringLiterals(tokens)
+        // Fetch tokens, then string literals for each file & concatenate into a single list
+        files.map { f =>
+            val tokens = this.getTokens(f.getPath)
+            // Inspect each token for something interesting
+            this.findStringLiterals(f.getPath, tokens)
+          }
+          .foldLeft(List[StringLiteral]())(_ ++ _)
+      }
 
       // Send our treasures to a file
       this.generateCsv(stringLiterals, outfileName)
@@ -94,7 +116,7 @@ class StringExtractorApp(infileName: String, outfileName: String) extends LazyLo
     *
     * @return iterator of tokens
     */
-  def getTokens(): Iterator[Token] = {
+  def getTokens(infileName: String): Iterator[Token] = {
     try {
       val input: CharStream = CharStreams.fromFileName(infileName)
       val lexer: StringExtractorLexer = new StringExtractorLexer(input)
@@ -117,10 +139,11 @@ class StringExtractorApp(infileName: String, outfileName: String) extends LazyLo
     * Extracts relevant tokens (i.e. StringLiterals) from a list of arbitrary tokens.
     * Stores related information about where the token was found.
     *
+    * @param infileName
     * @param tokens
     * @return list of StringLiterals
     */
-  def findStringLiterals(tokens: Iterator[Token]): List[StringLiteral] = {
+  def findStringLiterals(infileName: String, tokens: Iterator[Token]): List[StringLiteral] = {
     // A place to store everything that should go in the output file
     val allStringLiterals: ListBuffer[StringLiteral] = scala.collection.mutable.ListBuffer.empty[StringLiteral]
 
