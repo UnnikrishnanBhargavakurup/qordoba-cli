@@ -5,6 +5,8 @@ pipeline {
     // static
     SERVICE_NAME = "string-extractor"
     VERSION = "0.0.${BUILD_NUMBER}"
+    BASE_IMAGE_NAME = "qordoba-build"
+    BASE_IMAGE_VERSION = "latest"
     DOCKER_DIR = "docker"
 
     // Default to dev
@@ -36,7 +38,7 @@ pipeline {
 
             echo "Get latest base image"
             gcloud --quiet \
-              docker -- pull gcr.io/${PROJECT}/qordoba-build:latest
+              docker -- pull gcr.io/${PROJECT}/${BASE_IMAGE_NAME}:${BASE_IMAGE_VERSION}
 
             echo "Building image locally"
             docker build -t gcr.io/${PROJECT}/${SERVICE_NAME}:${VERSION} \
