@@ -32,6 +32,8 @@ pipeline {
             echo "PROJECT: ${PROJECT}"
             echo "DOCKERFILE: ${DOCKERFILE}"
 
+            cd ${SERVICE_NAME}
+
             echo "Get latest base image"
             gcloud --quiet \
               docker -- pull gcr.io/${PROJECT}/qordoba-build:latest
