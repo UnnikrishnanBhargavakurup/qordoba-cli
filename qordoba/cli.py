@@ -175,6 +175,8 @@ class PullHandler(BaseHandler):
         # pull_type_group = parser.add_mutually_exclusive_group()
         parser.add_argument('-b', '--bulk', dest='bulk', action='store_true',
                             help="Force to download languages in bulk, incl. source language.")
+        parser.add_argument('-w', '--workflow', dest='workflow', action='store_true',
+                            help="Force to download files from a specific workflow step.")
         parser.add_argument('-d', '--distinct', dest='distinct', action='store_true',
                             help="Allows you to pull distinct filenames.")
         group = parser.add_mutually_exclusive_group()
@@ -201,7 +203,7 @@ class PullHandler(BaseHandler):
         if isinstance(self.languages, (list, tuple, set)):
             languages.extend(self.languages)
         pull_command(self._curdir, config, languages=set(itertools.chain(*languages)),
-                     in_progress=self.in_progress, update_action=self.get_update_action(), force=self.force, bulk=self.bulk, distinct=self.distinct)
+                     in_progress=self.in_progress, update_action=self.get_update_action(), force=self.force, bulk=self.bulk, workflow=self.workflow, distinct=self.distinct)
 
 
 class PushHandler(BaseHandler):
