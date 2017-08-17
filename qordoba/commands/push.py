@@ -95,8 +95,8 @@ def upload_file(api, path, version=None, **kwargs):
                                        **kwargs)
     log.debug('File `{}` uploaded. Name - `{}`. Adding to the project...'.format(path.native_path, file_name))
 
-    if resp.get('version_tags', ()):
-        if version_tag is None or version_tag in resp.get('version_tags'):
+    if resp.get('version_tags', ()) or resp['version_tags'] == []:
+        if version_tag is None or version_tag == 'None' or version_tag in resp.get('version_tags'):
             version_tag = select_version_tag(file_name, resp.get('version_tags'))
 
     if resp.get('columns'):
@@ -123,7 +123,7 @@ def update_file(api, path, remote_files, version=None):
 
     resp = api.apply_upload_file(resp['id'], remote_file['page_id'])
 
-    log.info('Updated {} from {} successfully.'.format(file_name))
+    log.info('Updated {} successfully.'.format(file_name))
 
 def find_directories(pattern):
     directory = pattern.split('/')
@@ -158,7 +158,7 @@ def final_push(project, curdir, pattern, api,  update, version):
             upload_file(api, path, version=version)
 
 
-def push_command(curdir, config, update=False, version=None, files=()):
+def push_command(curdir, config, update, version=None, files=()):
     api = ProjectAPI(config)
     project = api.get_project()
     init_language_storage(api)
@@ -177,9 +177,6 @@ def push_command(curdir, config, update=False, version=None, files=()):
                     directory_list = find_directories(pattern)
                     for dir_ in directory_list:
                         dir_ = dir_ + '/' + pattern_extension
-                        final_push(project, curdir, dir_, api,  update=False, version=None)
+                        final_push(project, curdir, dir_, api,  update, version=None)
             else:
-                final_push(project, curdir, pattern, api, update=False, version=None)
-
-
-
+                final_push(project, curdir, pattern, api, update, version=None)

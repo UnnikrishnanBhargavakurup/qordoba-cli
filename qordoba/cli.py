@@ -221,7 +221,7 @@ class PushHandler(BaseHandler):
     def register(cls, *args, **kwargs):
         parser = super(PushHandler, cls).register(*args, **kwargs)
         parser.add_argument('files', nargs='*', metavar='PATH', default=None, type=FilePathType(), help="")
-        parser.add_argument('--update', dest='update', action='store_true', help="Force to update file.")
+        parser.add_argument('--update', dest='update', default=False, action='store_true', help="Force to update file.")
         parser.add_argument('--version', dest='version', default=None, type=str, help="Set version tag.")
         return parser
 
