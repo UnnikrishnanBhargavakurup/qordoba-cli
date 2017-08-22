@@ -95,7 +95,7 @@ def upload_file(api, path, version=None, **kwargs):
                                        **kwargs)
     log.debug('File `{}` uploaded. Name - `{}`. Adding to the project...'.format(path.native_path, file_name))
 
-    if resp.get('version_tags', ()) or resp['version_tags'] == []:
+    if resp.get('version_tags', ()):
         if version_tag is None or version_tag == 'None' or version_tag in resp.get('version_tags'):
             version_tag = select_version_tag(file_name, resp.get('version_tags'))
 
