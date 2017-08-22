@@ -223,11 +223,12 @@ class PushHandler(BaseHandler):
         parser.add_argument('files', nargs='*', metavar='PATH', default=None, type=FilePathType(), help="")
         parser.add_argument('--update', dest='update', default=False, action='store_true', help="Force to update file.")
         parser.add_argument('--version', dest='version', default=None, type=str, help="Set version tag.")
+        parser.add_argument('--directory', dest='directory', default=False, type=str, help="Push with all directories.")
         return parser
 
     def main(self):
         config = self.load_settings()
-        push_command(self._curdir, config, update=self.update, version=self.version, files=self.files)
+        push_command(self._curdir, config, update=self.update, version=self.version, directory=self.directory, files=self.files)
 
 class ListHandler(BaseHandler):
     name = 'ls'

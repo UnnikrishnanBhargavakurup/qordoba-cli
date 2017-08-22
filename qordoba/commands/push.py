@@ -142,7 +142,7 @@ def final_push(project, curdir, pattern, api,  update, version):
     lang = next(get_destination_languages(project))
     files = list(find_files_by_pattern(curdir, pattern, source_lang))
 
-    if not files:
+    if len(files) == 0:
         log.info('Files for the given push pattern `{}` do not exists.' .format(pattern))
 
     for file in files:
@@ -158,25 +158,31 @@ def final_push(project, curdir, pattern, api,  update, version):
             upload_file(api, path, version=version)
 
 
-def push_command(curdir, config, update, version=None, files=()):
+def push_command(curdir, config, update, directory, version=None, files=()):
     api = ProjectAPI(config)
     project = api.get_project()
     init_language_storage(api)
     add_project_file_formats(get_project_file_formats(config))
 
-
     if not files:
         pattern_list = get_push_pattern(config)
         if pattern_list is None:
-            pattern_list = [None]
+            log.info("No push pattern found in config. Taking files from current directory")
+            pass
 
-        for pattern in pattern_list:
 
-            if pattern is not None and find_directories(pattern):
-                    pattern_extension = pattern.split('/')[-1]
-                    directory_list = find_directories(pattern)
-                    for dir_ in directory_list:
-                        dir_ = dir_ + '/' + pattern_extension
-                        final_push(project, curdir, dir_, api,  update, version=None)
-            else:
-                final_push(project, curdir, pattern, api, update, version=None)
+    if files:
+        pattern_list = []
+        for file_ in files:
+            pattern_list.append(file_)
+
+    for pattern in pattern_list:
+        assert len(pattern_list) != 0
+        if directory:
+                pattern_extension = pattern.split('/')[-1]
+                directory_list = find_directories(pattern)
+                for dir_ in directory_list:
+                    dir_ = dir_ + '/' + pattern_extension
+                    final_push(project, curdir, dir_, api,  update, version=None)
+        else:
+            final_push(project, curdir, pattern, api, update, version=None)
