@@ -40,6 +40,12 @@ MIMETYPES = {
     'excel': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 }
 
+CUSTOM_LANGUAGE_CODE = {
+     'zh-chs' : 'zh-Hans',
+     'zh-cht' : ' zh-Hant',
+     'pt-br' : 'pt-BR',
+     'zh-cn' : 'zh-CN',
+}
 
 def get_mimetype(content_type):
     return MIMETYPES.get(content_type, 'application/octet-stream')
@@ -145,6 +151,9 @@ class PatternVariables(object):
 
     all = language_code, language_name, language_name_cap, language_name_allcap, language_lang_code, filename, extension
 
+#
+def custom_language(language):
+    return CUSTOM_LANGUAGE_CODE[str(language)]
 
 push_pattern_validate_regexp = re.compile(
     '\<({})\>'
@@ -170,13 +179,23 @@ def create_target_path_by_pattern(curdir, language, source_name, pattern=None, c
 
     pattern = pattern or DEFAULT_PATTERN
 
-    target_path = pattern.replace('<{}>'.format(PatternVariables.language_code), language.code)
-    target_path = target_path.replace('<{}>'.format(PatternVariables.language_lang_code), language.lang)
-    target_path = target_path.replace('<{}>'.format(PatternVariables.language_name), language.name)
-    target_path = target_path.replace('<{}>'.format(PatternVariables.language_name_cap),
-                                      language.name.capitalize())
-    target_path = target_path.replace('<{}>'.format(PatternVariables.language_name_allcap),
-                                      language.name.upper())
+    if 'lproj' in pattern and str(language) in CUSTOM_LANGUAGE_CODE.keys():
+        target_path = pattern.replace('<{}>'.format(PatternVariables.language_code), custom_language(language))
+        target_path = target_path.replace('<{}>'.format(PatternVariables.language_lang_code), custom_language(language))
+        target_path = target_path.replace('<{}>'.format(PatternVariables.language_name), custom_language(language))
+        target_path = target_path.replace('<{}>'.format(PatternVariables.language_name_cap),
+                                          custom_language(language))
+        target_path = target_path.replace('<{}>'.format(PatternVariables.language_name_allcap),
+                                          custom_language(language))
+
+    else:
+        target_path = pattern.replace('<{}>'.format(PatternVariables.language_code), language.code)
+        target_path = target_path.replace('<{}>'.format(PatternVariables.language_lang_code), language.lang)
+        target_path = target_path.replace('<{}>'.format(PatternVariables.language_name), language.name)
+        target_path = target_path.replace('<{}>'.format(PatternVariables.language_name_cap),
+                                          language.name.capitalize())
+        target_path = target_path.replace('<{}>'.format(PatternVariables.language_name_allcap),
+                                          language.name.upper())
 
     if '<{}>'.format(PatternVariables.extension) in target_path \
             or '<{}>'.format(PatternVariables.filename) in target_path:
@@ -224,6 +243,7 @@ def files_in_project(curpath, return_absolute_path=True):
         )
         for removal in removals:
             dirs.remove(removal)
+
 
 
 def _ishidden(path):

@@ -25,6 +25,9 @@ var/
 *.egg
 .DS_Store
 .qordoba.yml
+qordoba/.DS_Store
+qordoba/.qordoba.yml
+output/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

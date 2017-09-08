@@ -6,7 +6,7 @@ import shutil
 from argparse import ArgumentTypeError
 import requests, zipfile
 try:
-    from StringIO import StringIO
+    import StringIO
 except ImportError:
     import io
     # from io import StringIO
