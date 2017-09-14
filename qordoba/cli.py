@@ -153,13 +153,24 @@ class StatusHandler(BaseHandler):
         parser.add_argument('-j', '--json', dest='json', action='store_true', help='Print json dict to stdout.')
         return parser
 
+    def convert(self, input):
+        if isinstance(input, dict):
+            return {self.convert(key): self.convert(value) for key, value in input.iteritems()}
+        elif isinstance(input, list):
+            return [self.convert(element) for element in input]
+        elif isinstance(input, unicode):
+            return input.encode('utf-8')
+        else:
+            return input
 
     def main(self):
         config = self.load_settings()
 
         if self.json:
             dict = list(status_command_json(config))
-            pprint.pprint(dict)
+            unidict = self.convert(dict)
+            dict_str = str((unidict))
+            print(dict_str.replace("'", '"'))
         else:
             rows = list(status_command(config))
 
@@ -211,6 +222,7 @@ class PullHandler(BaseHandler):
         return action
 
     def main(self):
+        log.info('Loading Qordoba config...')
         config = self.load_settings()
         languages = []
         if isinstance(self.languages, (list, tuple, set)):
@@ -240,6 +252,7 @@ class PushHandler(BaseHandler):
         return parser
 
     def main(self):
+        log.info('Loading Qordoba config...')
         config = self.load_settings()
         push_command(self._curdir, config, update=self.update, version=self.version, directory=self.directory, files=self.files)
 
@@ -250,6 +263,7 @@ class ListHandler(BaseHandler):
     """
 
     def main(self):
+        log.info('Loading Qordoba config...')
         rows = [['ID', 'NAME', '#SEGMENTS', 'UPDATED_ON', 'STATUS'], ]
         rows.extend(ls_command(self.load_settings()))
 
@@ -277,6 +291,7 @@ class DeleteHandler(BaseHandler):
         return parser
 
     def main(self):
+        log.info('Loading Qordoba config...')
         config = self.load_settings()
         delete_command(self._curdir, config, self.file, force=self.force)
 
