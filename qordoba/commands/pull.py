@@ -96,7 +96,7 @@ def pull_bulk(api, src_to_dest_paths, dest_languages_page_ids, dest_languages_id
 
 
 def pull_command(curdir, config, force=False, bulk=False, workflow=False, distinct=False, files=(), languages=(),
-                 in_progress=False, update_action=None, **kwargs):
+                 in_progress=False, update_action=None, custom=False, **kwargs):
     api = ProjectAPI(config)
     init_language_storage(api)
     project = api.get_project()
@@ -198,7 +198,8 @@ def pull_command(curdir, config, force=False, bulk=False, workflow=False, distin
                         """
                         valid_extension = pattern.split('.')[-1] if pattern else None
                         file_extension = page['url'].split('.')[-1]
-                        if pattern and valid_extension != "<extension>" and valid_extension != file_extension:
+
+                        if not custom and pattern and valid_extension != "<extension>" and valid_extension != file_extension:
                             continue
 
                         if distinct:
