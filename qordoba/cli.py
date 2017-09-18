@@ -313,6 +313,24 @@ class FindNewHandler(BaseHandler):
         config = self.load_config()
         FindNewClass().find_new_command(self._curdir, config, files=self.files)
 
+class FindNewStringHandler(BaseHandler):
+    name = 'find-new-string'
+    help = """
+    Use the find-new command to extract all String from your project.
+    """
+
+    @classmethod
+    def register(cls, *args, **kwargs):
+        parser = super(FindNewStringHandler, cls).register(*args, **kwargs)
+        fix_parser_titles(parser)
+        parser.set_defaults(_handler=cls)
+        parser.add_argument('-r', '--run', dest='run', action='store_true', help="Will finally execute the move command")
+        parser.add_argument("-d", "--directory", type=str, required=True)
+        parser.add_argument("-o", "--output", type=str, required=True)
+
+    def main(self):
+        config = self.load_config()
+        FindNewStringHandler().string_command(self._curdir, config, run=self.run, directory=self.directory, output=self.output)
 
 class i18n_RemoveHandler(BaseHandler):
     name = 'i18n-rm'
