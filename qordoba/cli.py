@@ -328,10 +328,11 @@ class FindNewStringHandler(BaseHandler):
         parser.add_argument('-r', '--run', dest='run', action='store_true', help="Will finally execute the move command")
         parser.add_argument("-d", "--directory", type=str, required=True)
         parser.add_argument("-o", "--output", type=str, required=True)
+        parser.add_argument("-l", "--localization", type=str, required=False)
 
     def main(self):
         config = self.load_config()
-        FindNewStringClass().find_new_string(self._curdir, config, run=self.run, directory=self.directory, output=self.output)
+        FindNewStringClass().find_new_string(self._curdir, config, run=self.run, directory=self.directory, output=self.output, localization=self.localization)
 
 class i18n_RemoveHandler(BaseHandler):
     name = 'i18n-rm'

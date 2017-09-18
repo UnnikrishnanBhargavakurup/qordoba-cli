@@ -16,10 +16,16 @@ add localization filename column
 
 class FindNewConverter(BaseClass):
 
-    def get_existing_i18n_key_values(self, config):
+    def get_existing_i18n_key_values(self, localization_files):
         keys_values_localisation_files = dict()
+
         # greps localization file from config and stores all the key value pairs within existing_i18n_KEY_VALUES
-        localization_files = get_localization_files(config)
+        if localization_files:
+            import glob
+            localization_files = glob.glob(localization_files + "/*")
+        else:
+            localization_files = get_localization_files()
+
         for file in localization_files:
             dictionary = self.get_nested_dictionary(file)
             key_values = self.get_all_keys(dictionary, list(), dict())
@@ -121,14 +127,4 @@ class FindNewConverter(BaseClass):
 
         print(new_df.new_key)
 
-# converter = FindNewConverter()
-try:
-    with open('/Users/franzi/Desktop/i18n/qordoba-cli/qordoba/.qordoba.yml') as info:
-        config = yaml.load(info)
-except IOError:
-    log.info('No `.qordoba.yml` file, needs infos to continue')
-# converter.generate_CSV_with_keys(config, '/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/stringLiterals_csv/sample_app_rails_copy.csv')
 
-stringLiteral_CSV = '/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/stringLiterals_csv/sample_app_rails_copy.csv'
-converter = FindNewConverter()
-converter.main(stringLiteral_CSV, config)
