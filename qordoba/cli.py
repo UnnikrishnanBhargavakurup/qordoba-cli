@@ -18,6 +18,7 @@ from qordoba.commands.pull import pull_command
 from qordoba.commands.push import push_command
 from qordoba.commands.status import status_command
 from qordoba.commands.find_new import FindNewClass
+from qordoba.commands.find_new_string import FindNewStringClass
 from qordoba.commands.i18n_find import FindClass
 from qordoba.commands.i18n_rm import RemoveClass
 from qordoba.commands.i18n_mv import MoveClass
@@ -330,7 +331,7 @@ class FindNewStringHandler(BaseHandler):
 
     def main(self):
         config = self.load_config()
-        FindNewStringHandler().string_command(self._curdir, config, run=self.run, directory=self.directory, output=self.output)
+        FindNewStringClass().find_new_string(self._curdir, config, run=self.run, directory=self.directory, output=self.output)
 
 class i18n_RemoveHandler(BaseHandler):
     name = 'i18n-rm'
@@ -414,6 +415,7 @@ def parse_arguments():
     ListHandler.register(subparsers, **args)
     DeleteHandler.register(subparsers, **args)
     FindNewHandler.register(subparsers, **args)
+    FindNewStringHandler.register(subparsers, **args)
     i18n_FindHandler.register(subparsers, **args)
     i18n_RemoveHandler.register(subparsers, **args)
     i18n_MoveHandler.register(subparsers, **args)

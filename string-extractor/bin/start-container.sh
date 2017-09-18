@@ -14,10 +14,16 @@ PROJECT=qordoba-devel
 IMAGE_NAME=string-extractor
 IMAGE_VERSION=0.0.2
 
-INPUT_PATH=src/test/resources
-INPUT_FILE=python
+INPUT_PATH=$1
+INPUT_FILE=.
 WORK_DIR=/work_dir
+OUTPUT_PATH=$2
 OUTPUT_FILE=string-literals.csv
+
+#echo the variables
+
+echo inputpath: $INPUT_PATH
+echo outputpath: $OUTPUT_PATH
 
 # Pull latest image
 gcloud docker -- pull gcr.io/${PROJECT}/${IMAGE_NAME}:${IMAGE_VERSION}
@@ -32,9 +38,7 @@ docker cp ${INPUT_PATH} ${IMAGE_NAME}:${WORK_DIR}
 docker start -i ${IMAGE_NAME}
 
 # Get outfile
-docker cp ${IMAGE_NAME}:${WORK_DIR}/${OUTPUT_FILE} .
+docker cp ${IMAGE_NAME}:${WORK_DIR}/${OUTPUT_FILE} ${OUTPUT_PATH}
 
 # Remove the container
 docker rm ${IMAGE_NAME}
-
-
