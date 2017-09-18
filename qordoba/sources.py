@@ -20,6 +20,7 @@ CONTENT_TYPE_CODES['XLIFF1.2'] = ('xliff', 'xlf')
 CONTENT_TYPE_CODES['xmlAndroid'] = ('xml',)
 CONTENT_TYPE_CODES['macStrings'] = ('strings',)
 CONTENT_TYPE_CODES['PO'] = ('po',)
+CONTENT_TYPE_CODES['POT'] = ('pot',)
 CONTENT_TYPE_CODES['propertiesJava'] = ('properties',)
 CONTENT_TYPE_CODES['YAML'] = ('yml', 'yaml')
 CONTENT_TYPE_CODES['YAMLi18n'] = ('yml', 'yaml')
@@ -35,7 +36,6 @@ ALLOWED_EXTENSIONS = OrderedDict(
 
 ADJUST_EXTENSION = {
     "resx": "regex",
-    "html": "stringsHtml",
 }
 
 MIMETYPES = {
@@ -202,7 +202,6 @@ def create_target_path_by_pattern(curdir, language, version_tag, source_name,  p
         target_path = target_path.replace('<{}>'.format(PatternVariables.language_name_allcap),
                                           language.name.upper())
 
-
     if '<{}>'.format(PatternVariables.extension) in target_path \
             or '<{}>'.format(PatternVariables.filename) in target_path:
         try:
@@ -308,6 +307,5 @@ def get_content_type_code(path):
 
     if path_ext in ADJUST_EXTENSION:
         return ADJUST_EXTENSION[path_ext]
-
 
     return ALLOWED_EXTENSIONS[path_ext]

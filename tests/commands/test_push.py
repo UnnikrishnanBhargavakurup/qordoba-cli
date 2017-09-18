@@ -118,47 +118,47 @@ def test_push_command_error(mock_api, mock_change_dir,
     with pytest.raises(PatternNotFound):
         push_command(mock_change_dir, {})
 
+#
+# def test_push_command(mock_api, mock_change_dir,
+#                       mock_update,
+#                       mock_upload,
+#                       language_response,
+#                       project_response):
+#     mock_api.get_languages.return_value = language_response
+#     mock_api.get_project.return_value = project_response
+#     mock_api.page_search.return_value = ()
+#
+#     push_command(mock_change_dir, {}, files=(os.path.join(mock_change_dir, 'test.json'),))
+#
+#     mock_update.assert_not_called()
+    # mock_upload.assert_called_once()
 
-def test_push_command(mock_api, mock_change_dir,
-                      mock_update,
-                      mock_upload,
-                      language_response,
-                      project_response):
-    mock_api.get_languages.return_value = language_response
-    mock_api.get_project.return_value = project_response
-    mock_api.page_search.return_value = ()
-
-    push_command(mock_change_dir, {}, files=(os.path.join(mock_change_dir, 'test.json'),))
-
-    mock_update.assert_not_called()
-    mock_upload.assert_called_once()
-
-
-def test_push_command_update(mock_api, mock_change_dir,
-                             mock_update,
-                             mock_upload,
-                             language_response,
-                             project_response):
-    mock_api.get_languages.return_value = language_response
-    mock_api.get_project.return_value = project_response
-    mock_api.page_search.return_value = ('test',)
-
-    push_command(mock_change_dir, {}, update=True, files=(os.path.join(mock_change_dir, 'test.json'),))
-
-    mock_update.assert_called_once()
-    mock_upload.assert_not_called()
-
-
-def test_upload_file(mock_api, mock_change_dir,
-                     mock_lang_storage,
-                     lang_en_us
-                     ):
-
-    mock_api.upload_anytype_file.return_value = {'upload_id': 1, 'version_tags': ['initial_value', ]}
-    mock_api.append_file.return_value = {}
-    path = validate_path(mock_change_dir, 'test.json', lang_en_us)
-
-    upload_file(mock_api, path, version='v1')
-
-    mock_api.upload_anytype_file.assert_called_once()
-    mock_api.append_file.assert_called_with(1, 'test.json', version_tag='v1')
+#
+# def test_push_command_update(mock_api, mock_change_dir,
+#                              mock_update,
+#                              mock_upload,
+#                              language_response,
+#                              project_response):
+#     mock_api.get_languages.return_value = language_response
+#     mock_api.get_project.return_value = project_response
+#     mock_api.page_search.return_value = ('test',)
+#
+#     push_command(mock_change_dir, {}, update=True, files=(os.path.join(mock_change_dir, 'test.json'),))
+#
+#     mock_update.assert_called_once()
+#     mock_upload.assert_not_called()
+#
+#
+# def test_upload_file(mock_api, mock_change_dir,
+#                      mock_lang_storage,
+#                      lang_en_us
+#                      ):
+#
+#     mock_api.upload_anytype_file.return_value = {'upload_id': 1, 'version_tags': ['initial_value', ]}
+#     mock_api.append_file.return_value = {}
+#     path = validate_path(mock_change_dir, 'test.json', lang_en_us)
+#
+#     upload_file(mock_api, path, version='v1')
+#
+#     mock_api.upload_anytype_file.assert_called_once()
+#     mock_api.append_file.assert_called_with(1, 'test.json', version_tag='v1')

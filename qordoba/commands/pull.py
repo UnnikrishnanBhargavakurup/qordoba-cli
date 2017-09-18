@@ -127,60 +127,59 @@ def pull_command(curdir, config, force=False, bulk=False, distinct=False,  files
     dest_languages_page_ids = []
     dest_languages_ids = [src_language_id]
     src_to_dest_paths = []
+    pattern = get_pull_pattern(config, default=None)
+    status_filter = [PageStatus.enabled, ]
 
-    pattern_list = get_pull_pattern(config, default=None)
-    if pattern_list is None:
-        pattern_list=[None]
+    if in_progress is False:
+        log.debug('Pull only completed translations.')
+        status_filter = [PageStatus.completed, ]
 
-    for pattern in pattern_list:
-        status_filter = [PageStatus.enabled, ]
+    for language in languages:
+        is_started = False
 
-        if in_progress is False:
-            log.debug('Pull only completed translations.')
-            status_filter = [PageStatus.completed, ]
+        for page in api.page_search(language.id, status=status_filter):
+            is_started = True
+            page_status = api.get_page_details(language.id, page['page_id'], )
+            dest_languages_page_ids.append(page['page_id'])
+            dest_languages_ids.append(language.id)
 
-        for language in languages:
+            log.info('Starting Download of translation file(s) for src `{}` and language `{}`'.format(
+                format_file_name(page),
+                language.code,
+            ))
 
-            is_started = False
-            for page in api.page_search(language.id, status=status_filter):
-                is_started = True
-                page_status = api.get_page_details(language.id, page['page_id'], )
-                dest_languages_page_ids.append(page['page_id'])
-                dest_languages_ids.append(language.id)
+            milestone = None
+            if in_progress:
+                milestone = page_status['status']['id']
+                log.debug('Selected status for page `{}` - {}'.format(page_status['id'], page_status['status']['name']))
 
-                milestone = None
-                if in_progress:
-                    milestone = page_status['status']['id']
-                    log.debug('Selected status for page `{}` - {}'.format(page_status['id'], page_status['status']['name']))
+            dest_path = create_target_path_by_pattern(curdir, language, pattern=pattern,
+                                                      source_name=page_status['name'],
+                                                      content_type_code=page_status['content_type_code'])
+            if pattern is not None:
+                stripped_dest_path = ((dest_path.native_path).rsplit('/', 1))[0]
+                src_to_dest_paths.append(tuple((language.code, stripped_dest_path)))
+            src_to_dest_paths.append(tuple((language.code, language.code)))
 
-                dest_path = create_target_path_by_pattern(curdir, language, pattern=pattern,
-                                                          distinct=distinct,
-                                                          version_tag=page_status['version_tag'],
-                                                          source_name=page_status['name'],
-                                                          content_type_code=page_status['content_type_code'],)
+            '''adding the src langauge to the dest_path_of_src_language pattern'''
+            dest_path_of_src_language = create_target_path_by_pattern(curdir, src_language, pattern=pattern,
+                                                                      source_name=page_status['name'],
+                                                                      content_type_code=page_status[
+                                                                          'content_type_code'])
+            if pattern is not None:
+                src_page_status_id = page_status['id']
+                stripped_dest_path_of_src_language = ((dest_path_of_src_language.native_path).rsplit('/', 1))[0]
+                src_to_dest_paths.append(tuple((src_language_code, stripped_dest_path_of_src_language)))
+            src_to_dest_paths.append(tuple((src_language_code, src_language_code)))
 
-                if pattern is not None:
-                    stripped_dest_path = ((dest_path.native_path).rsplit('/', 1))[0]
-                    src_to_dest_paths.append(tuple((language.code, stripped_dest_path)))
-                src_to_dest_paths.append(tuple((language.code, language.code)))
+            if not bulk:
+                if os.path.exists(dest_path.native_path) and not force:
+                    log.warning('Translation file already exists. `{}`'.format(dest_path.native_path))
+                    answer = FileUpdateOptions.get_action(update_action) or ask_select(FileUpdateOptions.all,
+                                                                                       prompt='Choice: ')
+                    if answer == FileUpdateOptions.skip:
+                        log.info('Download translation file `{}` was skipped.'.format(dest_path.native_path))
 
-                '''adding the src langauge to the dest_path_of_src_language pattern'''
-                dest_path_of_src_language = create_target_path_by_pattern(curdir, src_language, pattern=pattern, distinct=distinct, version_tag=page_status['version_tag'], source_name=page_status['name'], content_type_code=page_status['content_type_code'])
-
-                if pattern is not None:
-                    stripped_dest_path_of_src_language = ((dest_path_of_src_language.native_path).rsplit('/', 1))[0]
-                    src_to_dest_paths.append(tuple((src_language_code, stripped_dest_path_of_src_language)))
-                src_to_dest_paths.append(tuple((src_language_code, src_language_code)))
-
-                if not bulk:
-                    """
-                    Checking if file extension in config file matches downloaded file.
-                    If not, continue e.g. *.resx should only download resx files from Qordoba
-                    """
-                    valid_extension = pattern.split('.')[-1] if pattern else None
-                    file_extension = page['url'].split('.')[-1]
-                    if pattern and valid_extension != "<extension>" and valid_extension != file_extension:
-                        # log.info('{} is not a valid file extension'.format(file_extension))
                         continue
 
                     if distinct:

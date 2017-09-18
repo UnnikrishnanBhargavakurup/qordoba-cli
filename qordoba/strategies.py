@@ -4,85 +4,136 @@ import logging
 import os
 import yaml
 
-from shebang import shebang
+import re
 
 log = logging.getLogger('qordoba')
 
 class Extension(object):
     def __init__(self):
-        pass
-
-    def reveal_extension(self, blob):
-        filename, file_extension = os.path.splitext(blob)
-        return file_extension
-
-    def find_ext(self, d, tag):
-        if tag in d:
-            yield d[tag]
-        for k, v in d.items():
-            if isinstance(v, dict):
-                for i in self.find_ext(v, tag):
-                    yield i, k
-
-    def find(self, blob):
-        extension = self.reveal_extension(blob)
-
-        with open("language.yml", 'r') as stream:
+        self.strategy_name = 'extension'
+        self.language_extension_mappings = {}
+        with open("../resources/language.yml", 'r') as stream:
             try:
-                data = (yaml.load(stream))
-                languages = []
+                data = yaml.load(stream)
                 for ext_key_value in self.find_ext(data, 'extensions'):
-                    (ext_list, ext_key) = ext_key_value
-                    for ext in ext_list:
-                        if ext == extension:
-                            languages.append(ext_key)
-                log.info('File `{}` with extension {} most certainly is of type {}'.format( blob.split('/')[-1:][0], extension, languages[0] ))
-                return languages
+                    (language, ext_list) = ext_key_value
+                    self.language_extension_mappings[language] = ext_list
             except yaml.YAMLError as exc:
                 print(exc)
 
+    def get_extension(self, file_path):
+        _, file_extension = os.path.splitext(file_path)
+        return file_extension
+
+    def find_ext(self, language_config, extention_tag):
+        for language in language_config:
+            extensions = language_config[language].get(extention_tag, [])
+            yield language, set(extensions)
+
+    def find_type(self, file_path):
+        extension = self.get_extension(file_path)
+        file_languages = []
+
+        if extension:
+            for language in self.language_extension_mappings:
+                ext_set = self.language_extension_mappings[language]
+                if extension in ext_set:
+                    file_languages.append(str(language).capitalize())
+        log.info('--- File `{}` with extension {} most certainly is of type {}'.format(file_path, extension, file_languages))
+        return file_languages
 
 class Shebang():
+
     def __init__(self):
-        pass
+        self.strategy_name = 'shebang'
 
-    def spot_shebang(self, blob):
-        # shebang = parseshebang.parse(blob)
-        # os.subprocess.check_call(shebang + ["/my_script.py"])
-        # print(shebang)
-        print(shebang(blob))
-        # firstLine = open(blob, 'r').readline()
-        # if firstLine[:2] == '#!':
-        #     return True
-        # else:
-        #     return False
+    def get_shebang_script(self, first_line):
+        if first_line[:2] != '#!':
+            return []
+        if len(first_line) < 4:
+            # Empty after the shebang then return
+            return []
+
+        last_path = first_line.split('/')[-1]
+        if not last_path:
+            return []
+        scripts = last_path.split()
+
+        if len(scripts) == 1 and scripts[0] != 'env':
+            return [str(scripts[0]).capitalize()]
+        elif len(scripts) == 2 and scripts[0] == 'env':
+            return [str(scripts[1]).capitalize()]
+        else:
+            for script in scripts:
+                if script != 'env' and script[:2] != '--':
+                    return [str(script).capitalize()]
 
 
-    def find(self, blob):
-        if self.spot_shebang(blob):
-            pass
-        log.info('Strategy Shebang does not apply for file `{}`'.format(blob.split('/')[-1:][0]))
+    def find_type(self, file_path):
+        infile = open(file_path, 'r')
+        firstLine = infile.readline()
+        log.info(
+            '--- File `{}` with shebang most certainly is of type {}'.format(file_path, self.get_shebang_script(firstLine)))
+
+        return self.get_shebang_script(firstLine)
 
 
-def Filename():
-    def __init__():
-        pass
+class Filename():
 
-    def reveal_filename(self, blob):
-        filename, file_extension = os.path.splitext(blob)
+    def __init__(self):
+        self.strategy_name = 'filename'
+        self.language_filename_mappings = {}
+        with open("../resources/language.yml", 'r') as stream:
+            try:
+                data = yaml.load(stream)
+                for ext_key_value in self.find_filename(data, 'filenames'):
+                    (language, ext_list) = ext_key_value
+                    self.language_filename_mappings[language] = ext_list
+            except yaml.YAMLError as exc:
+                print(exc)
+
+    def get_filename(self, file_path):
+        file = file_path.split(os.sep)[-1]
+        filename, _ = os.path.splitext(file)
         return filename
 
-    def find(self, blob):
-        filename = self.reveal_filename(blob)
+    def find_filename(self, language_config, filename_tag):
+        for language in language_config:
+            filename = language_config[language].get(filename_tag, [])
+            yield language, set(filename)
 
-        with open("language.yml", 'r') as stream:
-            try:
-                data = (yaml.load(stream))
-                languages = []
-                for filename_key_value in self.find_ext(data, 'filenames'):
-                    assert isinstance(filename_key_value, object)
-                    (filename_key, filename_value) = filename_key_value
-                    if filename == filename_value:
-                        languages.append()
-            except:
-                pass
+    def find_type(self, file_path):
+        filename = self.get_filename(file_path)
+        file_languages = []
+
+        if filename:
+            for language in self.language_filename_mappings:
+                filename_set = self.language_filename_mappings[language]
+                if filename in filename_set:
+                    file_languages.append(str(language).capitalize())
+        log.info(
+            '--- File `{}` with filename {} most certainly is of type {}'.format(file_path, filename, file_languages))
+        return file_languages
+
+# class Modeline():
+#
+#     def __init__(self):
+#         self.strategy_name = 'modeline'
+#
+#     EMACS_MODELINE = re.compile(r"""-\*-(?:\s* (?= [^:;\s]+ \s* -\*-)|(?:.*?[;\s]|(?<=-\*-))mode\s*:\s*)([^:;\s]+)(?=[\s;]|(?<![-*])-\*-).*?-\*-""")
+#
+#     # VIM_MODELINE = re.compile()
+#
+#     Modeline = [EMACS_MODELINE, VIM_MODELINE]
+#
+#     def find_type(self, file_path):
+#         with open(file_path) as blob:
+#             lines = blob.readlines()
+#         header = ('').join(lines[:10])
+#         footer = ('').join(lines[-10:])
+#         joined_blob = header + footer
+#         for regex in self.Modeline:
+#             match = regex.match(joined_blob)
+#             if match:
+#                 return match.group()
+        

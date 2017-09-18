@@ -25,7 +25,7 @@ class BaseFormatter(logging.Formatter):
         # fancy format traceback
         s = str('\n').join(str('  | ') + line for line in s.splitlines())
         # separate the traceback from the preceding lines
-        s = str('  |___\n{}').format(s)
+        s = str('  ___\n{}').format(s)
         if not self._traceback:
             return str('')
         return s

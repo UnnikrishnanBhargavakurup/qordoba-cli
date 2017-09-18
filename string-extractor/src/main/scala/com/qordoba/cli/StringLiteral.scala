@@ -3,6 +3,7 @@ package com.qordoba.cli
 /**
   * A single instance of a string literal and where it was found
   */
+
 class StringLiteral(val filename: String,
                     val startLineNumber: Int,
                     val startCharIdx: Int, // 0-based index, inclusive

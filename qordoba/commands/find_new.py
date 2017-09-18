@@ -1,118 +1,210 @@
 from __future__ import unicode_literals, print_function
 
 import logging
-from qordoba.languages import get_source_language, init_language_storage
-from qordoba.project import ProjectAPI
-from qordoba.settings import get_push_pattern
-from qordoba.sources import find_files_by_pattern
-from qordoba.strategies import Extension, Shebang
+from qordoba.settings import get_find_new_pattern, get_find_new_blacklist_pattern, get_qorignore
+from qordoba.strategies import Extension, Shebang, Filename
+from qordoba.classifier import Classifier
+from qordoba.framework import Framework
+from qordoba.commands.i18n_base import BaseClass, FilesNotFound, FileExtensionNotAllowed
 
-
+import os
 import yaml
 import re
-import sys
-import magic
+import datetime
+import operator
 
 log = logging.getLogger('qordoba')
 
+CUSTOM_BLACKLIST = set(get_qorignore())
 
 STRATEGIES = [
-                Extension(),
-                Shebang(),
-            ]
+    Extension(),
+    Filename(),
+    # Classifier(),
+    Shebang(),
+    # Modeline(),
+]
 
-RESULTS = list()
+FRAMEWORKS = Framework()
 
 class FilesNotFound(Exception):
     """
     Files not found
     """
 
-def _text_characters():
-    PY3 = sys.version_info[0] == 3
-    int2byte = (lambda x: bytes((x,))) if PY3 else chr
-    txt = (b''.join(int2byte(i) for i in range(32, 127)) + b'\n\r\t\f\b')
-    return txt
+class FindNewClass(BaseClass):
+    def empty(self, fileobj):
 
-
-def likely_binary(fileobj, blocksize=512):
-    x_file = open(fileobj, 'r')
-    block = x_file.read(blocksize)
-    if b'\x00' in block:
-        # Files with null bytes are binary
-        return True
-    elif not block:
-        # An empty file is considered a valid text file
-        return False
-    txt_characters = _text_characters()
-    nontext = block.translate(None, txt_characters)
-    # if nontext is more than 30%, than file considered binary
-    return float(len(nontext)) / len(block) >= 0.30
-
-def encoding_binary(fileobj):
-    blob = open(fileobj).read()
-    m = magic.Magic(mime_encoding=True)
-    encoding = m.from_buffer(blob)
-    return encoding == 'binary'
-
-
-def empty(fileobj, blocksize=512):
-    y_file = open(fileobj).read(blocksize)
-    if not y_file:
-        return True
-    return False
-
-
-def regex_file_match(regexFile, string):
-    with open(regexFile, 'r') as stream:
-        try:
-            output = yaml.load(stream)
-            result = [re.match(pattern, str(string)) for pattern in output]
-            if any(result) is not None:
-                return False
+        if os.stat(fileobj).st_size == 0:
             return True
-        except yaml.YAMLError as exc:
-            print(exc)
+        else:
+            False
 
+    def isbinaryfile(self, path):
 
-def vendored_or_documented(file):
-    if regex_file_match("../vendor.yml", file) and regex_file_match("../documentation.yml", file):
-        return True
-    return False
+        if path is None:
+            return None
+        try:
+            if not os.path.exists(path):
+                return
+        except Exception:
+            return
+        fin = open(path, 'rb')
 
+        try:
+            CHUNKSIZE = 1024
+            while True:
+                chunk = fin.read(CHUNKSIZE)
+                if b'\0' in chunk:  # found null byte
+                    return True
+                if len(chunk) < CHUNKSIZE:
+                    break  # done
+            return False
 
-def not_valid(fileobj):
-    conditions = [
-        likely_binary(fileobj),
-        encoding_binary(fileobj),
-        empty(fileobj),
-    ]
-    if any(condition == True for condition in conditions):
-        return True
-    else:
-        return False
+        finally:
+            fin.close()
 
+    def valid_file(self, fileobj):
 
+        conditions = [
+            self.isbinaryfile(fileobj),
+            self.empty(fileobj),
+        ]
+        if any(condition == True for condition in conditions):
+            return False
+        else:
+            return True
 
+    def percentage(self, x, lang_sum):
 
+        return str(round(x * 100.0 / lang_sum, 1)) + "%"
 
-def find_new_command(curdir, config, files=()):
-    api = ProjectAPI(config)
-    init_language_storage(api)
+    def regex_file_match(self, regexFile, string):
 
-    project = api.get_project()
-    source_lang = get_source_language(project)
-    pattern = get_push_pattern(config)
+        try:
+            with open(regexFile, 'r') as stream:
+                try:
+                    output = yaml.load(stream)
+                    result = [re.match(pattern, str(string)) for pattern in output]
+                    if any(result) is not None:
+                        return False
+                    return True
+                except yaml.YAMLError as exc:
+                    print(exc)
 
-    if not files:
-        files = list(find_files_by_pattern(curdir, pattern, source_lang))
+        except UnicodeDecodeError:
+            return False
+
+    def framework_detect(self, dir_path):
+
+        framework = FRAMEWORKS.find_framework(dir_path)
+        log.info('\nFramework Detected: {framework} at path: {path}'.format(framework=framework, path=dir_path))
+
+        return framework
+
+    def find_new_command(self, curdir, config, files=()):
+
+        pattern = get_find_new_pattern(config)
+        blacklist_pattern = get_find_new_blacklist_pattern(config)
+        # walk through whole path
+        log.info('\n Starting reading and validating files from path .....')
 
         if not files:
-            raise FilesNotFound('Files not found by pattern `{}`'.format(pattern))
+            files = []
+            for single_path in pattern:
 
-    for file_name in files:
-        blob = curdir + '/' + ''.join(pattern.split('/')[:-1]) +  '/' + str(file_name)
-        if not vendored_or_documented(blob) and not not_valid(blob):
-            language = [strategy.find(blob) for strategy in STRATEGIES]
-            RESULTS.append(language)
-        print(RESULTS)
+                framework = "not found"
+                if os.path.isdir(single_path):
+
+                    framework = self.framework_detect(single_path)
+                    for path, dirnames, filenames in os.walk(single_path):
+                        files.extend(os.path.join(path, name) for name in filenames)
+                    files = [file for file in files if not any(path in file for path in blacklist_pattern)]
+
+                if os.path.isfile(single_path):
+                    files.append(single_path)
+
+            if not files:
+                raise FilesNotFound('Files not found by pattern `{}`'.format(pattern))
+
+            file_source_pool = dict()
+        """Start applying the Strategies"""
+        files_ignored = 0
+        for file_path in files:
+
+            # filtering out vendored code such as library
+            vendor_code = self.regex_file_match("../resources/vendor.yml", file_path)
+            documentation_code = self.regex_file_match("../resources/documentation.yml", file_path)
+            if not self.valid_file(file_path):
+                files_ignored += 1
+                continue
+            if vendor_code or documentation_code:
+                files_ignored += 1
+                continue
+            if any(item in file_path for item in CUSTOM_BLACKLIST):
+                files_ignored += 1
+                continue
+
+            # Add count of files being ignored and print a log outside the for loop
+            log.info('Starting.... processing file {}'.format(file_path))
+            results_file = {}
+            for strategy in STRATEGIES:
+                typo = strategy.find_type(file_path)
+                results_file[strategy.strategy_name] = typo
+                file_source_pool[file_path] = results_file
+
+        file_sources = dict()
+        language_distribution = dict()
+
+        STRATEGY_WEIGHTS = {
+            'extension': 0.8,
+            'filename': 0.7,
+            'shebang': 0.6,
+            'modeline': 0.5,
+            'classifier': 0.4,
+
+        }
+
+        # weighted source result
+        for file_path, value in file_source_pool.items():
+            weights = dict()
+            for strategy, sources in value.items():
+
+                if sources == []:
+                    continue
+                for single_source in sources:
+                    try:
+                        weights[single_source] += STRATEGY_WEIGHTS[strategy]
+                    except KeyError:
+                        weights[single_source] = STRATEGY_WEIGHTS[strategy]
+                source_max = max(weights.items(), key=operator.itemgetter(1))[0]
+                file_sources[file_path] = source_max
+
+                try:
+                    language_distribution[source_max] += os.stat(file_path).st_size
+                except KeyError:
+                    language_distribution[source_max] = os.stat(file_path).st_size
+
+        language_distribution_sorted = dict()
+        for w in sorted(language_distribution, key=language_distribution.get, reverse=True):
+            language_distribution_sorted[w] = language_distribution[w]
+
+        lang_sum = sum(language_distribution.values())
+
+        language_percentage = {k: self.percentage(v, lang_sum) for k, v in language_distribution_sorted.items()}
+
+        timestamp = datetime.datetime.now().isoformat()
+
+        outputdir = self.makeoutputdir()
+        output_file = outputdir + '/file_sources_' + str(timestamp) + ".yml"
+
+        with open(output_file, 'w') as outfile:
+            yaml.safe_dump("timestamp: " + timestamp, outfile, default_flow_style=False)
+            yaml.safe_dump("framework: " + framework, outfile, default_flow_style=False)
+            yaml.safe_dump(language_percentage, outfile, default_flow_style=False)
+            yaml.safe_dump(file_sources, outfile)
+
+        log.info(
+            "\n Source Analyzer finished. Results in {output_file} \n Found total of {total} files in path, trained on {valid} valid files. Framework is {framework}. \n {language_percentage}".format(
+                output_file=output_file, total=len(files), valid=(len(files) - files_ignored), framework=framework,
+                language_percentage=language_percentage))

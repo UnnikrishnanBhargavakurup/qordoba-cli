@@ -5,6 +5,7 @@ import os
 import sys
 import logging
 import itertools
+import yaml
 
 from abc import ABCMeta, abstractmethod
 
@@ -16,6 +17,11 @@ from qordoba.commands.ls import ls_command
 from qordoba.commands.pull import pull_command
 from qordoba.commands.push import push_command
 from qordoba.commands.status import status_command
+from qordoba.commands.find_new import FindNewClass
+from qordoba.commands.i18n_find import FindClass
+from qordoba.commands.i18n_rm import RemoveClass
+from qordoba.commands.i18n_mv import MoveClass
+
 from qordoba.settings import load_settings, SettingsError
 from qordoba.utils import with_metaclass, FilePathType, CommaSeparatedSet
 from qordoba.log import init
@@ -73,24 +79,23 @@ class BaseHandler(with_metaclass(ABCMeta)):
             log.info('Config not found...')
         return config
 
+    def load_config(self):
+        try:
+            with open('.qordoba.yml') as info:
+                info_dict = yaml.load(info)
+            return info_dict
+        except IOError:
+            log.info('No `.qordoba.yml` file, needs infos to continue')
+
+
     @classmethod
     def register(cls, root, **kwargs):
         kwargs.setdefault('name', cls.name)
         kwargs.setdefault('help', cls.help)
         kwargs['add_help'] = False
-
         parser = root.add_parser(**kwargs)
         fix_parser_titles(parser)
         parser.set_defaults(_handler=cls)
-        parser.add_argument('--project-id', required=False, type=int, dest='project_id',
-                            help='The ID of your Qordoba project.',
-                            default=None)
-        parser.add_argument('--access-token', required=False, type=str, dest='access_token',
-                            help='Your Qordoba access token.',
-                            default=None)
-        parser.add_argument('--organization-id', required=False, type=int, dest='organization_id',
-                            help='The ID of your Qordoba organization.',
-                            default=None)
         parser.add_argument('--traceback', dest='traceback', action='store_true')
         parser.add_argument('--debug', dest='debug', default=False, action='store_true')
         parser.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS,
@@ -109,7 +114,7 @@ class BaseHandler(with_metaclass(ABCMeta)):
 class InitHandler(BaseHandler):
     name = 'init'
     help = """
-    Create your .qordoba.yml configuration file.
+    Create your config.yml configuration file.
     """
 
     def main(self):
@@ -165,6 +170,15 @@ class PullHandler(BaseHandler):
     @classmethod
     def register(cls, *args, **kwargs):
         parser = super(PullHandler, cls).register(*args, **kwargs)
+        parser.add_argument('--project-id', required=False, type=int, dest='project_id',
+                            help='The ID of your Qordoba project.',
+                            default=None)
+        parser.add_argument('--access-token', required=False, type=str, dest='access_token',
+                            help='Your Qordoba access token.',
+                            default=None)
+        parser.add_argument('--organization-id', required=False, type=int, dest='organization_id',
+                            help='The ID of your Qordoba organization.',
+                            default=None)
         parser.add_argument('--in-progress', dest='in_progress', action='store_true',
                             help='Allow to download not completed translations.')
 
@@ -201,7 +215,8 @@ class PullHandler(BaseHandler):
         if isinstance(self.languages, (list, tuple, set)):
             languages.extend(self.languages)
         pull_command(self._curdir, config, languages=set(itertools.chain(*languages)),
-                     in_progress=self.in_progress, update_action=self.get_update_action(), force=self.force, bulk=self.bulk, distinct=self.distinct)
+                     in_progress=self.in_progress, update_action=self.get_update_action(), force=self.force,
+                     bulk=self.bulk)
 
 
 class PushHandler(BaseHandler):
@@ -218,6 +233,15 @@ class PushHandler(BaseHandler):
     @classmethod
     def register(cls, *args, **kwargs):
         parser = super(PushHandler, cls).register(*args, **kwargs)
+        parser.add_argument('--project-id', required=False, type=int, dest='project_id',
+                            help='The ID of your Qordoba project.',
+                            default=None)
+        parser.add_argument('--access-token', required=False, type=str, dest='access_token',
+                            help='Your Qordoba access token.',
+                            default=None)
+        parser.add_argument('--organization-id', required=False, type=int, dest='organization_id',
+                            help='The ID of your Qordoba organization.',
+                            default=None)
         parser.add_argument('files', nargs='*', metavar='PATH', default=None, type=FilePathType(), help="")
         parser.add_argument('--update', dest='update', action='store_true', help="Force to update file.")
         parser.add_argument('--version', dest='version', default=None, type=str, help="Set version tag.")
@@ -249,12 +273,20 @@ class DeleteHandler(BaseHandler):
 
     def load_settings(self):
         config = super(DeleteHandler, self).load_settings()
-        config.validate(keys=('organization_id',))
         return config
 
     @classmethod
     def register(cls, *args, **kwargs):
         parser = super(DeleteHandler, cls).register(*args, **kwargs)
+        parser.add_argument('--project-id', required=False, type=int, dest='project_id',
+                            help='The ID of your Qordoba project.',
+                            default=None)
+        parser.add_argument('--access-token', required=False, type=str, dest='access_token',
+                            help='Your Qordoba access token.',
+                            default=None)
+        parser.add_argument('--organization-id', required=False, type=int, dest='organization_id',
+                            help='The ID of your Qordoba organization.',
+                            default=None)
         parser.add_argument('file', default=(), type=str,
                             help="Define resource name or ID.")
         parser.add_argument('-f', '--force', dest='force', action='store_true', help='Force delete resources.')
@@ -263,6 +295,79 @@ class DeleteHandler(BaseHandler):
     def main(self):
         config = self.load_settings()
         delete_command(self._curdir, config, self.file, force=self.force)
+
+
+class FindNewHandler(BaseHandler):
+    name = 'find-new'
+    help = """
+    Use the find-new command to analyse source content.
+    """
+
+    @classmethod
+    def register(cls, *args, **kwargs):
+        parser = super(FindNewHandler, cls).register(*args, **kwargs)
+        parser.add_argument('files', nargs='*', metavar='PATH', default=None, type=FilePathType(), help="")
+        return parser
+
+    def main(self):
+        config = self.load_config()
+        FindNewClass().find_new_command(self._curdir, config, files=self.files)
+
+
+class i18n_RemoveHandler(BaseHandler):
+    name = 'i18n-rm'
+    help = """
+    Use the remove command to remove specific keys in your i18n key files.
+    """
+
+    @classmethod
+    def register(cls, *args, **kwargs):
+        parser = super(i18n_RemoveHandler, cls).register(*args, **kwargs)
+        parser.add_argument('keyword', nargs='*', default=None, type=str, help="Filter your i18n keys by that keyword")
+        return parser
+
+    def main(self):
+        config = self.load_config()
+        RemoveClass().i18n_remove_command(self._curdir, config, keyword=self.keyword)
+
+
+class i18n_FindHandler(BaseHandler):
+    name = 'i18n-find'
+    help = """
+    Use the find command to get source of local keys within project.
+    """
+
+    @classmethod
+    def register(cls, *args, **kwargs):
+        parser = super(i18n_FindHandler, cls).register(*args, **kwargs)
+        parser.add_argument('keyword', nargs='*', default=None, type=str, help="Filter your i18n keys by that keyword")
+
+        return parser
+
+    def main(self):
+        config = self.load_config()
+        FindClass().i18n_find_command(self._curdir, config, keyword=self.keyword)
+
+
+class i18n_MoveHandler(BaseHandler):
+    name = 'i18n-mv'
+    help = """
+    Use the move command to move keys or merge keys within your i18n key files.
+    """
+
+    @classmethod
+    def register(cls, *args, **kwargs):
+        parser = super(i18n_MoveHandler, cls).register(*args, **kwargs)
+        fix_parser_titles(parser)
+        parser.set_defaults(_handler=cls)
+        parser.add_argument('-r', '--run', dest='run', action='store_true', help="Will finally execute the move command")
+        parser.add_argument('-em', '--exact_match', dest='exact_match', action='store_true', help="Only exact matches of keys will be changed.")
+        parser.add_argument("-s", "--source", type=str, required=True)
+        parser.add_argument("-t", "--target", type=str, required=True)
+
+    def main(self):
+        config = self.load_config()
+        MoveClass().i18n_move_command(self._curdir, config, run=self.run, exact_match=self.exact_match, source=self.source, target=self.target)
 
 
 def parse_arguments():
@@ -290,6 +395,10 @@ def parse_arguments():
     PushHandler.register(subparsers, **args)
     ListHandler.register(subparsers, **args)
     DeleteHandler.register(subparsers, **args)
+    FindNewHandler.register(subparsers, **args)
+    i18n_FindHandler.register(subparsers, **args)
+    i18n_RemoveHandler.register(subparsers, **args)
+    i18n_MoveHandler.register(subparsers, **args)
 
     args = parser.parse_args()
     return args, parser

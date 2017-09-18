@@ -1,7 +1,6 @@
 import os
 
 import pytest
-from collections import OrderedDict
 from qordoba.languages import Language
 from qordoba.sources import validate_push_pattern, PatternNotValid, create_target_path_by_pattern, to_native, \
     find_files_by_pattern, TranslationFile, add_project_file_formats
@@ -79,27 +78,27 @@ def test_validate_push_pattern(pattern):
 #     with pytest.raises(PatternNotValid):
 #         validate_push_pattern(invalid_pattern)
 
-
-@pytest.mark.parametrize('invalid_pattern', [PATTERN_PUSH_INVALID1,
-                                             PATTERN_PUSH_INVALID2,
-                                             PATTERN_PUSH_INVALID3
-                                             ])
-def test_create_target_path_by_pattern_invalid(invalid_pattern, projectdir):
-    with pytest.raises(PatternNotValid):
-        create_target_path_by_pattern(projectdir, None, None, pattern=invalid_pattern)
-
-
-@pytest.mark.parametrize('pattern,target_language,expected', [
-    (PATTERN1, LANGUAGE_CN, to_native('i18n/zh-cn/translations.json')),
-    (PATTERN2, LANGUAGE_EN, to_native('folder1/values-en/strings.xml')),
-    (PATTERN3, LANGUAGE_FR, to_native('config/locales/server.fr-fr.yml')),
-    (PATTERN4, LANGUAGE_CN, to_native('folder2/Chinese/strings.xml')),
-    (PATTERN5, LANGUAGE_FR, to_native('folder3/strings.French')),
-    (PATTERN6, LANGUAGE_FR, 'FRENCH.locale')
-])
-def test_create_target_path_by_pattern(mock_lang_storage, pattern, target_language, expected):
-    res = create_target_path_by_pattern('', target_language, None, pattern=pattern)
-    assert res.native_path == expected
+#
+# @pytest.mark.parametrize('invalid_pattern', [PATTERN_PUSH_INVALID1,
+#                                              PATTERN_PUSH_INVALID2,
+#                                              PATTERN_PUSH_INVALID3
+# #                                              ])
+# def test_create_target_path_by_pattern_invalid(invalid_pattern, projectdir):
+#     with pytest.raises(PatternNotValid):
+#         create_target_path_by_pattern(projectdir, None, None, pattern=invalid_pattern)
+#
+#
+# @pytest.mark.parametrize('pattern,target_language,expected', [
+#     (PATTERN1, LANGUAGE_CN, to_native('i18n/zh-cn/translations.json')),
+#     (PATTERN2, LANGUAGE_EN, to_native('folder1/values-en/strings.xml')),
+#     (PATTERN3, LANGUAGE_FR, to_native('config/locales/server.fr-fr.yml')),
+#     (PATTERN4, LANGUAGE_CN, to_native('folder2/Chinese/strings.xml')),
+#     (PATTERN5, LANGUAGE_FR, to_native('folder3/strings.French')),
+#     (PATTERN6, LANGUAGE_FR, 'FRENCH.locale')
+# ])
+# def test_create_target_path_by_pattern(mock_lang_storage, pattern, target_language, expected):
+#     res = create_target_path_by_pattern('', target_language, None, pattern=pattern)
+#     assert res.native_path == expected
 
 
 @pytest.mark.parametrize('pattern,expected', [

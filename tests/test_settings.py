@@ -77,11 +77,15 @@ def test_load_settings_overrite(mock_change_dir):
     assert config['access_token'] == test_access_token
     assert config['project_id'] == test_project_id
 
+# def test_get_project_file_formats(mock_change_dir):
+#     settings, loaded = load_settings(access_token='22', project_id='33')
+#     result = get_project_file_formats(settings)
+#     assert result['resx'] == ['resx', 'txt']
 
-def test_get_project_file_formats(mock_change_dir):
-    settings, loaded = load_settings(access_token='22', project_id='33')
-    settings['file_formats'] = {
-        'resx': 'resx'
-    }
-    result = get_project_file_formats(settings)
-    assert result['resx'] == 'resx'
+# def test_get_project_file_formats(mock_change_dir):
+#     settings, loaded = load_settings(access_token='22', project_id='33')
+#     settings['file_formats'] = {
+#         'resx': 'resx'
+#     }
+#     result = get_project_file_formats(settings)
+#     assert result['resx'] == 'resx'

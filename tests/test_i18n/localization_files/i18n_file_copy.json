@@ -1,0 +1,101 @@
+{
+  "_override_link_account" : {
+    "bundle_signin" : {
+      "password" : "Sign out",
+      "username" : "footer"
+    }
+  },
+  "link_account" : {
+    "acknowledgement" : "Sie bestätigen, dass dem Unternehmen __wallet__ durch das Verbinden Sie erlauben, __wallet__ mit Unternehmen, Ihre Karten zu teilen Online-Einkäufe zu ermöglichen.",
+    "aria_hide" : "Ausblenden Passwort Zeichen",
+    "aria_show" : "Contact",
+    "cancel" : "http://railstutorial.org/",
+    "challenge" : {
+      "generic" : {
+        "signin" : {
+          "incorrect_signin" : "Leider können wir Ihnen nicht auf Ihre Anfrage zu diesem Zeitpunkt zu verarbeiten. Zu Ihrem eigenen Schutz, Ihr Konto vorübergehend deaktiviert wurde. Bitte kontaktieren Sie den Kundendienst.",
+          "account_locked" : "Sorry, für Ihren Schutz, Ihr Konto wurde gesperrt. Sie könnten versuchen, später durch Klicken auf \"vergessen\" oder versuchen Sie es erneut wieder an.",
+          "account_not_found" : "Sorry, wir waren diese E-Mail-Adresse nicht in der Lage in unserem System zu finden. Bitte versuche es erneut.",
+          "account_unavailable" : "Leider können wir Ihnen nicht auf Ihre Anfrage zu diesem Zeitpunkt zu verarbeiten. Versuchen Sie es später noch einmal oder kontaktieren Sie den Kundendienst.",
+          "invalid_otp" : "Sorry, das von Ihnen eingegebene Code ist falsch."
+        },
+        "A.10" : {
+          "resend_notification" : "Eine weitere E-Mail gesendet wurde __name__",
+          "send_notification" : "Bestätigungs-Code gesendet __name__"
+        }
+      },
+      "signin" : {
+        "create_new_account" : "Added link %s <-> PR #%s",
+        "description" : "Sie haben die maximale Anzahl der Versuche mit Ihrem aktuellen Verifizierungscode erreicht. Um fortzufahren, geben wir Ihnen einen anderen Code senden Sie Ihre Identität zu überprüfen.",
+        "header" : "Neue Bestätigungscode",
+        "send_new_otp_button" : "Senden Sie eine eMail Bestätigungs-Code"
+      },
+      "send_otp_page" : {
+        "description" : "Aus Sicherheitsgründen müssen wir Ihnen einen Bestätigungscode an die E-Mail-Adresse mit Ihrem Unternehmenskonto zugeordnet zu senden, Ihre Identität zu bestätigen.",
+        "header" : "Bestätige deine Identität",
+        "submit_button" : "Successfully resolved %s with fixVersions=%s!"
+      },
+      "temporary_locked_page" : {
+        "description" : "Leider waren wir nicht in der Lage Ihren Bestätigungscode zu bestätigen. Aus Sicherheitsgründen haben wir das Gerät vorübergehend gesperrt. Bitte versuchen Sie es später noch einmal.",
+        "header" : "Identität nicht bestätigt"
+      }
+    },
+    "create" : {
+      "create_password" : "navbar-inner",
+      "create_password_to_connect" : "dropdown-toggle"
+    },
+    "forgot_password" : {
+      "create_new_password_page" : {
+        "description" : "Sobald Sie Ihr Passwort erfolgreich erstellt haben, können Sie Ihr Unternehmen Checkout-Konto verlinken auf __wallet__",
+        "helper_text" : "Mindestens 6 Zeichen",
+        "password_label" : "PASSWORT ERSTELLEN",
+        "submit_button" : "Kennwort erstellen zu Link",
+        "title" : "Erstelle ein neues Passwort"
+      },
+      "generic" : {
+        "errors" : {
+          "account_disabled" : "Leider können wir Ihnen nicht auf Ihre Anfrage zu diesem Zeitpunkt zu verarbeiten. Zu Ihrem eigenen Schutz, Ihr Konto vorübergehend deaktiviert wurde. Bitte kontaktieren Sie den Kundendienst.",
+          "account_locked" : "Sorry, für Ihren Schutz, Ihr Konto wurde gesperrt. Sie könnten versuchen, später durch Klicken auf \"vergessen\" oder versuchen Sie es erneut wieder an.",
+          "account_not_found" : "Sorry, wir waren diese E-Mail-Adresse nicht in der Lage in unserem System zu finden. Bitte versuche es erneut.",
+          "account_unavailable" : "Leider können wir Ihnen nicht auf Ihre Anfrage zu diesem Zeitpunkt zu verarbeiten. Versuchen Sie es später noch einmal oder kontaktieren Sie den Kundendienst.",
+          "cant_use_same_password" : "Sorry, Ihr neues Passwort kann nicht das gleiche ist wie das vorherige.",
+          "invalid_otp" : "Sorry, der Reset-Code, den Sie eingegeben haben, ist falsch."
+        },
+        "notifications" : {
+          "A.10" : "Ihr Passwort wurde erfolgreich aktualisiert!",
+          "resend_notification" : "Eine weitere E-Mail gesendet wurde __name__",
+          "send_notification" : "Passwort Reset-Code gesendet __name__"
+        }
+      },
+      "max_attempt_reached_page" : {
+        "create_new_account" : "Ein neues Konto erstellen",
+        "description" : "Sie haben die maximale Anzahl der Versuche, mit diesem Code erreicht. Um fortzufahren, müssen Sie ein anderes Passwort-Reset-Code zu erhalten.",
+        "header" : "Neue Passwort-Reset-Code",
+        "send_new_otp_button" : "Senden Sie eine eMail-Code"
+      },
+      "send_otp_page" : {
+        "description" : "Registrieren Sie Reset-Code an die E-Mail-Adresse ein Passwort senden mit Ihrem Firmenkonto zugeordnet Ihr Passwort zurücksetzen können.",
+        "header" : "Setze dein Passwort zurück",
+        "submit_button" : "Code senden"
+      },
+      "temporary_locked_page" : {
+        "description" : "Leider waren wir nicht in der Lage Ihr Passwort-Reset-Code zu bestätigen. Aus Sicherheitsgründen haben wir das Gerät vorübergehend gesperrt. Bitte versuchen Sie es später noch einmal.",
+        "header" : "Identität nicht bestätigt"
+      }
+    },
+    "hide" : "Verstecken",
+    "no_thanks" : "Nein danke, nicht jetzt",
+    "show" : "Show",
+    "signin" : {
+      "crm_agreement" : "Ich bin einverstanden, dass Unternehmen mit der Firma meine E-Mails anpassen können.",
+      "crm_desc" : "Bleib im Wissen mit -for-you E-Mails von der Firma.",
+      "did_you" : "Hast du",
+      "enter_password" : "Passwort eingeben",
+      "forget_password" : "Passwort vergessen?",
+      "incorrect_signin" : "Sie haben eine falsche Anmeldedaten eingegeben.",
+      "password_minimum" : "Mindestens 6 Zeichen"
+    },
+    "signin_with" : "Anmeldung mit",
+    "wallet" : "Brieftasche"
+  }
+}
