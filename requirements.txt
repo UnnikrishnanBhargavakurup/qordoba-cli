@@ -1,3 +1,4 @@
+quotes
 yaml
 PyYAML==3.12
 requests==2.5.1
