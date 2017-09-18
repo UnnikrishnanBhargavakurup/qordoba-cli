@@ -38,6 +38,7 @@ docker cp ${INPUT_PATH} ${IMAGE_NAME}:${WORK_DIR}
 docker start -i ${IMAGE_NAME}
 
 # Get outfile
+
 docker cp ${IMAGE_NAME}:${WORK_DIR}/${OUTPUT_FILE} ${OUTPUT_PATH}
 
 # Remove the container

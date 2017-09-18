@@ -189,4 +189,3 @@ def get_i18n_app_pattern(config):
         return [pattern_row for pattern_row in config['qordoba']['search']['paths']]
     except (KeyError, IndexError):
         raise PatternNotFound('Pattern not found for source files')
-

@@ -100,7 +100,6 @@ def test_validate_push_pattern(pattern):
 #     res = create_target_path_by_pattern('', target_language, None, pattern=pattern)
 #     assert res.native_path == expected
 
-
 @pytest.mark.parametrize('pattern,expected', [
     ('./sources/*', ['./sources/sampleA.json', './sources/sampleB.json']),
     ('./sources/*/*', ['./sources/C/sampleC.json', './sources/D/sampleD.json']),
@@ -122,7 +121,6 @@ def test_find_files_by_pattern(mock_change_dir, mock_lang_storage, pattern, expe
 def test_file_extension(path, expected):
     f = TranslationFile(path, "en-nz", "./")
     assert f.extension == expected
-
 
 def test_add_project_file_formats():
     inbound = {

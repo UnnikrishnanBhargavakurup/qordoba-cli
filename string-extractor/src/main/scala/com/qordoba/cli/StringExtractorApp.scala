@@ -10,7 +10,6 @@ import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
 
-
 /**
   * Application that uses a precompiled ANTLR grammar to extract string literals from a given file
   */

@@ -98,7 +98,6 @@ class StringExtractorAppTest extends FeatureSpec with Matchers with ShouldMatche
   feature(s"Lexer") {
     scenario(s"Tokenization single file") {
       val app = new StringExtractorApp(infilePath, outfilePath)
-
       val tokens = app.getTokens(infilePath)
 
       tokens.size shouldBe 10807
@@ -108,7 +107,6 @@ class StringExtractorAppTest extends FeatureSpec with Matchers with ShouldMatche
   feature(s"Token filter") {
     scenario(s"Find string literals single file") {
       val app = new StringExtractorApp(infilePath, outfilePath)
-
       val tokens = app.getTokens(infilePath)
       val stringLiterals = app.findStringLiterals(infilePath, tokens)
 

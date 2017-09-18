@@ -219,7 +219,6 @@ class PullHandler(BaseHandler):
                      in_progress=self.in_progress, update_action=self.get_update_action(), force=self.force,
                      bulk=self.bulk)
 
-
 class PushHandler(BaseHandler):
     name = 'push'
     help = """

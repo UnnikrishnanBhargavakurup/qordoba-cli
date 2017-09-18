@@ -126,5 +126,3 @@ class FindNewConverter(BaseClass):
         new_df['new_key'] = new_df['text'].apply(lambda x: self.generate_new_keys(x))
 
         print(new_df.new_key)
-
-

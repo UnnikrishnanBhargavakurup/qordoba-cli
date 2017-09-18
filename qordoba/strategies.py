@@ -136,4 +136,3 @@ class Filename():
 #             match = regex.match(joined_blob)
 #             if match:
 #                 return match.group()
-        
