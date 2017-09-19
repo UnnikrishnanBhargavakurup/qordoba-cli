@@ -104,7 +104,11 @@ def upload_file(api, path, version=None, **kwargs):
 
     resp = api.append_file(resp['upload_id'], file_name, version_tag=version_tag, **kwargs)
 
-    log.info('Uploaded {} successfully as {}'.format(path.native_path, file_name))
+    if version:
+        log.info('Uploaded {} successfully as {} with version tag `{}`'.format(path.native_path, file_name, version_tag))
+    else:
+        log.info('Uploaded {} successfully as {}'.format(path.native_path, file_name))
+
 
 
 def update_file(api, path, remote_files, version=None):
@@ -183,6 +187,6 @@ def push_command(curdir, config, update, directory, version=None, files=()):
                 directory_list = find_directories(pattern)
                 for dir_ in directory_list:
                     dir_ = dir_ + '/' + pattern_extension
-                    final_push(project, curdir, dir_, api,  update, version=None)
+                    final_push(project, curdir, dir_, api,  update, version)
         else:
-            final_push(project, curdir, pattern, api, update, version=None)
+            final_push(project, curdir, pattern, api, update, version)
