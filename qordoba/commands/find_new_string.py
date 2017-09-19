@@ -19,13 +19,23 @@ class FindNewStringClass(BaseClass):
     """
 
     def find_new_string(self, curdir, config, run=False, directory=None, output=None, localization=False):
-        log.info(u"\U0001F4E1" + " - loading data from space")
-        log.info("strings from your files are exported")
+        log.info('\b')
+        log.info( " Loading Data from Outer Space")
+        log.info('\b')
+        log.info("       ... "+ u"\U0001F4E1"+" ...")
+        log.info('\b')
+        log.info("       ... "+ u"\U0001F4E1"+" ...")
+        log.info('\b')
+        log.info("Strings are now being exported from your files")
+        log.info('\b')
+
         Process = Popen('../string-extractor/bin/start-container.sh %s %s' % (str(directory), str(output),), shell=True)
-        print Process.communicate()
+        log.info(Process.communicate())
+
+        log.info('\b')
+        log.info('Extraction completed. All exported Strings can be found within the ' + u"\U0001F4C1" + ' file `string-literal.csv`')
+        log.info('\b')
 
         if localization:
             converter = FindNewConverter()
             converter.main(output + '/string-literals.csv', localization, output)
-
-
