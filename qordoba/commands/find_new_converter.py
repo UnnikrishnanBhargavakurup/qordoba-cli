@@ -1,10 +1,8 @@
 import pandas as pd
-from goodreads_quotes import Goodreads
 from qordoba.settings import get_localization_files
 from qordoba.commands.i18n_base import BaseClass, FilesNotFound
 import logging
 import nltk
-nltk.download('punkt')
 
 log = logging.getLogger('qordoba')
 
@@ -12,7 +10,10 @@ log = logging.getLogger('qordoba')
 to do: 
 add csv, yaml to test
 add localization filename column
+find bug -- key value nested dict
+change find-new to input and output, -- .qorignore
 '''
+
 KEY_COUNT = 0
 
 class FindNewConverter(BaseClass):
@@ -34,16 +35,18 @@ class FindNewConverter(BaseClass):
         return self.convert(keys_values_localisation_files)
 
     def index_lookup(self, stringLiteral, localization_k_v):
+        # log.info(" ... searching if existing keys exist.")
+
         # checks if stringLiteral exists in values, gives back corresponding key or None
         for i18n_file in localization_k_v:
             for key, value in localization_k_v[i18n_file].items():
                 # print(value, stringLiteral)
                 # print(key, stringLiteral)
                 if value.strip() == stringLiteral.strip():
-                    return key
+                    return key, i18n_file
                 if key.strip() == stringLiteral.strip():
-                    return key
-        return None
+                    return key, i18n_file
+        return None, None
 
     # def generate_CSV_with_key_column(self, filepath, df):
     #     # adding key column to Dataframe with existing keys
@@ -66,27 +69,31 @@ class FindNewConverter(BaseClass):
 
         global KEY_COUNT
         KEY_COUNT += 1
-        if KEY_COUNT%30 == 0:
+        if KEY_COUNT%20 == 0:
             log.info("{} keys created ".format(KEY_COUNT))
 
         ANC_csv = '../resources/ANC-all-count.csv'
         column_names = ['word', 'again_wtf', 'type', 'count']
         df_ANC = pd.read_csv(ANC_csv, header=None, names=column_names)
 
+        # trying to make sense of this BS = need different approach
         stringLiteral = stringLiteral.replace('-', ' ')
         stringLiteral = stringLiteral.replace('.', ' ')
         stringLiteral = stringLiteral.replace('/', ' ')
         stringLiteral = stringLiteral.replace('_', ' ')
-        words = nltk.word_tokenize(stringLiteral)
+        words = stringLiteral.split(" ")
         words = [word.lower() for word in words if word.isalpha()]
-        # take the longest word
+
         if len(words) == 1:
             return words[0]
+
         elif len(words) == 0:
             return stringLiteral
+
         elif len(set(words).intersection(df_ANC.word)) <= 1:
             word_tuple = (sorted(words,  key=len)[-2:])
             return '.'.join(set(([word_tuple[0],word_tuple[1]]))),
+
         else:
             w1 = None
             w2 = None
@@ -102,17 +109,18 @@ class FindNewConverter(BaseClass):
                     w1 = w
                     w2 = w
                 elif s < v1:
-                    v1=s
-                    w1=w
+                    v1 = s
+                    w1 = w
                 elif s < v2 < v1:
-                    v2=s
-                    w2=w
+                    v2 = s
+                    w2 = w
                 else:
                     continue
             return '.'.join(set(([w1,w2])))
 
     def main(self, filepath, localization_dir, output_dir):
-        # loading CSV into dataframe
+        # loading CSV into Dataframe
+
         column_names = ['filename', 'startLineNumber', 'startCharIdx', 'endLineNumber', 'endCharIdx', 'text']
         df = pd.read_csv(filepath, header=None, names=column_names)
 
@@ -124,16 +132,18 @@ class FindNewConverter(BaseClass):
         df['text'] = df['text'].apply(lambda x: x.replace("'", ''))
 
         # lookup if Stringliteral exists as value or key in localization file. If yes, return key, otherwise None.
-        df['key'] = df['text'].apply(lambda x: self.index_lookup(x, localization_k_v))
-
-        # generate CSV File to output path with existing keys
-        # new_df = self.generate_CSV_with_key_column(filepath, df)
-        df.to_csv(output_dir + '/string_literals_existing_keys.csv',  index=False, encoding='utf-8')
-        log.info("  " + u"\U0001F4AB" + u"\U0001F52E" + " .. starting to generate new keys for you - based on the extracted Strings from your files.")
-        log.info(" (This could Take some time)")
-        log.info("\b")
-
-        #generate keys and add to existing CSV
-        df['new_key'] = df['text'].apply(lambda x: self.generate_new_keys(x))
-        df.to_csv(output_dir + '/string_literals_existing_and_new_keys.csv',  index=False, encoding='utf-8')
-        log.info("Process completed. " + u"\U0001F680" + u"\U0001F4A5")
+        # (df['key'], df['loc_file'])  = df['text'].apply(lambda x: self.index_lookup(x, localization_k_v))
+        from itertools import izip
+        df['key'], df['loc_file'] = izip(*df['text'].apply(lambda x: self.index_lookup(x, localization_k_v)))
+        
+        # # generate CSV File to output path with existing keys
+        # # new_df = self.generate_CSV_with_key_column(filepath, df)
+        # df.to_csv(output_dir + '/string_literals_existing_keys.csv',  index=False, encoding='utf-8')
+        # log.info("  " + u"\U0001F4AB" + u"\U0001F52E" + " .. starting to generate new keys for you - based on the extracted Strings from your files.")
+        # log.info(" (This could Take some time)")
+        # log.info("\b")
+        #
+        # # generate keys and create CSV
+        # df['new_key'] = df['text'].apply(lambda x: self.generate_new_keys(x))
+        # df.to_csv(output_dir + '/string_literals_existing_and_new_keys.csv',  index=False, encoding='utf-8')
+        # log.info("Process completed. " + u"\U0001F680" + u"\U0001F4A5")
