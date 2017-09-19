@@ -18,7 +18,7 @@ class FindNewStringClass(BaseClass):
     when the stringLiterals are found, it will run through the project and
     """
 
-    def find_new_string(self, curdir, config, run=False, directory=None, output=None, localization=False):
+    def find_new_string(self, curdir, run=False, directory=None, output=None, localization=False):
         log.info('\b')
         log.info( " Loading Data from Outer Space")
         log.info('\b')

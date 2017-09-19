@@ -141,16 +141,17 @@ def get_pull_pattern(config, default=NOTDEFINED):
             return None
         raise PatternNotFound('Pattern not found for target files')
 
-def get_qorignore():
-    with open('.qorignore') as file:
-        ignore_file = file.readlines()
-        return ignore_file
-
-def get_qorignore():
-    with open('.qorignore') as file:
-        ignore_file = file.readlines()
-        return ignore_file
-
+def get_qorignore(directory=None):
+    qor_filename = '.qorignore'
+    if directory:
+        if directory.strip()[-1] == '/':
+            qor_filename = directory + '.qorignore'
+        else:
+            qor_filename = directory + '/.qorignore'
+    with open(qor_filename) as file:
+        ignore_list = [line.rstrip() for line in file.readlines()]
+        file.close()
+        return ignore_list
 
 def get_project_file_formats(config, default=None):
     try:

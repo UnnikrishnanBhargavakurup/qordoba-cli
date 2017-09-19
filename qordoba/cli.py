@@ -17,7 +17,7 @@ from qordoba.commands.ls import ls_command
 from qordoba.commands.pull import pull_command
 from qordoba.commands.push import push_command
 from qordoba.commands.status import status_command
-from qordoba.commands.find_new import FindNewClass
+from qordoba.commands.find_new_source import FindNewSourceClass
 from qordoba.commands.find_new_string import FindNewStringClass
 from qordoba.commands.i18n_find import FindClass
 from qordoba.commands.i18n_rm import RemoveClass
@@ -157,7 +157,6 @@ class StatusHandler(BaseHandler):
         config = self.load_settings()
 
         rows = list(status_command(config))
-
         table = AsciiTable(rows).table
         print(table)
 
@@ -297,21 +296,21 @@ class DeleteHandler(BaseHandler):
         delete_command(self._curdir, config, self.file, force=self.force)
 
 
-class FindNewHandler(BaseHandler):
-    name = 'find-new'
+class FindNewSourceHandler(BaseHandler):
+    name = 'find-new-source'
     help = """
     Use the find-new command to analyse source content.
     """
 
     @classmethod
     def register(cls, *args, **kwargs):
-        parser = super(FindNewHandler, cls).register(*args, **kwargs)
-        parser.add_argument('files', nargs='*', metavar='PATH', default=None, type=FilePathType(), help="")
+        parser = super(FindNewSourceHandler, cls).register(*args, **kwargs)
+        parser.add_argument("-d", "--directory", type=str, required=True)
+        parser.add_argument("-o", "--output", type=str, required=True)
         return parser
 
     def main(self):
-        config = self.load_config()
-        FindNewClass().find_new_command(self._curdir, config, files=self.files)
+        FindNewSourceClass().find_new_source_command(self._curdir, directory=self.directory, output=self.output)
 
 class FindNewStringHandler(BaseHandler):
     name = 'find-new-string'
@@ -330,8 +329,7 @@ class FindNewStringHandler(BaseHandler):
         parser.add_argument("-l", "--localization", type=str, required=False)
 
     def main(self):
-        config = self.load_config()
-        FindNewStringClass().find_new_string(self._curdir, config, run=self.run, directory=self.directory, output=self.output, localization=self.localization)
+        FindNewStringClass().find_new_string(self._curdir, run=self.run, directory=self.directory, output=self.output, localization=self.localization)
 
 class i18n_RemoveHandler(BaseHandler):
     name = 'i18n-rm'
@@ -414,7 +412,7 @@ def parse_arguments():
     PushHandler.register(subparsers, **args)
     ListHandler.register(subparsers, **args)
     DeleteHandler.register(subparsers, **args)
-    FindNewHandler.register(subparsers, **args)
+    FindNewSourceHandler.register(subparsers, **args)
     FindNewStringHandler.register(subparsers, **args)
     i18n_FindHandler.register(subparsers, **args)
     i18n_RemoveHandler.register(subparsers, **args)

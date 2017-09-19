@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function
 
 import logging
-from qordoba.settings import get_find_new_pattern, get_find_new_blacklist_pattern, get_qorignore
+from qordoba.settings import get_qorignore
 from qordoba.strategies import Extension, Shebang, Filename
 from qordoba.classifier import Classifier
 from qordoba.framework import Framework
@@ -14,8 +14,6 @@ import datetime
 import operator
 
 log = logging.getLogger('qordoba')
-
-CUSTOM_BLACKLIST = set(get_qorignore())
 
 STRATEGIES = [
     Extension(),
@@ -32,7 +30,7 @@ class FilesNotFound(Exception):
     Files not found
     """
 
-class FindNewClass(BaseClass):
+class FindNewSourceClass(BaseClass):
     def empty(self, fileobj):
 
         if os.stat(fileobj).st_size == 0:
@@ -102,30 +100,26 @@ class FindNewClass(BaseClass):
 
         return framework
 
-    def find_new_command(self, curdir, config, files=()):
+    def find_new_source_command(self, curdir, directory, output):
 
-        pattern = get_find_new_pattern(config)
-        blacklist_pattern = get_find_new_blacklist_pattern(config)
+        log.info(".. Loading .qorignore")
+        blacklist_pattern = get_qorignore(directory)
         # walk through whole path
-        log.info('\n Starting reading and validating files from path .....')
+        log.info('\n Starting to read files from path {}'.format(directory))
+        files = []
+        framework = "not found"
+        if os.path.isdir(directory):
+
+            framework = self.framework_detect(directory)
+            for path, dirnames, filenames in os.walk(directory):
+                files.extend(os.path.join(path, name) for name in filenames)
+            files = [file for file in files if not any(path in file for path in blacklist_pattern)]
+
+        if os.path.isfile(directory):
+            files.append(directory)
 
         if not files:
-            files = []
-            for single_path in pattern:
-
-                framework = "not found"
-                if os.path.isdir(single_path):
-
-                    framework = self.framework_detect(single_path)
-                    for path, dirnames, filenames in os.walk(single_path):
-                        files.extend(os.path.join(path, name) for name in filenames)
-                    files = [file for file in files if not any(path in file for path in blacklist_pattern)]
-
-                if os.path.isfile(single_path):
-                    files.append(single_path)
-
-            if not files:
-                raise FilesNotFound('Files not found by pattern `{}`'.format(pattern))
+            raise FilesNotFound('Files not found by pattern `{}`'.format(pattern))
 
             file_source_pool = dict()
         """Start applying the Strategies"""
@@ -141,9 +135,9 @@ class FindNewClass(BaseClass):
             if vendor_code or documentation_code:
                 files_ignored += 1
                 continue
-            if any(item in file_path for item in CUSTOM_BLACKLIST):
-                files_ignored += 1
-                continue
+            # if any(item in file_path for item in CUSTOM_BLACKLIST):
+            #     files_ignored += 1
+            #     continue
 
             # Add count of files being ignored and print a log outside the for loop
             log.info('Starting.... processing file {}'.format(file_path))
