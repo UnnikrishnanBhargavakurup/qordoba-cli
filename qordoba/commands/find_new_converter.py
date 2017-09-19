@@ -9,7 +9,6 @@ log = logging.getLogger('qordoba')
 '''
 to do: 
 add csv, yaml to test
-add localization filename column
 find bug -- key value nested dict
 change find-new to input and output, -- .qorignore
 '''
@@ -134,16 +133,16 @@ class FindNewConverter(BaseClass):
         # lookup if Stringliteral exists as value or key in localization file. If yes, return key, otherwise None.
         # (df['key'], df['loc_file'])  = df['text'].apply(lambda x: self.index_lookup(x, localization_k_v))
         from itertools import izip
-        df['key'], df['loc_file'] = izip(*df['text'].apply(lambda x: self.index_lookup(x, localization_k_v)))
-        
-        # # generate CSV File to output path with existing keys
-        # # new_df = self.generate_CSV_with_key_column(filepath, df)
-        # df.to_csv(output_dir + '/string_literals_existing_keys.csv',  index=False, encoding='utf-8')
-        # log.info("  " + u"\U0001F4AB" + u"\U0001F52E" + " .. starting to generate new keys for you - based on the extracted Strings from your files.")
-        # log.info(" (This could Take some time)")
-        # log.info("\b")
-        #
-        # # generate keys and create CSV
-        # df['new_key'] = df['text'].apply(lambda x: self.generate_new_keys(x))
-        # df.to_csv(output_dir + '/string_literals_existing_and_new_keys.csv',  index=False, encoding='utf-8')
-        # log.info("Process completed. " + u"\U0001F680" + u"\U0001F4A5")
+        df['key'], df['localization_file'] = izip(*df['text'].apply(lambda x: self.index_lookup(x, localization_k_v)))
+
+        # generate CSV File to output path with existing keys
+        # new_df = self.generate_CSV_with_key_column(filepath, df)
+        df.to_csv(output_dir + '/string_literals_existing_keys.csv',  index=False, encoding='utf-8')
+        log.info("  " + u"\U0001F4AB" + u"\U0001F52E" + " .. starting to generate new keys for you - based on the extracted Strings from your files.")
+        log.info(" (This could Take some time)")
+        log.info("\b")
+
+        # generate keys and create CSV
+        df['new_key'] = df['text'].apply(lambda x: self.generate_new_keys(x))
+        df.to_csv(output_dir + '/string_literals_existing_and_new_keys.csv',  index=False, encoding='utf-8')
+        log.info("Process completed. " + u"\U0001F680" + u"\U0001F4A5")
