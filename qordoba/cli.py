@@ -5,6 +5,7 @@ import os
 import sys
 import logging
 import itertools
+import pprint
 
 from abc import ABCMeta, abstractmethod
 
@@ -15,7 +16,7 @@ from qordoba.commands.init import init_command
 from qordoba.commands.ls import ls_command
 from qordoba.commands.pull import pull_command
 from qordoba.commands.push import push_command
-from qordoba.commands.status import status_command
+from qordoba.commands.status import status_command, status_command_json
 from qordoba.settings import load_settings, SettingsError
 from qordoba.utils import with_metaclass, FilePathType, CommaSeparatedSet
 from qordoba.log import init
@@ -146,14 +147,35 @@ class StatusHandler(BaseHandler):
     help = """
     Use the status command to show localization status in current project.
     """
+    @classmethod
+    def register(cls, *args, **kwargs):
+        parser = super(StatusHandler, cls).register(*args, **kwargs)
+        parser.add_argument('-j', '--json', dest='json', action='store_true', help='Print json dict to stdout.')
+        return parser
+
+    def convert(self, input):
+        if isinstance(input, dict):
+            return {self.convert(key): self.convert(value) for key, value in input.iteritems()}
+        elif isinstance(input, list):
+            return [self.convert(element) for element in input]
+        elif isinstance(input, unicode):
+            return input.encode('utf-8')
+        else:
+            return input
 
     def main(self):
         config = self.load_settings()
 
-        rows = list(status_command(config))
+        if self.json:
+            dict = list(status_command_json(config))
+            unidict = self.convert(dict)
+            dict_str = str((unidict))
+            print(dict_str.replace("'", '"'))
+        else:
+            rows = list(status_command(config))
 
-        table = AsciiTable(rows).table
-        print(table)
+            table = AsciiTable(rows).table
+            print(table)
 
 
 class PullHandler(BaseHandler):
@@ -175,6 +197,8 @@ class PullHandler(BaseHandler):
         # pull_type_group = parser.add_mutually_exclusive_group()
         parser.add_argument('-b', '--bulk', dest='bulk', action='store_true',
                             help="Force to download languages in bulk, incl. source language.")
+        parser.add_argument('-custom', '--custom', dest='custom', action='store_true',
+                            help="Allows to pull file with custom extension provided in config files")
         parser.add_argument('-w', '--workflow', dest='workflow', action='store_true',
                             help="Force to download files from a specific workflow step.")
         parser.add_argument('-d', '--distinct', dest='distinct', action='store_true',
@@ -198,12 +222,13 @@ class PullHandler(BaseHandler):
         return action
 
     def main(self):
+        log.info('Loading Qordoba config...')
         config = self.load_settings()
         languages = []
         if isinstance(self.languages, (list, tuple, set)):
             languages.extend(self.languages)
         pull_command(self._curdir, config, languages=set(itertools.chain(*languages)),
-                     in_progress=self.in_progress, update_action=self.get_update_action(), force=self.force, bulk=self.bulk, workflow=self.workflow, distinct=self.distinct)
+                     in_progress=self.in_progress, update_action=self.get_update_action(), force=self.force, custom=self.custom, bulk=self.bulk, workflow=self.workflow, distinct=self.distinct)
 
 
 class PushHandler(BaseHandler):
@@ -227,6 +252,7 @@ class PushHandler(BaseHandler):
         return parser
 
     def main(self):
+        log.info('Loading Qordoba config...')
         config = self.load_settings()
         push_command(self._curdir, config, update=self.update, version=self.version, directory=self.directory, files=self.files)
 
@@ -237,6 +263,7 @@ class ListHandler(BaseHandler):
     """
 
     def main(self):
+        log.info('Loading Qordoba config...')
         rows = [['ID', 'NAME', '#SEGMENTS', 'UPDATED_ON', 'STATUS'], ]
         rows.extend(ls_command(self.load_settings()))
 
@@ -264,6 +291,7 @@ class DeleteHandler(BaseHandler):
         return parser
 
     def main(self):
+        log.info('Loading Qordoba config...')
         config = self.load_settings()
         delete_command(self._curdir, config, self.file, force=self.force)
 

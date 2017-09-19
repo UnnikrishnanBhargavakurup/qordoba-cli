@@ -81,7 +81,6 @@ def dump_settings(path, data):
 
 
 def load_settings(**kwargs):
-    log.info('Loading Qordoba config...')
 
     settings = None
     loaded = False

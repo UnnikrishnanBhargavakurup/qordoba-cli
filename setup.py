@@ -5,7 +5,6 @@ from setuptools import setup
 
 __version__ = '1.2.5'
 
-
 packages = [
     'qordoba',
     'qordoba.commands'
