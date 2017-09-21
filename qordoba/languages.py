@@ -134,10 +134,10 @@ class Language(object):
 
 
 def get_source_language(project):
-    return Language(project['source_language'])
 
+    return Language(project[0]['source_language'])
 
 def get_destination_languages(project):
-    for target_data in project['target_languages']:
+    for target_data in project[0]['target_languages']:
         yield Language(target_data)
 
