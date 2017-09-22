@@ -138,5 +138,6 @@ def get_source_language(project):
     return Language(project['source_language'])
 
 def get_destination_languages(project):
+
     for target_data in project['target_languages']:
         yield Language(target_data)

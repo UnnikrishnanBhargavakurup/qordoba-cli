@@ -83,11 +83,11 @@ def select_source_columns(columns):
     }
 
 
-def upload_file(api, path, version=None, **kwargs):
+def upload_file(api, path, remote_content_type_codes, version=None, **kwargs):
     log.info('Uploading {}'.format(path.native_path))
 
     file_name = path.unique_name
-    content_type_code = get_content_type_code(path)
+    content_type_code = get_content_type_code(path, remote_content_type_codes)
     version_tag = version
 
     with open(path.native_path, 'rb') as f:
@@ -141,11 +141,11 @@ def find_directories(pattern):
             directory_list.append(os.path.join(root, name))
     return directory_list
 
-def final_push(project, curdir, pattern, api,  update, version):
+def final_push(project, curdir, pattern, api,  update, version, remote_content_type_codes):
 
     source_lang = get_source_language(project)
     lang = next(get_destination_languages(project))
-    files = list(find_files_by_pattern(curdir, pattern, source_lang))
+    files = list(find_files_by_pattern(curdir, pattern, source_lang, remote_content_type_codes))
 
     if len(files) == 0:
         log.info('Files for the given push pattern `{}` do not exists.' .format(pattern))
@@ -160,12 +160,13 @@ def final_push(project, curdir, pattern, api,  update, version):
         if remote_file_pages and update:
             update_file(api, path, remote_file_pages, version=version)
         else:
-            upload_file(api, path, version=version)
+            upload_file(api, path, remote_content_type_codes, version=version)
 
 
 def push_command(curdir, config, update, directory, version=None, files=()):
     api = ProjectAPI(config)
     project = api.get_project()
+    remote_content_type_codes = project['content_type_codes']
     init_language_storage(api)
     add_project_file_formats(get_project_file_formats(config))
 
@@ -174,7 +175,6 @@ def push_command(curdir, config, update, directory, version=None, files=()):
         if pattern_list is None:
             log.info("No push pattern found in config. Taking files from current directory")
             pass
-
 
     if files:
         pattern_list = []
@@ -188,6 +188,6 @@ def push_command(curdir, config, update, directory, version=None, files=()):
                 directory_list = find_directories(pattern)
                 for dir_ in directory_list:
                     dir_ = dir_ + '/' + pattern_extension
-                    final_push(project, curdir, dir_, api,  update, version)
+                    final_push(project, curdir, dir_, api,  update, version, remote_content_type_codes)
         else:
-            final_push(project, curdir, pattern, api, update, version)
+            final_push(project, curdir, pattern, api, update, version, remote_content_type_codes)

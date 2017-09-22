@@ -13,7 +13,7 @@ log = logging.getLogger('qordoba')
 
 DEFAULT_PATTERN = '<language_code>.<extension>'
 
-CONTENT_TYPE_CODES = OrderedDict()
+CONTENT_TYPE_CODES = dict()
 CONTENT_TYPE_CODES['excel'] = ('xlsx',)
 CONTENT_TYPE_CODES['xliff'] = ('xliff', 'xlf')
 CONTENT_TYPE_CODES['XLIFF1.2'] = ('xliff', 'xlf')
@@ -36,7 +36,7 @@ CONTENT_TYPE_CODES['SRT'] = ('srt',)
 
 # .xlsx, .pptx idml ts
 
-ALLOWED_EXTENSIONS = OrderedDict(
+ALLOWED_EXTENSIONS = dict(
     {extension: k for k, extensions in CONTENT_TYPE_CODES.items() for extension in extensions}
 )
 
@@ -57,7 +57,6 @@ CUSTOM_LANGUAGE_CODE = {
 
 def get_mimetype(content_type):
     return MIMETYPES.get(content_type, 'application/octet-stream')
-
 
 class PatternNotValid(Exception):
     pass
@@ -268,7 +267,7 @@ def _ishidden(path):
     return path[0] in ('.', b'.'[0])
 
 
-def find_files_by_pattern(curpath, pattern, lang):
+def find_files_by_pattern(curpath, pattern, lang, remote_content_type_codes):
     validate_push_pattern(pattern)
 
     for path in glob.iglob(pattern):
@@ -281,7 +280,7 @@ def find_files_by_pattern(curpath, pattern, lang):
         path = validate_path(curpath, path, lang)
 
         try:
-            _ = get_content_type_code(path)
+            _ = get_content_type_code(path, remote_content_type_codes)
         except FileExtensionNotAllowed as e:
             log.info('File path ignored: {}'.format(e))
             continue
@@ -302,18 +301,48 @@ def add_project_file_formats(formats, target_dict=ALLOWED_EXTENSIONS):
     return target_dict
 
 
-def get_content_type_code(path):
+def get_content_type_code(path, remote_content_type_codes):
     """
     :param qordoba.sources.TranslationFile path:
     :return:
     """
+    remote_content_types_list = list()
+    for content_type in remote_content_type_codes:
+        remote_content_types_list.append(content_type['content_type_code'])
+
     path_ext = path.extension
+
+
     if path_ext not in ALLOWED_EXTENSIONS:
         raise FileExtensionNotAllowed("File format `{}` not in allowed list of file formats: {}"
                                       .format(path_ext, ', '.join(ALLOWED_EXTENSIONS)))
 
-    if path_ext in ADJUST_EXTENSION:
-        return ADJUST_EXTENSION[path_ext]
+    final_content_type = None
+    content_set = False
+
+    for k, v in CONTENT_TYPE_CODES.items():
+
+        for value in v:
+            if value == path_ext:
+                final_content_type = k
+                content_set = True
+
+        if final_content_type in remote_content_types_list:
+            final_content_type = k
+            content_set = True
+
+        if content_set:
+
+            if not final_content_type:
+                raise FileExtensionNotAllowed("File format `{}` not in allowed list of file formats: {}. Or not specified as file format in your project (supported filefomats are: {})"
+                                          .format(path_ext, ', '.join(ALLOWED_EXTENSIONS), remote_content_types_list))
+
+            return final_content_type
+
+        else:
+
+            continue
 
 
-    return ALLOWED_EXTENSIONS[path_ext]
+
+
