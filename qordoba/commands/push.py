@@ -164,7 +164,7 @@ def final_push(project, curdir, pattern, api,  update, version):
 
 def push_command(curdir, config, update, directory, version=None, files=()):
     api = ProjectAPI(config)
-    project = api.get_project(),
+    project = api.get_project()
     init_language_storage(api)
     add_project_file_formats(get_project_file_formats(config))
 
