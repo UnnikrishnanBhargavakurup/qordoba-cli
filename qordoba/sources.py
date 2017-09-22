@@ -18,25 +18,28 @@ CONTENT_TYPE_CODES['excel'] = ('xlsx',)
 CONTENT_TYPE_CODES['xliff'] = ('xliff', 'xlf')
 CONTENT_TYPE_CODES['XLIFF1.2'] = ('xliff', 'xlf')
 CONTENT_TYPE_CODES['xmlAndroid'] = ('xml',)
-CONTENT_TYPE_CODES['macStrings'] = ('strings',)
 CONTENT_TYPE_CODES['PO'] = ('po',)
 CONTENT_TYPE_CODES['POT'] = ('pot',)
 CONTENT_TYPE_CODES['propertiesJava'] = ('properties',)
 CONTENT_TYPE_CODES['YAML'] = ('yml', 'yaml')
-# CONTENT_TYPE_CODES['YAMLi18n'] = ('yml', 'yaml')
+CONTENT_TYPE_CODES['iosStringsDict'] = ('stringsdict', )
+CONTENT_TYPE_CODES['macStrings'] = ('strings',)
 CONTENT_TYPE_CODES['csv'] = ('csv',)
 CONTENT_TYPE_CODES['JSON'] = ('json',)
 CONTENT_TYPE_CODES['SRT'] = ('srt',)
 CONTENT_TYPE_CODES['md'] = ('md', 'text')
-CONTENT_TYPE_CODES['html'] = ('html',)
+CONTENT_TYPE_CODES['stringsHtml'] = ('html', 'htm')
+CONTENT_TYPE_CODES['regex'] = ('resx',)
+CONTENT_TYPE_CODES['stringsDocx'] = ('docx',)
+
+# .xlsx, .pptx idml ts
 
 ALLOWED_EXTENSIONS = OrderedDict(
     {extension: k for k, extensions in CONTENT_TYPE_CODES.items() for extension in extensions}
 )
 
 ADJUST_EXTENSION = {
-    "resx": "regex",
-    "html": "stringsHtml",
+    # "resx": "regex",
 }
 
 MIMETYPES = {
