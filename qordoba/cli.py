@@ -189,7 +189,6 @@ class PullHandler(BaseHandler):
         parser = super(PullHandler, cls).register(*args, **kwargs)
         parser.add_argument('--in-progress', dest='in_progress', action='store_true',
                             help='Allow to download not completed translations.')
-
         parser.add_argument('-l', '--languages', dest='languages', nargs='+', type=CommaSeparatedSet(),
                             help="Work only on specified (comma-separated) languages.")
         parser.add_argument('-f', '--force', dest='force', action='store_true',
@@ -203,6 +202,7 @@ class PullHandler(BaseHandler):
                             help="Force to download files from a specific workflow step.")
         parser.add_argument('-d', '--distinct', dest='distinct', action='store_true',
                             help="Allows you to pull distinct filenames.")
+        parser.add_argument('--version', dest='version', default=None, type=str, help="Set version tag.")
         group = parser.add_mutually_exclusive_group()
         group.add_argument('--skip', dest='skip', action='store_true', help='Skip downloading if file exists.')
         group.add_argument('--replace', dest='replace', action='store_true', help='Replace existing file.')
@@ -228,7 +228,7 @@ class PullHandler(BaseHandler):
         if isinstance(self.languages, (list, tuple, set)):
             languages.extend(self.languages)
         pull_command(self._curdir, config, languages=set(itertools.chain(*languages)),
-                     in_progress=self.in_progress, update_action=self.get_update_action(), force=self.force, custom=self.custom, bulk=self.bulk, workflow=self.workflow, distinct=self.distinct)
+                     in_progress=self.in_progress, update_action=self.get_update_action(), force=self.force, custom=self.custom, bulk=self.bulk, version=self.version, workflow=self.workflow, distinct=self.distinct)
 
 
 class PushHandler(BaseHandler):

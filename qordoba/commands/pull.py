@@ -95,7 +95,7 @@ def pull_bulk(api, src_to_dest_paths, dest_languages_page_ids, dest_languages_id
     log.info('Finished with bulk download. Saved in "qordoba-cli/qordoba/bulkDownload/"')
 
 
-def pull_command(curdir, config, force=False, bulk=False, workflow=False, distinct=False, files=(), languages=(),
+def pull_command(curdir, config, force=False, bulk=False, workflow=False, version=None, distinct=False, languages=(),
                  in_progress=False, update_action=None, custom=False, **kwargs):
     api = ProjectAPI(config)
     init_language_storage(api)
@@ -144,6 +144,10 @@ def pull_command(curdir, config, force=False, bulk=False, workflow=False, distin
                     dest_languages_page_ids.append(page['page_id'])
                     dest_languages_ids.append(language.id)
                     milestone = page_status['status']['id']
+                    version_tag  = page_status['version_tag']
+
+                    if str(version_tag) != str(version):
+                        continue
 
                     # when '--workflow' parameter is set, user can pick of which workflow files should be downloaded
                     if workflow:
