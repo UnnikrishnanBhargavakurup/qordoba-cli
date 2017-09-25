@@ -148,10 +148,13 @@ def get_qorignore(directory=None):
             qor_filename = directory + '.qorignore'
         else:
             qor_filename = directory + '/.qorignore'
-    with open(qor_filename) as file:
-        ignore_list = [line.rstrip() for line in file.readlines()]
-        file.close()
-        return ignore_list
+    try:
+        with open(qor_filename) as file:
+            ignore_list = [line.rstrip() for line in file.readlines()]
+            file.close()
+            return ignore_list
+    except IOError:
+        return
 
 def get_project_file_formats(config, default=None):
     try:

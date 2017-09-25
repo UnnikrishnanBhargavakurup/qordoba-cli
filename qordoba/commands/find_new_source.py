@@ -113,15 +113,19 @@ class FindNewSourceClass(BaseClass):
             framework = self.framework_detect(directory)
             for path, dirnames, filenames in os.walk(directory):
                 files.extend(os.path.join(path, name) for name in filenames)
-            files = [file for file in files if not any(path in file for path in blacklist_pattern)]
+            try:
+                files = [file for file in files if not any(path in file for path in blacklist_pattern)]
+            except TypeError:
+                # than .qorignore possibly empty
+                pass
 
         if os.path.isfile(directory):
             files.append(directory)
 
         if not files:
-            raise FilesNotFound('Files not found by pattern `{}`'.format(pattern))
+            raise FilesNotFound('Files not found by pattern `{}`'.format(directory))
 
-            file_source_pool = dict()
+        file_source_pool = dict()
         """Start applying the Strategies"""
         files_ignored = 0
         for file_path in files:
