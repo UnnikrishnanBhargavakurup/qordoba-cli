@@ -5,7 +5,6 @@ import os
 import sys
 import logging
 import itertools
-import pprint
 
 from abc import ABCMeta, abstractmethod
 
@@ -187,6 +186,7 @@ class PullHandler(BaseHandler):
     @classmethod
     def register(cls, *args, **kwargs):
         parser = super(PullHandler, cls).register(*args, **kwargs)
+        parser.add_argument('files', nargs='*', metavar='FILE', default=None, help="")
         parser.add_argument('--in-progress', dest='in_progress', action='store_true',
                             help='Allow to download not completed translations.')
         parser.add_argument('-l', '--languages', dest='languages', nargs='+', type=CommaSeparatedSet(),
@@ -204,6 +204,7 @@ class PullHandler(BaseHandler):
                             help="Force to download ALL files from a specific workflow step.")
         parser.add_argument('-d', '--distinct', dest='distinct', action='store_true',
                             help="Allows you to pull distinct filenames.")
+        parser.add_argument('--version', dest='version', default=None, type=str, help="Set version tag.")
         group = parser.add_mutually_exclusive_group()
         group.add_argument('--skip', dest='skip', action='store_true', help='Skip downloading if file exists.')
         group.add_argument('--replace', dest='replace', action='store_true', help='Replace existing file.')
@@ -228,8 +229,10 @@ class PullHandler(BaseHandler):
         languages = []
         if isinstance(self.languages, (list, tuple, set)):
             languages.extend(self.languages)
-        pull_command(self._curdir, config, languages=set(itertools.chain(*languages)),
-                     in_progress=self.in_progress, update_action=self.get_update_action(), force=self.force, custom=self.custom, bulk=self.bulk, workflow=self.workflow, workflow_all=self.workflow_all, distinct=self.distinct)
+
+        pull_command(self._curdir, config, files=self.files, languages=set(itertools.chain(*languages)),
+                     in_progress=self.in_progress, update_action=self.get_update_action(), force=self.force, custom=self.custom, bulk=self.bulk, version=self.version, workflow=self.workflow, workflow_all=self.workflow_all, distinct=self.distinct)
+
 
 class PushHandler(BaseHandler):
     name = 'push'
@@ -269,7 +272,6 @@ class ListHandler(BaseHandler):
 
         table = AsciiTable(rows).table
         print(table)
-
 
 class DeleteHandler(BaseHandler):
     name = 'delete'
