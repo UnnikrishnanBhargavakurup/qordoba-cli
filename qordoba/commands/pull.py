@@ -95,7 +95,7 @@ def pull_bulk(api, src_to_dest_paths, dest_languages_page_ids, dest_languages_id
     log.info('Finished with bulk download. Saved in "qordoba-cli/qordoba/bulkDownload/"')
 
 
-def pull_command(curdir, config, force=False, bulk=False, workflow=False, distinct=False, files=(), languages=(),
+def pull_command(curdir, config, force=False, bulk=False, workflow=False, workflow_all=None, distinct=False, files=(), languages=(),
                  in_progress=False, update_action=None, custom=False, **kwargs):
     api = ProjectAPI(config)
     init_language_storage(api)
@@ -133,10 +133,11 @@ def pull_command(curdir, config, force=False, bulk=False, workflow=False, distin
             pages_all = [pages_completed, ]
 
             # if workflow flag exists, enabled files will be pulled too
-            if workflow:
+            if workflow or workflow_all:
                 pages_enabled = api.page_search(language.id, status=[PageStatus.enabled, ])
                 pages_all = [pages_completed, pages_enabled]
 
+            milestone_all = None
             for pages in pages_all:
                 for page in pages:
                     is_started = True
@@ -146,16 +147,23 @@ def pull_command(curdir, config, force=False, bulk=False, workflow=False, distin
                     milestone = page_status['status']['id']
 
                     # when '--workflow' parameter is set, user can pick of which workflow files should be downloaded
-                    if workflow:
-                        log.info('For file {} and language {} pick workflow step'.format(format_file_name(page), language))
+                    if workflow or workflow_all:
                         milestones_resp = api.get_milestone(language.id, page_status['assignees'][0]['id'])
                         milestone_dict = dict()
                         for i in milestones_resp:
                             milestone_dict[i['name']] = i['id']
+                        if workflow:
+                            log.info('For file {} and language {} pick workflow step'.format(format_file_name(page),
+                                                                                             language))
+                            # takes the milestone answer from stdin
+                            pick = ask_select(MilestoneOptions().all(milestone_dict), prompt='Pick a milestone: ')
+                            milestone = milestone_dict[pick]
 
-                        # takes the milestone answer from stdin
-                        pick = ask_select(MilestoneOptions().all(milestone_dict), prompt='Pick a milestone: ')
-                        milestone = milestone_dict[pick]
+                        if workflow_all:
+                            if milestone_dict[workflow_all]:
+                                milestone = milestone_dict[workflow_all]
+                            else:
+                                log.info("The given Milestone `{}` does not exists in your project".format(workflow_all))
 
                     if in_progress:
                         log.debug(
@@ -234,6 +242,10 @@ def pull_command(curdir, config, force=False, bulk=False, workflow=False, distin
 
                         if workflow:
                             log.info('- note: pulls only from workflowstep  `{}` '.format(pick))
+                        if workflow_all:
+                            assert milestone_dict[workflow_all] == milestone
+                            log.info('- note: pulls only from workflowstep  `{}` '.format(workflow_all))
+
                         res = api.download_file(page_status['id'], language.id, milestone=milestone)
                         res.raw.decode_content = True  # required to decompress content
 
