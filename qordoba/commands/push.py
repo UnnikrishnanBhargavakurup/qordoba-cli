@@ -133,13 +133,11 @@ def update_file(api, path, remote_files, version=None):
 def find_directories(pattern):
     directory = pattern.split('/')
     del directory[-1]
-    directory = '/'.join(directory)
+    directory = '/'.join(directory) + '/'
     directory_list = list()
     directory_list.append(directory)
-    for root, dirs, files in os.walk(directory, topdown=False):
-        for name in dirs:
-            directory_list.append(os.path.join(root, name))
-    return directory_list
+    directory_listing = [x[0] for x in os.walk(directory)]
+    return directory_listing
 
 def final_push(project, curdir, pattern, api,  update, version, remote_content_type_codes):
 
@@ -163,7 +161,7 @@ def final_push(project, curdir, pattern, api,  update, version, remote_content_t
             upload_file(api, path, remote_content_type_codes, version=version)
 
 
-def push_command(curdir, config, update, directory, version=None, files=()):
+def push_command(curdir, config, update, version=None, files=()):
     api = ProjectAPI(config)
     project = api.get_project()
     remote_content_type_codes = project['content_type_codes']
@@ -183,11 +181,11 @@ def push_command(curdir, config, update, directory, version=None, files=()):
 
     for pattern in pattern_list:
         assert len(pattern_list) != 0
-        if directory:
-                pattern_extension = pattern.split('/')[-1]
-                directory_list = find_directories(pattern)
-                for dir_ in directory_list:
-                    dir_ = dir_ + '/' + pattern_extension
-                    final_push(project, curdir, dir_, api,  update, version, remote_content_type_codes)
+        if pattern[-2:] == '/*':
+            pattern_extension = pattern.split('/')[-1]
+            directory_list = find_directories(pattern)
+            for dir_ in directory_list:
+                dir_ = dir_ + '/' + pattern_extension
+                final_push(project, curdir, dir_, api,  update, version, remote_content_type_codes)
         else:
             final_push(project, curdir, pattern, api, update, version, remote_content_type_codes)
