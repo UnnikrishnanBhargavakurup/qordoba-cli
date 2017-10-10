@@ -40,6 +40,14 @@ class FileExtensionNotAllowed(Exception):
 
 class BaseClass(object):
 
+    def find_files_in_dir(self, dir_path):
+        for path in glob.iglob(dir_path):
+            if os.path.isdir(path):
+                continue
+
+            if os.path.isabs(path):
+                path = os.path.relpath(path, dir_path)
+
     def get_content_type_code(self, path):
         extension = path.split('.')[-1]
         if extension not in ALLOWED_EXTENSIONS:
@@ -59,10 +67,13 @@ class BaseClass(object):
 
     def convert(self, input):
         if isinstance(input, dict):
-            return {self.convert(key): self.convert(value) for key, value in input.iteritems()}
+            try:
+                return {self.convert(key): self.convert(value) for key, value in input.iteritems()}
+            except AttributeError:
+                return {self.convert(key): self.convert(value) for key, value in input.items()}
         elif isinstance(input, list):
             return [self.convert(element) for element in input]
-        elif isinstance(input, unicode):
+        elif isinstance(input, str) or isinstance(input, unicode):
             return input.encode('utf-8')
         else:
             return input

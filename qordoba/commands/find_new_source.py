@@ -3,7 +3,7 @@ from __future__ import unicode_literals, print_function
 import logging
 from qordoba.settings import get_qorignore
 from qordoba.strategies import Extension, Shebang, Filename
-from qordoba.classifier import Classifier
+# from qordoba.classifier import Classifier
 from qordoba.framework import Framework
 from qordoba.commands.i18n_base import BaseClass, FilesNotFound, FileExtensionNotAllowed
 

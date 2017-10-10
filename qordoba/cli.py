@@ -18,7 +18,9 @@ from qordoba.commands.pull import pull_command
 from qordoba.commands.push import push_command
 from qordoba.commands.status import status_command
 from qordoba.commands.find_new_source import FindNewSourceClass
-from qordoba.commands.find_new_string import FindNewStringClass
+from qordoba.commands.i18n_extract import i18nExtractClass
+from qordoba.commands.i18n_generate import i18nGenerateClass
+from qordoba.commands.i18n_execute import i18nExecutionClass
 from qordoba.commands.i18n_find import FindClass
 from qordoba.commands.i18n_rm import RemoveClass
 from qordoba.commands.i18n_mv import MoveClass
@@ -295,7 +297,15 @@ class DeleteHandler(BaseHandler):
         config = self.load_settings()
         delete_command(self._curdir, config, self.file, force=self.force)
 
+"""
+The StringExtractor classes start here and are as follows:
+FindNewSourceHandler: Finds for each given file the source language and  the framework for the entire project
+i18nExtractHandler: Extracts all StringLiterals from files and stores them in an csv report
+i18nGenerateHandler: validates if report is valid. takes StringLiterals as Values, checks for existing keys and generates new keys. Results are added to report
+i18nExecuteHandler: validates if report is valid. takes keys and replaces them in code through generated Keys of Csv file. Adds key: value to JSON localization files
 
+everything should be added in a way that when executed and fails, can easly go back to starting point
+"""
 class FindNewSourceHandler(BaseHandler):
     name = 'find-new-source'
     help = """
@@ -312,24 +322,67 @@ class FindNewSourceHandler(BaseHandler):
     def main(self):
         FindNewSourceClass().find_new_source_command(self._curdir, directory=self.directory, output=self.output)
 
-class FindNewStringHandler(BaseHandler):
-    name = 'find-new-string'
+class i18nExtractHandler(BaseHandler):
+    name = 'i18n-extract'
     help = """
     Use the find-new command to extract all String from your project.
     """
 
     @classmethod
     def register(cls, *args, **kwargs):
-        parser = super(FindNewStringHandler, cls).register(*args, **kwargs)
+        parser = super(i18nExtractHandler, cls).register(*args, **kwargs)
         fix_parser_titles(parser)
         parser.set_defaults(_handler=cls)
-        parser.add_argument('-r', '--run', dest='run', action='store_true', help="Will finally execute the move command")
         parser.add_argument("-d", "--directory", type=str, required=True)
         parser.add_argument("-o", "--output", type=str, required=True)
+
+    def main(self):
+        i18nExtractClass().extract(self._curdir, directory=self.directory, output=self.output)
+
+class i18nGenerateHandler(BaseHandler):
+    name = 'i18n-generate'
+    help = """
+    Use the find-new command to extract all String from your project.
+    """
+
+    @classmethod
+    def register(cls, *args, **kwargs):
+        parser = super(i18nGenerateHandler, cls).register(*args, **kwargs)
+        fix_parser_titles(parser)
+        parser.set_defaults(_handler=cls)
+        parser.add_argument("-r", "--report", type=str, required=True)
         parser.add_argument("-l", "--localization", type=str, required=False)
 
     def main(self):
-        FindNewStringClass().find_new_string(self._curdir, run=self.run, directory=self.directory, output=self.output, localization=self.localization)
+        i18nGenerateClass().generate(self._curdir, report=self.report, localization=self.localization)
+
+class i18nExecuteHandler(BaseHandler):
+    name = 'i18n-execute'
+    help = """
+    Use the find-new command to extract all String from your project.
+    """
+
+    @classmethod
+    def register(cls, *args, **kwargs):
+        parser = super(i18nExecuteHandler, cls).register(*args, **kwargs)
+        fix_parser_titles(parser)
+        parser.set_defaults(_handler=cls)
+        parser.add_argument("-r", "--report", type=str, required=True)
+        parser.add_argument("-d", "--directory", type=str, required=True)
+        parser.add_argument("-o", "--output", type=str, required=True)
+
+    def main(self):
+        i18nExecutionClass().execute(self._curdir, report=self.report, directory=self.directory, output=self.output)
+
+
+
+"""
+- RemoveHandler
+- FindHandler
+- MoveHandler
+are executed on localization Files. 
+They are used at a later stage in the localization process, to rename, delete or find values or keys within LocalizationFiles
+"""
 
 class i18n_RemoveHandler(BaseHandler):
     name = 'i18n-rm'
@@ -412,8 +465,12 @@ def parse_arguments():
     PushHandler.register(subparsers, **args)
     ListHandler.register(subparsers, **args)
     DeleteHandler.register(subparsers, **args)
+
     FindNewSourceHandler.register(subparsers, **args)
-    FindNewStringHandler.register(subparsers, **args)
+    i18nGenerateHandler.register(subparsers, **args)
+    i18nExtractHandler.register(subparsers, **args)
+    i18nExecuteHandler.register(subparsers, **args)
+
     i18n_FindHandler.register(subparsers, **args)
     i18n_RemoveHandler.register(subparsers, **args)
     i18n_MoveHandler.register(subparsers, **args)

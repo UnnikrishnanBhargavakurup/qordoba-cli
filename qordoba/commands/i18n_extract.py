@@ -4,12 +4,11 @@ from qordoba.commands.i18n_base import BaseClass, IGNOREFILES
 import logging
 import pprint
 from subprocess import Popen,PIPE
-from qordoba.commands.find_new_converter import FindNewConverter
 
 pp = pprint.PrettyPrinter(indent=4)
 log = logging.getLogger('qordoba')
 
-class FindNewStringClass(BaseClass):
+class i18nExtractClass(BaseClass):
     """
     The FindNewString class is created to find StringLiterals within a project directory (currently python, Scala)
     input: Directory of the files to be converted
@@ -18,9 +17,9 @@ class FindNewStringClass(BaseClass):
     when the stringLiterals are found, it will run through the project and
     """
 
-    def find_new_string(self, curdir, run=False, directory=None, output=None, localization=False):
+    def extract(self, curdir, run=False, directory=None, output=None):
         log.info('\b')
-        log.info( " Loading Data from Outer Space")
+        log.info( " Loading Data from Outer Space" + '\b')
         log.info('\b')
         log.info("       ... "+ u"\U0001F4E1"+" ...")
         log.info('\b')
@@ -33,9 +32,16 @@ class FindNewStringClass(BaseClass):
         log.info(Process.communicate())
 
         log.info('\b')
+
+        import pandas as pd
+        import os
+        if output[:-1] == '/':
+            file_path = output + 'string-literal.csv'
+        else:
+            file_path = output + '/' + 'string-literals.csv'
+
+        df_file = pd.read_csv(file_path, sep=',', names=['filename', 'startLineNumber', 'startCharIdx', 'endLineNumber', 'endCharIdx', 'text'])
+        os.remove(file_path)
+        df_file.to_csv(file_path, encoding='utf-8', index=False)
         log.info('Extraction completed. All exported Strings can be found within the ' + u"\U0001F4C1" + ' file `string-literal.csv`')
         log.info('\b')
-
-        if localization:
-            converter = FindNewConverter()
-            converter.main(output + '/string-literals.csv', localization, output)
