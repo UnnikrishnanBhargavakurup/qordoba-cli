@@ -128,7 +128,7 @@ class i18nGenerateClass(BaseClass):
     def generate(self, _curdir, report=None, localization=None):
 
         for filename in os.listdir(report):
-            
+
             """!!!!! toDo: validate csv report"""
 
             if not filename.endswith(".csv"):
