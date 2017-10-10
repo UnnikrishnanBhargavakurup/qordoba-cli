@@ -372,9 +372,7 @@ class i18nExecuteHandler(BaseHandler):
         parser.add_argument("-o", "--output", type=str, required=True)
 
     def main(self):
-        i18nExecutionClass().execute(self._curdir, report=self.report, directory=self.directory, output=self.output)
-
-
+        i18nExecutionClass().execute(report=self.report, directory=self.directory, output=self.output)
 
 """
 - RemoveHandler
