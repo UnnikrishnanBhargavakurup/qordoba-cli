@@ -134,6 +134,9 @@ class i18nGenerateClass(BaseClass):
             if not filename.endswith(".csv"):
                 continue
             filename_path = report + '/' + filename
+            if not validate_report :
+                raise ""
+
             df = pd.read_csv(filename_path, header=0)
             # converting StringLiterals to pure strings
             (df.text) = (df.text).apply(lambda x: x.replace('"', ''))

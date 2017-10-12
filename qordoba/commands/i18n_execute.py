@@ -79,8 +79,12 @@ class i18nExecutionClass(BaseClass):
             return file_array
 
     def execute(self, report, directory, output):
+        output = str(output).strip()
+        directory = str(directory).strip()
         if report[-1] == '/':
             report = report[:-1]
+        if output[-1] == '/':
+            output = output[:-1]
 
         reports = self.get_files_in_Dir(report)
         reports_file_path = [report + '/' + x for x in reports if x.endswith('.csv')]

@@ -4,6 +4,8 @@ from collections import OrderedDict
 import os
 import yaml, csv, json
 import datetime
+import pandas as pd
+
 
 log = logging.getLogger('qordoba')
 
@@ -37,8 +39,22 @@ class FileExtensionNotAllowed(Exception):
     The file extension doesn't match any file format allowed for this project
     """
 
+class ReportNotValid(Exception):
+    """
+    Files not found
+    """
 
 class BaseClass(object):
+
+    def validate_report(self, file_path, keys=False):
+        df = pd.read_csv(file_path)
+
+        if not keys:
+            print(df.columns)
+            raise ReportNotValid("The given report is not valid. ")
+        else:
+            print(df.columns)
+            raise ReportNotValid("The given report is not valid. ")
 
     def get_files_in_Dir(self, report):
         files=list()

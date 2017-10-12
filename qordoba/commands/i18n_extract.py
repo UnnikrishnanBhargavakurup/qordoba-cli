@@ -17,18 +17,27 @@ class i18nExtractClass(BaseClass):
     when the stringLiterals are found, it will run through the project and
     """
 
-    def extract(self, curdir, run=False, directory=None, output=None):
+    def extract(self,directory, output):
+
+        directory = str(directory).strip()
+        output = str(output).strip()
+        if directory[-1] == '/':
+            directory = directory[:-1]
+        if output[-1] == '/':
+            output = output[:-1]
+
+
         log.info('\b')
-        log.info( " Loading Data from Outer Space" + '\b')
+        log.info( " loading data from outer space ..." + '\b')
         log.info('\b')
         log.info("       ... "+ u"\U0001F4E1"+" ...")
         log.info('\b')
         log.info("       ... "+ u"\U0001F4E1"+" ...")
         log.info('\b')
-        log.info("Strings are now being exported from your files")
+        log.info("strings are now being exported from your files")
         log.info('\b')
 
-        Process = Popen('../string-extractor/bin/start-container.sh %s %s' % (str(directory), str(output),), shell=True)
+        Process = Popen('../string-extractor/bin/start-container.sh %s %s' % (directory, output), shell=True)
         log.info(Process.communicate())
 
         log.info('\b')

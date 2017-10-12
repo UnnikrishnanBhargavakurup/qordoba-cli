@@ -337,7 +337,7 @@ class i18nExtractHandler(BaseHandler):
         parser.add_argument("-o", "--output", type=str, required=True)
 
     def main(self):
-        i18nExtractClass().extract(self._curdir, directory=self.directory, output=self.output)
+        i18nExtractClass().extract(directory=self.directory, output=self.output)
 
 class i18nGenerateHandler(BaseHandler):
     name = 'i18n-generate'
@@ -367,8 +367,8 @@ class i18nExecuteHandler(BaseHandler):
         parser = super(i18nExecuteHandler, cls).register(*args, **kwargs)
         fix_parser_titles(parser)
         parser.set_defaults(_handler=cls)
-        parser.add_argument("-r", "--report", type=str, required=True)
         parser.add_argument("-d", "--directory", type=str, required=True)
+        parser.add_argument("-r", "--report", type=str, required=True)
         parser.add_argument("-o", "--output", type=str, required=True)
 
     def main(self):
