@@ -34,9 +34,14 @@ class i18nExecutionClass(BaseClass):
                     idx_start = v['startLineNumber'] - 1
                     idx_end = v['endLineNumber'] - 1
                     picked_lines = file_array[idx_start:idx_end]
-                    print('START')
-                    print(picked_lines)
-                    print(v['startLineNumber'], v['endLineNumber'])
+                    joined_lines = '\n'.join(picked_lines)
+                    joined_lines = joined_lines.replace("'" + v['text'] + "'", "${" + v['generated_keys'] + "}")
+                    joined_lines = joined_lines.replace('"' + v['text'] + '"', "${" + v['generated_keys'] + "}")
+                    file_array[idx_end] = joined_lines
+                    for i in range(idx_start, idx_end):
+                        file_array[i] = None
+
+            return file_array
 
 
         # Python 3
@@ -55,18 +60,13 @@ class i18nExecutionClass(BaseClass):
                     idx_end = v['endLineNumber'] - 1
                     picked_lines = file_array[idx_start:idx_end]
                     joined_lines = '\n'.join(picked_lines)
-                    print('START')
-                    print(joined_lines)
-                    print(picked_lines)
-                    print(v['startLineNumber'], v['endLineNumber'])
-                    print(v['text'])
-                    picked_line = picked_lines.replace("'" + v['text'] + "'", "${" + v['generated_keys'] + "}")
-                    picked_line = picked_lines.replace('"' + v['text'] + '"', "${" + v['generated_keys'] + "}")
-                    file_array[idx_end] = picked_line
+                    joined_lines = joined_lines.replace("'" + v['text'] + "'", "${" + v['generated_keys'] + "}")
+                    joined_lines = joined_lines.replace('"' + v['text'] + '"', "${" + v['generated_keys'] + "}")
+                    file_array[idx_end] = joined_lines
                     for i in range(idx_start, idx_end):
                         file_array[i] = None
 
-                return file_array
+            return file_array
 
 
 
@@ -104,12 +104,15 @@ class i18nExecutionClass(BaseClass):
 
                 # remove old file, dump new
                 # os.remove(project_file_path)
-                project_file_path_new = directory + '/new_w_keys.html'
+                a = file_in_report[11:]
+                ext = a.split(".")[-1]
+                file = a.split(".")[0]
+                print(ext)
+                project_file_path_new = directory + file + "_NEW." + ext
                 Html_file = open(project_file_path_new, "w")
                 Html_file.write("\n".join(new_file_array))
                 Html_file.close()
                 # with open(project_file_path, "w") as new_file:
                 #     new_file.write("\n".join(new_file_array))
-
 
         #create localization file in output folder
