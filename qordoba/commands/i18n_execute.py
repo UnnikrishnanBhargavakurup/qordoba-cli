@@ -2,6 +2,10 @@ from qordoba.commands.i18n_base import BaseClass
 import pandas as pd
 import os
 
+class ReportNotValid(Exception):
+    """
+    Files not found
+    """
 
 class i18nExecutionClass(BaseClass):
     '''
@@ -78,8 +82,9 @@ class i18nExecutionClass(BaseClass):
 
             return file_array
 
-    def execute(self, report, directory, output):
+    def execute(self, curdir, report, directory, output):
         output = str(output).strip()
+        report = str(report).strip()
         directory = str(directory).strip()
         if report[-1] == '/':
             report = report[:-1]
@@ -89,6 +94,9 @@ class i18nExecutionClass(BaseClass):
         reports = self.get_files_in_Dir(report)
         reports_file_path = [report + '/' + x for x in reports if x.endswith('.csv')]
         for report_path in reports_file_path:
+
+            if not self.validate_report(report_path, keys=True):
+                raise ReportNotValid("The given report is not valid. ")
 
             df_nan = pd.read_csv(report_path)
             df = df_nan.where((pd.notnull(df_nan)), None)
@@ -103,7 +111,6 @@ class i18nExecutionClass(BaseClass):
                 df_single_file = df[df.filename == file_in_report]
                 df_to_dict = df_single_file.T.to_dict()
                 file_array = self.get_filerows_as_list(project_file_path)
-                print(file_array)
                 new_file_array = self.replace_strings_for_keys(df_to_dict, file_array)
                 new_file_array = [x for x in new_file_array if x != None]
 
@@ -128,7 +135,6 @@ class i18nExecutionClass(BaseClass):
             del df['endLineNumber']
             del df['endCharIdx']
             del df['existing_localization_file']
-            print(df.columns)
             json_dump = dict()
             for index, row in df.iterrows():
                 if row['existing_keys'] is not None:

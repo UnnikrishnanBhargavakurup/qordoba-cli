@@ -372,7 +372,7 @@ class i18nExecuteHandler(BaseHandler):
         parser.add_argument("-o", "--output", type=str, required=True)
 
     def main(self):
-        i18nExecutionClass().execute(report=self.report, directory=self.directory, output=self.output)
+        i18nExecutionClass().execute(self._curdir, report=self.report, directory=self.directory, output=self.output)
 
 """
 - RemoveHandler
@@ -428,7 +428,7 @@ class i18n_MoveHandler(BaseHandler):
         parser = super(i18n_MoveHandler, cls).register(*args, **kwargs)
         fix_parser_titles(parser)
         parser.set_defaults(_handler=cls)
-        parser.add_argument('-r', '--run', dest='run', action='store_true', help="Will finally execute the move command")
+        # parser.add_argument('-r', '--run', dest='run', action='store_true', help="Will finally execute the move command")
         parser.add_argument('-em', '--exact_match', dest='exact_match', action='store_true', help="Only exact matches of keys will be changed.")
         parser.add_argument("-s", "--source", type=str, required=True)
         parser.add_argument("-t", "--target", type=str, required=True)
