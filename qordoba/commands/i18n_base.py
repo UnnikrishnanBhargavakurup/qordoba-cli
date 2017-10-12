@@ -40,13 +40,11 @@ class FileExtensionNotAllowed(Exception):
 
 class BaseClass(object):
 
-    def find_files_in_dir(self, dir_path):
-        for path in glob.iglob(dir_path):
-            if os.path.isdir(path):
-                continue
-
-            if os.path.isabs(path):
-                path = os.path.relpath(path, dir_path)
+    def get_files_in_Dir(self, report):
+        files=list()
+        for file_ in os.listdir(report):
+            files.append(file_)
+        return files
 
     def get_content_type_code(self, path):
         extension = path.split('.')[-1]
