@@ -1,0 +1,638 @@
+/*
+* Reusable Form component that will validate non-hidden inputs and textareas
+*
+* Ensure you have HTML in the structure of /plans/enterprise/contact
+*
+* All form fields are required by default and will show an error message on submit if the input
+* has no value.
+* To make an input or textarea optional, give it a class of ${optional}
+*
+* If you would want specific types of validation, the CFJS.Validation class will be used to bind the
+* respective validation type to HTML elements with a data attribute. As an example,
+*
+* data-validation-type="email" will use the CFJS.Validation.email validation method
+*/
+
+CFJS.Form = function(el) {
+  var $el = $(el);
+  var formElementsToValidate = $el.find('input.marketing-form-input__field, textarea.marketing-form-input__field, select.marketing-form-input__field').not(':hidden');
+  var formSubmitElement = 'button[type="button"]';
+  var formProcessingMsg = 'Submitting Form...';
+  var formSubmitDisabledWhileAjax = false;
+  var $submitMessage = $('#js-form__submit-msg');
+
+  var GATracker = '972248548';
+
+  var formRecords = [{
+    "record": "1",
+    "details": {
+      "name": "Enterprise Service Request",
+      "url":"/plans/enterprise/contact",
+      "conversioncode": "caqvCO3e32EQ5KvNzwM"
+    }
+  }, {
+    "record": "2",
+    "details": {
+      "name": "Under Attack Hotline Request",
+      "url": "/under-attack-hotline",
+      "conversioncode": "caqvCO3e32EQ5KvNzwM"
+    }
+  }, {
+    "record": "3",
+    "details": {
+      "name": "Enterprise Free Trial Request",
+      "url":"/enterprise-free-trial",
+      "conversioncode": "caqvCO3e32EQ5KvNzwM"
+    }
+  }, {
+    "record": "4",
+    "details": {
+      "name": "Partners Enterprise Deal Registration Form",
+      "url": "/partners/become-a-partner",
+    }
+  }, {
+    "record": "5",
+    "details": {
+      "name": "Forrester Report Gated Download",
+      "url": "/forrester-wave-ddos-services-providers",
+      "conversioncode": "caqvCO3e32EQ5KvNzwM"
+    }
+  }, {
+    "record": "6",
+    "details": {
+      "name": "YCombinator",
+      "url": "/yc",
+      "conversioncode": "4LHlCKyLgwkQ5KvNzwM"
+    }
+  }, {
+    "record": "7",
+    "details": {
+      "name": "Galileo",
+      "url": "/galileo"
+    }
+  }, {
+    "record": "8",
+    "details": {
+      "name": "Certified Partners Form",
+      "url": "/partners/become-a-partner/"
+    }
+  }, {
+    "record": "9",
+    "details": {
+      "name": "LP DDOS Request",
+      "url":"/lp/ddos",
+      "conversioncode": "caqvCO3e32EQ5KvNzwM"
+    }
+  }, {
+    "record": "10",
+    "details": {
+      "name": "Community Bank White Paper",
+      "url":"/security-compliance-for-banks/",
+      "conversioncode": "caqvCO3e32EQ5KvNzwM"
+    }
+  }, {
+    "record": "11",
+    "details": {
+      "name": "LP SECTOR FINANCIAL",
+      "url":"/lp/sector/financial",
+      "conversioncode": "caqvCO3e32EQ5KvNzwM"
+    }
+  }, {
+    "record": "12",
+    "details": {
+      "name": "LP network China",
+      "url": "/lp/network/china",
+      "conversioncode": "caqvCO3e32EQ5KvNzwM"
+    }
+  }, {
+    "record": "13",
+    "details": {
+      "name": "Internet of Things",
+      "url": "/internet-of-things",
+      "conversioncode": "caqvCO3e32EQ5KvNzwM"
+    }
+  }, {
+    "record": "14",
+    "details": {
+      "name": "LP Whitepaper Download",
+      "url": "/ecommerce-site-performance-security",
+      "conversioncode": "caqvCO3e32EQ5KvNzwM"
+    }
+  }];
+
+  if (formElementsToValidate.length === 0) {
+    console.error('Cannot find any inputs for ' + el);
+  }
+
+  var $intlPhoneSelector = $('#input-Phone-Intl-Test-Only');
+
+  var getFormSuccessMessage = function() {
+    return $el.data("success-msg");
+  };
+
+  var showFieldsAsFilled = function() {
+    $('.marketing-form-input .marketing-form-input__field').each(function() {
+      var inputEl = $(this);
+
+      if(inputEl.val().trim() !== '') {
+        $(inputEl.parentNode).addClass('marketing-form-input--filled');
+      }
+
+      inputEl.bind('focus', onInputFocus);
+      inputEl.bind('blur', onInputBlur);
+    });
+  };
+
+  var disableSubmitButton = function(buttonElementEventTarget) {
+    $(formSubmitElement).prop('disabled', true);
+  };
+
+  var enableSubmitButton = function(buttonElementEventTarget) {
+    $(formSubmitElement).prop('disabled', false);
+  };
+
+  // For editing parameters in dataJSON
+  var removeParam = function(key, myDataJSON) {
+    var param,
+        params_arr = [],
+        queryString = myDataJSON;
+
+    if (queryString !== "") {
+        params_arr = queryString.split("&");
+        for (var i = params_arr.length - 1; i >= 0; i -= 1) {
+            param = params_arr[i].split("=")[0];
+            if (param === key) {
+                params_arr.splice(i, 1);
+            }
+        }
+        rtn = params_arr.join("&");
+    }
+    return rtn;
+};
+
+  var openVideoModal = function() {
+    // Assuming there's only one video modal on the page
+    // Need to Load /js/pages/vimeo-player-modal.js on page and add id "vimeo-frame" to iframe
+    // Add an empty with class "video-replay-container" somewhere on the page for the replay link to show up
+    if ($('.js-lp-video-modal').length) {
+      $('.js-lp-video-modal').modal();
+
+      var player = new Vimeo.Player($('#vimeo-frame'));
+
+      player.on('loaded', function(){
+        this.play();
+      });
+
+      // If replay link exists, don't add another one
+      var replayLinkExists = $(".video-replay").length;
+
+      if(!replayLinkExists) {
+        $('.video-replay-container').append(
+          $('<a href="#" class="video-replay">Click here to replay video!</a>').click(function() {
+            openVideoModal();
+          })
+        );
+      }
+    } else {
+      console.log("Error: Video modal does not exist.");
+    }
+  };
+
+  var bindSubmitButton = function() {
+    // This method binds the submit button to submit to Marketo
+    $(formSubmitElement).bind('click', function(e){
+      e.preventDefault();
+      var $submitButton = e.currentTarget;
+      // Lose focus on submit button to keep original styles
+      $(this).blur();
+
+      // Validate all required form fields
+      if (inputsAreValid()) {
+        // All form fields have been validated, continue with Ajax request
+        if (!formSubmitDisabledWhileAjax) {
+          // Prevent user from clicking the submit button multiple times
+          formSubmitDisabledWhileAjax = true;
+          disableSubmitButton();
+
+          $(formSubmitElement).text(formProcessingMsg);
+
+          CFJS.Helpers.traceData().then(function() {
+            var CommentCaptureField = $('#input-CommentCapture');
+            //Get full number from intlTelInput field
+            //
+            $intlPhoneSelector.val($intlPhoneSelector.intlTelInput("getNumber"));
+            var dataJSON = $el.find(":input").not(CommentCaptureField).serialize();
+
+            // Append additional fields to request
+            dataJSON += "&LIC=" + (userLoggedIn || "");
+            dataJSON += "&CountryCode=" + (traceDataObj['loc'] || "");
+            dataJSON += "&gclid=" + CFJS.Analytics.getGclid();
+            dataJSON += "&munchkin_value=" + encodeURIComponent(_getCookieValue("_mkto_trk"));
+
+            // Get value of Platform and set variables accordingly
+            // Should be one of two values
+            // SF = Salesforce
+            // MK = Marketo
+            var platformName = $('#PlatformName').val();
+            var endpointURL = '';
+
+            if (platformName === 'MK') {
+              endpointURL = '/ajax/marketo-submit.html';
+
+              // Append additional utm fields for marketo forms only
+              dataJSON += "&utmcampaign=" + encodeURIComponent(CFJS.Tools.getUrlParameter("utm_campaign"));
+              dataJSON += "&utmsource=" + encodeURIComponent(CFJS.Tools.getUrlParameter("utm_source"));
+              dataJSON += "&utmmedium=" + encodeURIComponent(CFJS.Tools.getUrlParameter("utm_medium"));
+              dataJSON += "&utmcontent=" + encodeURIComponent(CFJS.Tools.getUrlParameter("utm_content"));
+
+              // Add Special logic for name fields
+              var firstName = $el.find("[name='FirstName']").val();
+              var lastName = $el.find("[name='LastName']").val();
+
+              if (firstName && lastName) {
+                // Add the two together with a space and submit as Name field
+                var combinedName = firstName + " " + lastName;
+                dataJSON += "&Name=" + combinedName;
+              }
+
+            } else if (platformName === 'SF') {
+              endpointURL = '/ajax/er-submit.html';
+            } else if (platformName === 'PR') {
+              // Partner request
+              endpointURL = '/api/v2/marketing/host_req';
+            } else if (platformName === 'YC') {
+              endpointURL = '/ajax/yc-submit.html';
+            } else if (platformName === 'GL') {
+              endpointURL = '/ajax/galileo-submit.html';
+            } else if (platformName === 'SFWL') {
+              endpointURL = 'https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8';
+            } else {
+              console.error('No form endpoint specified. Please specify an endpoint URL.');
+            }
+
+            // Replace %20 with + to create application/x-www-form-urlencoded string as suggested here:
+            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent
+            if (CommentCaptureField.length) {
+              var defaultCommentCapture = CommentCaptureField.data('input-default');
+              // data-input-default EXISTS
+              if (defaultCommentCapture) {
+                // If the user DOES NOT have input in the CommentCapture field
+                if (CommentCaptureField.val().length === 0) {
+                  dataJSON += "&CommentCapture=" + encodeURIComponent(defaultCommentCapture).replace(/%20/g, "+");
+                } else {
+                  // If user DOES have input in the CommentCapture field
+                  var CommentCaptureFieldVal = encodeURIComponent(CommentCaptureField.val()).replace(/%20/g, "+");
+                  dataJSON += "&CommentCapture=" + CommentCaptureFieldVal;
+                }
+              } else {
+                // data-input-default DOES NOT EXIST
+                if (CommentCaptureField.val().length > 0) {
+                  // If user DOES have input in the CommentCapture field
+                  var CommentCaptureFieldVal = encodeURIComponent(CommentCaptureField.val()).replace(/%20/g, "+");
+                  dataJSON += "&CommentCapture=" + CommentCaptureFieldVal;
+                } else {
+                  // If user DOES NOT have input in the CommentCapture field
+                  dataJSON += "&CommentCapture=";
+                }
+              }
+            }
+
+            // Get form record value, and use it to get Analytics values
+            // name and url are required if you wish to track a form
+            var formRecordValue = $('#FormRecord').val();
+            var specialAction = $('#SpecialAction').val();
+
+            if (specialAction === "HostingPartnerForm") {
+              var $typeOfBusiness = $('#TypeOfBusiness');
+              var type_of_business = ($typeOfBusiness.val() === 'other') ? $('#TypeOfBusinessOther').val() : $typeOfBusiness.val();
+              dataJSON += "&type_of_business=" + type_of_business;
+            }
+
+            if (specialAction === "PartnerResellerForm") {
+              var $partnerTypeSelect = $('#PartnerBusinessType');
+              if ($partnerTypeSelect.val() === 'other') {
+                var partnerBusinessType = $('#input-TypeOfBusinessOtherRow').val();
+                var tempJSON = removeParam("PartnerBusinessType", dataJSON);
+                dataJSON = tempJSON;
+                dataJSON += "&PartnerBusinessType=" + partnerBusinessType;
+              }
+
+            }
+
+            if (specialAction === "DownloadPDF") {
+              // Expecting these files to be at this path
+              var downloadUrl = "/media/pdf/" + $("#SpecialAction").data("download") + ".pdf";
+            }
+
+            if (specialAction === "LinkToPage") {
+              var linkToUrl = $("#SpecialAction").data("link");
+            }
+
+            if (platformName === 'SFWL') {
+              // The following AJAX call will trigger a single origin policy error, but Salesforce will still accept and process the lead submission
+              $.ajax({
+                type: 'POST',
+                url: endpointURL,
+                data: dataJSON,
+                error: function (xhr, status, error) {
+                  // Trigger success even on error due to SOP
+                  formSubmitDisabledWhileAjax = false;
+                  enableSubmitButton();
+
+                  showFormSuccessMsg();
+                  CFJS.Analytics.trackEvent('Onboarding', 'Partners Enterprise Deal Registration Form', 'Error Successful');
+                  console.log(xhr);
+                },
+                success: function (json, status, xhr) {
+                  formSubmitDisabledWhileAjax = false;
+                  enableSubmitButton();
+
+                  showFormSuccessMsg();
+                  CFJS.Analytics.trackEvent('Onboarding', 'Partners Enterprise Deal Registration Form', 'Successful');
+                }
+              });
+            } else {
+              $.ajax({
+                type: 'POST',
+                url: endpointURL,
+                dataType: 'json',
+                data: dataJSON,
+                error: function (errorResponse) {
+                  formSubmitDisabledWhileAjax = false;
+                  enableSubmitButton();
+
+                  var errorMsg = '<div class="marketing-form__messages"><p class="general-error">We are currently experiencing issues with submitting your requests. Please contact Sales at 1-888-993-5273 or <a href="mailto:sales@cloudflare.com">sales@cloudflare.com</a>.</p></div>';
+                  var galileoErrorMsg = '<div class="marketing-form__messages"><p class="general-error">We are currently experiencing issues with submitting your requests. Please contact us at 1-888-993-5273 or <a href="mailto:galileo-requests@cloudflare.com">galileo-requests@cloudflare.com</a>.</p></div>';
+
+                  if(platformName === 'GL') {
+                    $el.append(galileoErrorMsg);
+                  } else {
+                    $el.append(errorMsg);
+                  }
+
+                },
+                 success: function (json, status, xhr) {
+                  formSubmitDisabledWhileAjax = false;
+                  enableSubmitButton();
+
+                  if (json && json.result && json.result == 'success') {
+                    window['optimizely'] = window['optimizely'] || [];
+                    window.optimizely.push(["trackEvent", "enterprise_form_success"]);
+
+                    // Analytics
+                    if (formRecordValue) {
+                      for (var i = 0; i < formRecords.length; i++) {
+                        if (formRecords[i].record === formRecordValue) {
+                          var formRecordDetails = formRecords[i].details;
+                          var formEventName = formRecordDetails.name;
+                          var submissionURL = formRecordDetails.url;
+
+                          // Track it here
+                          CFJS.Analytics.trackEvent('Onboarding', formEventName, 'Successful');
+                          // count a fake page view on successful submission (to setup a funnel)
+                          CFJS.Analytics.trackPageView(submissionURL + '-submission-success');
+
+                          if (formRecordDetails.conversioncode) {
+                            var conversionCode = formRecordDetails.conversioncode;
+                            // Google Lead Gen Conversion
+                            CFJS.Analytics.trackConversion(GATracker, conversionCode);
+                          }
+                        }
+                      }
+                    }
+                    // Always track Bing Conversion
+                    CFJS.Analytics.trackContactBingConversion();
+
+                    if (specialAction === 'DownloadPDF') {
+                      showFormSuccessMsg(downloadUrl, customDownloadText);
+                    } else if (specialAction === 'LinkToPage') {
+                      showFormSuccessMsg();
+                      setTimeout(function () {
+                        window.location.href = linkToUrl;
+                      }, 1500);
+                    } else if (specialAction === 'OpenVideoModal') {
+                      showFormSuccessMsg();
+                      openVideoModal();
+                    }
+                    else {
+                      showFormSuccessMsg();
+                    }
+                  } else if (json && json.result && json.result == 'error') {
+                    $el.append('<div class="marketing-form__messages"><p class="general-error">The server returned an error: ' + (json.msg || "Unable to submit form. Check field input and try again.") + ' </p></div>');
+
+                    if (formRecordValue) {
+                      for (var i = 0; i < formRecords.length; i++) {
+                        if (formRecords[i].record === formRecordValue) {
+                          var formRecordDetails = formRecords[i].details;
+                          var formEventName = formRecordDetails.name;
+
+                          CFJS.Analytics.trackEvent('Onboarding', formEventName, 'Submission Errors');
+                        }
+                      }
+                    }
+
+                  } else {
+                    $el.append('<div class="marketing-form__messages"><p class="general-error">A server error occured.</p><p class="general-error">Please refresh and try again.</p></div>');
+                  }
+                }
+              });
+            }
+          });
+        }
+      }
+    });
+  };
+
+  var init = function() {
+    checkAndSetGclid();
+    bindValidateFormElements();
+    bindIntlTelInputPhonePicker();
+    showFieldsAsFilled();
+    bindSubmitButton();
+  };
+
+  var _resolveValue = function(target) {
+    if(target.attr('type') == 'checkbox') {
+      return target.is(':checked');
+    } else {
+      return target.val();
+    }
+  };
+
+  var onInputFocus = function(e) {
+    $(e.target.parentNode).addClass('marketing-form-input--filled');
+  };
+
+  var onInputBlur = function(e) {
+    if(e.target.value.trim() === '' ) {
+      $(e.target.parentNode).removeClass('marketing-form-input--filled');
+    }
+  };
+
+  var _validationCheck = function(formElementTarget, thisContext) {
+    var targetValue = _resolveValue($(thisContext));
+
+    // Check the targets data-validation-type, and use that validation from CFJS validations
+    var validationType = formElementTarget.data('validation-type');
+    var validInputType;
+
+    // If the input is not optional, check to ensure it has a value
+    // TODO CHANGE THIS TO A DATA ATTRIBUTE
+    if (!formElementTarget.data('validation-optional')) {
+      var valid;
+
+      if ($(formElementTarget).data('validation-type') === 'phone') {
+        //Input is an international phone number, so validation is handled by the intlTelInput library
+        valid = $(formElementTarget).intlTelInput("isValidNumber");
+        $(formElementTarget).parents('.marketing-form-input').toggleClass('marketing-form-input--error', !valid);
+      } else {
+        //Input is of any other type
+        valid = CFJS.Validation.hasValue(targetValue);
+        $(formElementTarget).parent().toggleClass('marketing-form-input--error', !valid);
+      }
+    }
+
+    /*
+    * If there is a validation-type data attribute, check for that specific validation from
+    * the CFJS Validation class
+    */
+    if (validationType) {
+      try {
+        if (validationType === 'phone') {
+          //Use less complex regex-based fallback
+          validInputType = CFJS.Validation[validationType](targetValue);
+        } else {
+          validInputType = CFJS.Validation[validationType](targetValue);
+        }
+        if (validInputType) {
+          formElementTarget.parent().removeClass('marketing-form-input--error');
+        } else {
+          formElementTarget.parent().addClass('marketing-form-input--error');
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    // Clear error messages from optional fields if they contain no values
+    if (formElementTarget.data('validation-optional')) {
+      if (!CFJS.Validation.hasValue(targetValue)) {
+        formElementTarget.parent().removeClass('marketing-form-input--error');
+      }
+    }
+  };
+
+  var getFormElement = function() {
+    return $el;
+  };
+
+  var _getCookieValue = function(name) {
+    var cookieRegex = new RegExp(name + "=([^;]+)");
+    var value = cookieRegex.exec(document.cookie);
+    return (value != null) ? unescape(value[1]) : null;
+  };
+
+  var bindValidateFormElements = function() {
+    // For the current form element, bind an event when an input is blurred to trigger validation
+    formElementsToValidate.each(function(){
+      var formElementTarget = $(this);
+
+      // Bind blur event (When an input field loses focus) to trigger validation
+      formElementTarget.bind('blur', function(event) {
+        _validationCheck(formElementTarget, this);
+      });
+
+    });
+  };
+
+  var bindIntlTelInputPhonePicker = function() {
+    $intlPhoneSelector.intlTelInput({
+      autoPlaceholder: 'off'
+    });
+    $intlPhoneSelector.on('keyup', function(){
+      $('.marketing-form-input.intl-tel-phone').toggleClass('marketing-form-input--filled', $intlPhoneSelector.intlTelInput("getNumber") !== "");
+    });
+    $intlPhoneSelector.on('focus', function(){
+      $(this).parents('.marketing-form-input').addClass('marketing-form-input--filled');
+    })
+    $intlPhoneSelector.on('blur', function() {
+     if ($(this).val().trim() === ''){
+       $(this).parents('.marketing-form-input').removeClass('marketing-form-input--filled');
+     }
+    })
+  };
+
+  // gclid is sometimes not set in different browsers
+  var checkAndSetGclid = function() {
+    var _getParamaterByName = function(name) {
+      name = name.replace(/[\[\]]/g, "\\$&");
+      var regex = new RegExp("[?&]" + "gclid" + "(=([^&#]*)|&|#|$)"),
+          results = regex.exec(window.location.href);
+      if (!results) return null;
+      if (!results[2]) return null; // gclid parameter exists, but field is empty
+      return decodeURIComponent(results[2].replace(/\+/g, " "));
+    };
+
+    if (_getParamaterByName("gclid")) {
+      var myGclid = _getParamaterByName("gclid");
+      var date = new Date();
+      var days = 90;
+      date.setTime(date.getTime() + (days*24*60*60*1000));
+      var expires = "; expires=" + date.toGMTString();
+      document.cookie = "gclid=" + myGclid + "; path=/" + expires;
+    }
+  };
+
+  var inputIsValid = function(formInputToValidate) {
+    _validationCheck(formInputToValidate, formInputToValidate);
+
+    return !formInputToValidate.parent().hasClass('marketing-form-input--error');
+  };
+
+  var inputsAreValid = function() {
+    formElementsToValidate.each(function(){
+      var formElementTarget = $(this);
+
+      _validationCheck(formElementTarget, this);
+    });
+
+    return !formElementsToValidate.parent().hasClass('marketing-form-input--error');
+  };
+
+
+  function _getDownloadButton (downloadUrl, customDownloadText) {
+    var buttonText = customDownloadText ? customDownloadText : "Download Guide";
+
+    if (downloadUrl) {
+      return "<a href='" + downloadUrl + "' target='_blank' class='button button--blue'>"+ buttonText +"</a>";
+    } else {
+      return '';
+    }
+  }
+
+  var showFormSuccessMsg = function(downloadUrl, customDownloadText) {
+    //'downloadUrl' is an optional param for creating a button on form completion which opens a new page with the passed-in relative url of the pdf file
+    // Show confirmation box that form has been successfully submitted
+    var scrollElementPadding = 80;
+    var formThankYouMsg = "<div class='marketing-form__message-success'><img class='responsive-image responsive-image--65px-height' src='/img/icon_check-white.svg'><h3 class='marketing-h3 marketing-h3--no-desktop-top-margin'>Thank You</h3><p>" + getFormSuccessMessage() + "</p>" + _getDownloadButton(downloadUrl, customDownloadText) + "</div>";
+
+    $el.fadeOut().promise().done(function(){
+      $el.html(formThankYouMsg).fadeIn("slow");
+
+      $('html, body').animate({
+        // Scroll to the top of the form to show the success message to account for small viewports
+        scrollTop: $el.html(formThankYouMsg).offset().top - scrollElementPadding
+      }, 700);
+    });
+  };
+
+  init();
+
+  return {
+    getFormElement: getFormElement,
+    bindValidateFormElements: bindValidateFormElements,
+    inputIsValid: inputIsValid,
+    inputsAreValid: inputsAreValid,
+    showFormSuccessMsg: showFormSuccessMsg
+  };
+};
