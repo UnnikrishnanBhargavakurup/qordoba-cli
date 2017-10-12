@@ -155,7 +155,7 @@ class i18nGenerateClass(BaseClass):
 
                 localization_k_v = self.get_existing_i18n_key_values(localization_files)
                 log.info(" ... searching if existing keys exist.")
-                df['existing_eys'], df['existing_localization_file'] = izip(*df.iloc[:,-1].apply(lambda x: self.index_lookup(x, localization_k_v)))
+                df['existing_keys'], df['existing_localization_file'] = izip(*df.iloc[:,-1].apply(lambda x: self.index_lookup(x, localization_k_v)))
 
                 log.info("  " + u"\U0001F4AB" + u"\U0001F52E" + " .. starting to generate new keys for you - based on the extracted Strings from your files.")
                 log.info(" (This could Take some time)")
