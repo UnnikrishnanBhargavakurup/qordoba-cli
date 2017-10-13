@@ -29,58 +29,74 @@ class i18nExecutionClass(BaseClass):
         # Python 2
         try:
             for k, v in df_to_dict.iteritems():
+                idx_start  = v['startLineNumber']
+                idx_end = v['endLineNumber']
+                if  idx_start == idx_end:
+                    picked_line = file_array[idx_start]
+                    # replaces with html keys. "STRING" -->  ${KEY}
+                    picked_line = picked_line.replace("'" + v['text']+"'", "${" + v['generated_keys'] + "}")
+                    picked_line = picked_line.replace('"' + v['text'] + '"', "${" + v['generated_keys'] + "}")
+                    file_array[idx_start] = picked_line
 
-                if v['startLineNumber'] == v['endLineNumber']:
-                    idx = v['startLineNumber']-1
+                if idx_start < idx_end:
+                    picked_lines = list()
+                    for i in range(idx_start, idx_end):
+                        picked_lines.append(file_array[i])
+                    joined_lines = '\n'.join(picked_lines)
+                    joined_lines = joined_lines.replace("'" + v['text'] + "'", "${" + v['generated_keys'] + "}")
+                    joined_lines = joined_lines.replace('"' + v['text'] + '"', "${" + v['generated_keys'] + "}")
+                    file_array[idx_end] = joined_lines
+                    for i in range(idx_start, idx_end):
+                        file_array[i] = None
+            file_array_list = list()
+            # print(max(map(int, file_array)))
+            for i in range(len(file_array)):
+                idx = i+1
+                print(idx)
+                file_array_list.append(file_array[idx])
+            return file_array_list
+
+        # Python 3
+        except AttributeError:
+            for k, v in df_to_dict.items():
+                idx_start  = v['startLineNumber']
+                idx_end = v['endLineNumber']
+                if  idx_start == idx_end:
+                    idx = v['startLineNumber']
                     picked_line = file_array[idx]
                     # replaces with html keys. "STRING" -->  ${KEY}
                     picked_line = picked_line.replace("'" + v['text']+"'", "${" + v['generated_keys'] + "}")
                     picked_line = picked_line.replace('"' + v['text'] + '"', "${" + v['generated_keys'] + "}")
                     file_array[idx] = picked_line
 
-                if v['startLineNumber'] < v['endLineNumber']:
-                    idx_start = v['startLineNumber'] - 1
-                    idx_end = v['endLineNumber'] - 1
+                if idx_start < idx_end:
                     picked_lines = file_array[idx_start:idx_end]
                     joined_lines = '\n'.join(picked_lines)
                     joined_lines = joined_lines.replace("'" + v['text'] + "'", "${" + v['generated_keys'] + "}")
                     joined_lines = joined_lines.replace('"' + v['text'] + '"', "${" + v['generated_keys'] + "}")
-                    file_array[idx_end] = joined_lines
-                    for i in range(idx_start, idx_end):
-                        file_array[i] = None
-
-            return file_array
-
-        # Python 3
-        except AttributeError:
-            for k, v in df_to_dict.items():
-
-                if v['startLineNumber'] == v['endLineNumber']:
-                    idx = v['startLineNumber']-1
-                    picked_line = file_array[idx]
-                    picked_line = picked_line.replace("'" + v['text']+"'", "${" + v['generated_keys'] + "}")
-                    picked_line = picked_line.replace('"' + v['text'] + '"', "${" + v['generated_keys'] + "}")
-                    file_array[idx] = picked_line
-
-                if v['startLineNumber'] < v['endLineNumber']:
-                    idx_start = v['startLineNumber'] - 1
-                    idx_end = v['endLineNumber'] - 1
-                    picked_lines = file_array[idx_start:idx_end]
-                    joined_lines = '\n'.join(picked_lines)
-                    joined_lines = joined_lines.replace("'" + v['text'] + "'", "${" + v['generated_keys'] + "}")
-                    joined_lines = joined_lines.replace('"' + v['text'] + '"', "${" + v['generated_keys'] + "}")
-                    file_array[idx_end] = joined_lines
-                    for i in range(idx_start, idx_end):
-                        file_array[i] = None
+                    try:
+                        file_array[idx_end] = joined_lines
+                        for i in range(idx_start, idx_end):
+                            file_array[i] = None
+                    except IndexError:
+                        print("IndexError.{}".format(idx_end)
+                              )
 
             return file_array
 
     # loads file into list. Items of list are lines in file
     def get_filerows_as_list(self, file_path):
-        with open(file_path, "r") as ins:
-            file_array = ins.read().splitlines()
-
-            return file_array
+        file_dict = {}
+        count= 0
+        try:
+            with open(file_path, "r") as ins:
+                for line in ins:
+                    count += 1
+                    file_dict[count] = line
+            return file_dict
+        except IOError:
+            print("File '{}' does not exist.".format(file_path))
+            pass
 
     def execute(self, curdir, report, directory, output):
         output = str(output).strip()
@@ -110,21 +126,30 @@ class i18nExecutionClass(BaseClass):
                 project_file_path = directory + file_in_report[11:]
                 df_single_file = df[df.filename == file_in_report]
                 df_to_dict = df_single_file.T.to_dict()
-                file_array = self.get_filerows_as_list(project_file_path)
-                new_file_array = self.replace_strings_for_keys(df_to_dict, file_array)
-                new_file_array = [x for x in new_file_array if x != None]
+                file_dict = self.get_filerows_as_list(project_file_path)
+                try:
+                    if len(file_dict) == 0:
+                        print('File {} is empty'.format(file_in_report))
+                        continue
+                except TypeError:
+                    print('File {} is empty'.format(file_in_report))
+                    continue
+                new_file_dict = self.replace_strings_for_keys(df_to_dict, file_dict)
+                new_file_dict_1 = [x for x in new_file_dict if x != None]
 
                 # remove old file, dump new
+                print(project_file_path)
                 os.remove(project_file_path)
                 # a = file_in_report[11:]
                 # ext = a.split(".")[-1]
                 # file = a.split(".")[0]
                 # project_file_path_new = directory + file + "_NEW." + ext
                 Html_file = open(project_file_path, "w")
-                Html_file.write("\n".join(new_file_array))
+                print(new_file_dict_1)
+                Html_file.write("".join(new_file_dict_1))
                 Html_file.close()
 
-            #create localization file in output folder
+            # create localization file in output folder
             if output[-1] == '/':
                 report = output[:-1]
             new_localization_file = output + '/qordoba_localization_file.json'

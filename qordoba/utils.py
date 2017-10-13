@@ -6,7 +6,7 @@ import sys
 import itertools
 from argparse import ArgumentTypeError
 
-import furl as furl
+# aimport furl as furl
 
 PY3 = sys.version_info[0] == 3
 
