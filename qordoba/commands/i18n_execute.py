@@ -34,8 +34,15 @@ class i18nExecutionClass(BaseClass):
                 if  idx_start == idx_end:
                     picked_line = file_array[idx_start]
                     # replaces with html keys. "STRING" -->  ${KEY}
-                    picked_line = picked_line.replace("'" + v['text']+"'", "${" + v['generated_keys'] + "}")
-                    picked_line = picked_line.replace('"' + v['text'] + '"', "${" + v['generated_keys'] + "}")
+
+                    if v['existing_keys'] is None:
+                        picked_line = picked_line.replace("'" + v['text']+"'", "${" + v['generated_keys'] + "}")
+                        picked_line = picked_line.replace('"' + v['text'] + '"', "${" + v['generated_keys'] + "}")
+                    else:
+                        print(v['existing_keys'])
+                        picked_line = picked_line.replace("'" + v['text']+"'", "${" + v['existing_keys'] + "}")
+                        picked_line = picked_line.replace('"' + v['text'] + '"', "${" + v['existing_keys'] + "}")
+
                     file_array[idx_start] = picked_line
 
                 if idx_start < idx_end:
@@ -43,8 +50,13 @@ class i18nExecutionClass(BaseClass):
                     for i in range(idx_start, idx_end):
                         picked_lines.append(file_array[i])
                     joined_lines = '\n'.join(picked_lines)
-                    joined_lines = joined_lines.replace("'" + v['text'] + "'", "${" + v['generated_keys'] + "}")
-                    joined_lines = joined_lines.replace('"' + v['text'] + '"', "${" + v['generated_keys'] + "}")
+                    if v['existing_keys'] is None:
+                        joined_lines = joined_lines.replace("'" + v['text'] + "'", "${" + v['generated_keys'] + "}")
+                        joined_lines = joined_lines.replace('"' + v['text'] + '"', "${" + v['generated_keys'] + "}")
+                    else:
+                        joined_lines = joined_lines.replace("'" + v['text'] + "'", "${" + v['existing_keys'] + "}")
+                        joined_lines = joined_lines.replace('"' + v['text'] + '"', "${" + v['existing_keys'] + "}")
+
                     file_array[idx_end] = joined_lines
                     for i in range(idx_start, idx_end):
                         file_array[i] = None
@@ -52,37 +64,45 @@ class i18nExecutionClass(BaseClass):
             # print(max(map(int, file_array)))
             for i in range(len(file_array)):
                 idx = i+1
-                print(idx)
                 file_array_list.append(file_array[idx])
             return file_array_list
 
         # Python 3
         except AttributeError:
             for k, v in df_to_dict.items():
-                idx_start  = v['startLineNumber']
+                idx_start = v['startLineNumber']
                 idx_end = v['endLineNumber']
-                if  idx_start == idx_end:
-                    idx = v['startLineNumber']
-                    picked_line = file_array[idx]
+                if idx_start == idx_end:
+                    picked_line = file_array[idx_start]
                     # replaces with html keys. "STRING" -->  ${KEY}
-                    picked_line = picked_line.replace("'" + v['text']+"'", "${" + v['generated_keys'] + "}")
-                    picked_line = picked_line.replace('"' + v['text'] + '"', "${" + v['generated_keys'] + "}")
-                    file_array[idx] = picked_line
+                    if v['existing_keys'] is None:
+                        picked_line = picked_line.replace("'" + v['text'] + "'", "${" + v['generated_keys'] + "}")
+                        picked_line = picked_line.replace('"' + v['text'] + '"', "${" + v['generated_keys'] + "}")
+                    else:
+                        picked_line = picked_line.replace("'" + v['text'] + "'", "${" + v['existing_keys'] + "}")
+                        picked_line = picked_line.replace('"' + v['text'] + '"', "${" + v['existing_keys'] + "}")
+                    file_array[idx_start] = picked_line
 
                 if idx_start < idx_end:
-                    picked_lines = file_array[idx_start:idx_end]
+                    picked_lines = list()
+                    for i in range(idx_start, idx_end):
+                        picked_lines.append(file_array[i])
                     joined_lines = '\n'.join(picked_lines)
-                    joined_lines = joined_lines.replace("'" + v['text'] + "'", "${" + v['generated_keys'] + "}")
-                    joined_lines = joined_lines.replace('"' + v['text'] + '"', "${" + v['generated_keys'] + "}")
-                    try:
-                        file_array[idx_end] = joined_lines
-                        for i in range(idx_start, idx_end):
-                            file_array[i] = None
-                    except IndexError:
-                        print("IndexError.{}".format(idx_end)
-                              )
-
-            return file_array
+                    if v['existing_keys'] is None:
+                        joined_lines = joined_lines.replace("'" + v['text'] + "'", "${" + v['generated_keys'] + "}")
+                        joined_lines = joined_lines.replace('"' + v['text'] + '"', "${" + v['generated_keys'] + "}")
+                    else:
+                        joined_lines = joined_lines.replace("'" + v['text'] + "'", "${" + v['existing_keys'] + "}")
+                        joined_lines = joined_lines.replace('"' + v['text'] + '"', "${" + v['existing_keys'] + "}")
+                    file_array[idx_end] = joined_lines
+                    for i in range(idx_start, idx_end):
+                        file_array[i] = None
+            file_array_list = list()
+            # print(max(map(int, file_array)))
+            for i in range(len(file_array)):
+                idx = i + 1
+                file_array_list.append(file_array[idx])
+            return file_array_list
 
     # loads file into list. Items of list are lines in file
     def get_filerows_as_list(self, file_path):
@@ -138,14 +158,8 @@ class i18nExecutionClass(BaseClass):
                 new_file_dict_1 = [x for x in new_file_dict if x != None]
 
                 # remove old file, dump new
-                print(project_file_path)
                 os.remove(project_file_path)
-                # a = file_in_report[11:]
-                # ext = a.split(".")[-1]
-                # file = a.split(".")[0]
-                # project_file_path_new = directory + file + "_NEW." + ext
                 Html_file = open(project_file_path, "w")
-                print(new_file_dict_1)
                 Html_file.write("".join(new_file_dict_1))
                 Html_file.close()
 
@@ -162,10 +176,11 @@ class i18nExecutionClass(BaseClass):
             del df['existing_localization_file']
             json_dump = dict()
             for index, row in df.iterrows():
-                if row['existing_keys'] is not None:
-                    json_dump[row['existing_keys']]  = row['text']
-                else:
+                if row['existing_keys'] is None:
                     json_dump[row['generated_keys']]  = row['text']
+                else:
+                    json_dump[row['existing_keys']] = row['text']
+
             import json
             with open(new_localization_file, "w") as jsonFile:
                 json.dump(json_dump, jsonFile, sort_keys=True, indent=4, separators=(',', ': '))
