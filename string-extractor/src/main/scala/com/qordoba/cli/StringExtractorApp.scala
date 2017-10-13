@@ -3,9 +3,14 @@ package com.qordoba.cli
 import com.opencsv.CSVWriter
 import com.qordoba.cli.grammar.StringExtractorLexer
 import com.qordoba.cli.grammar.StringExtractorLexer.{DOCSTRING, STRING_LITERAL}
+import com.qordoba.cli.grammar.HtmlStringExtractorLexer
+import com.qordoba.cli.grammar.HtmlStringExtractorLexer.{HTML_TEXT}
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import java.io.{BufferedWriter, File, FileWriter, StringWriter}
+
+import org.antlr.v4.runtime.CommonTokenStream._
 import org.antlr.v4.runtime.{CharStream, CharStreams, CommonTokenStream, Token}
+
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
@@ -130,20 +135,42 @@ class StringExtractorApp(infileName: String, outfileName: String) extends LazyLo
     * @return iterator of tokens
     */
   def getTokens(infileName: String): Iterator[Token] = {
-    try {
-      val input: CharStream = CharStreams.fromFileName(infileName)
-      val lexer: StringExtractorLexer = new StringExtractorLexer(input)
-      val tokenStream: CommonTokenStream = new CommonTokenStream(lexer)
 
-      // Activate the lexer
-      tokenStream.fill()
+    if (infileName.toLowerCase.endsWith(".html")) {
+      try {
+        // Html files
+        val input: CharStream = CharStreams.fromFileName(infileName)
+        val lexer: HtmlStringExtractorLexer.tokens = new HtmlStringExtractorLexer.tokens(input)
+        val tokenStream: CommonTokenStream = new CommonTokenStream(lexer)
 
-      // Retrieve the token iterator
-      tokenStream.getTokens().iterator()
-    } catch {
-      case e: Exception => {
-        logger.error(s"Unable to generate tokens for ${infileName}: ${e}")
-        throw e
+        // Activate the lexer
+        tokenStream.fill()
+
+        // Retrieve the token iterator
+        tokenStream.getTokens().iterator()
+      } catch {
+        case e: Exception => {
+          logger.error(s"Unable to generate tokens for ${infileName}: ${e}")
+          throw e
+        }
+      }
+    } else {
+      // Python files
+      try {
+        val input: CharStream = CharStreams.fromFileName(infileName)
+        val lexer: StringExtractorLexer = new StringExtractorLexer(input)
+        val tokenStream: CommonTokenStream = new CommonTokenStream(lexer)
+
+        // Activate the lexer
+        tokenStream.fill()
+
+        // Retrieve the token iterator
+        tokenStream.getTokens().iterator()
+      } catch {
+        case e: Exception => {
+          logger.error(s"Unable to generate tokens for ${infileName}: ${e}")
+          throw e
+        }
       }
     }
   }
@@ -160,29 +187,59 @@ class StringExtractorApp(infileName: String, outfileName: String) extends LazyLo
     // A place to store everything that should go in the output file
     val allStringLiterals: ListBuffer[StringLiteral] = scala.collection.mutable.ListBuffer.empty[StringLiteral]
 
-    try {
-      // Inspect each token for something interesting
-      while (tokens.hasNext()) {
-        val token: Token = tokens.next()
+    if (infileName.toLowerCase.endsWith(".html")) {
+      // Html files
+      try {
+        // Inspect each token for something interesting
+        while (tokens.hasNext()) {
+          val token: Token = tokens.next()
 
-        // Only process string literals & docstrings (do we really want to include docstrings?)
-        if (token.getType() == STRING_LITERAL || token.getType() == DOCSTRING) {
-          // TODO: Support CR+LF for endLineNumber
-          val stringLiteral: StringLiteral = new StringLiteral(
-            filename = infileName,
-            startLineNumber = token.getLine(),
-            startCharIdx = token.getCharPositionInLine(),
-            endLineNumber = token.getLine() + token.getText().count(_ == '\u000A'), // startLineNumber + newline count
-            endCharIdx = token.getCharPositionInLine() + token.getText().size - 1,  // 0-based index, inclusive
-            text = token.getText()
-          )
-          allStringLiterals += stringLiteral
+          // Only process string literals & docstrings (do we really want to include docstrings?)
+          if (token.getType() == HTML_TEXT ) {
+            // TODO: Support CR+LF for endLineNumber
+            val stringLiteral: StringLiteral = new StringLiteral(
+              filename = infileName,
+              startLineNumber = token.getLine(),
+              startCharIdx = token.getCharPositionInLine(),
+              endLineNumber = token.getLine() + token.getText().count(_ == '\u000A'), // startLineNumber + newline count
+              endCharIdx = token.getCharPositionInLine() + token.getText().size - 1,  // 0-based index, inclusive
+              text = token.getText()
+            )
+            allStringLiterals += stringLiteral
+          }
+        }
+      } catch {
+        case e: Exception => {
+          logger.error(s"Unable to filter tokens for ${infileName}: ${e}")
+          throw e
         }
       }
-    } catch {
-      case e: Exception => {
-        logger.error(s"Unable to filter tokens for ${infileName}: ${e}")
-        throw e
+    } else {
+      // Python files
+      try {
+        // Inspect each token for something interesting
+        while (tokens.hasNext()) {
+          val token: Token = tokens.next()
+
+          // Only process string literals & docstrings (do we really want to include docstrings?)
+          if (token.getType() == STRING_LITERAL || token.getType() == DOCSTRING) {
+            // TODO: Support CR+LF for endLineNumber
+            val stringLiteral: StringLiteral = new StringLiteral(
+              filename = infileName,
+              startLineNumber = token.getLine(),
+              startCharIdx = token.getCharPositionInLine(),
+              endLineNumber = token.getLine() + token.getText().count(_ == '\u000A'), // startLineNumber + newline count
+              endCharIdx = token.getCharPositionInLine() + token.getText().size - 1,  // 0-based index, inclusive
+              text = token.getText()
+            )
+            allStringLiterals += stringLiteral
+          }
+        }
+      } catch {
+        case e: Exception => {
+          logger.error(s"Unable to filter tokens for ${infileName}: ${e}")
+          throw e
+        }
       }
     }
 
