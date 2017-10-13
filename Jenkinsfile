@@ -23,8 +23,7 @@ pipeline {
       }
 
       when {
-        // branch "develop"
-        branch "ENG-1037-string-extractor"
+        expression { BRANCH_NAME ==~ /(develop|ENG-[0-9]+-.*)/ }
       }
 
       steps {
