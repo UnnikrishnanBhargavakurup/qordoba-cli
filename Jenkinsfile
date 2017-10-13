@@ -4,9 +4,9 @@ pipeline {
   environment {
     // static
     SERVICE_NAME = "string-extractor"
-    VERSION = "0.0.${BUILD_NUMBER}"
-    BASE_IMAGE_NAME = "qordoba-build"
-    BASE_IMAGE_VERSION = "latest"
+    VERSION = "${BRANCH_NAME}-0.0.${BUILD_NUMBER}"
+    BASE_IMAGE_NAME = "qordoba-builder"
+    BASE_IMAGE_VERSION = "0.0.8"
     DOCKER_DIR = "docker"
 
     // Default to dev
@@ -23,8 +23,7 @@ pipeline {
       }
 
       when {
-        // branch "develop"
-        branch "ENG-1037-string-extractor"
+        expression { BRANCH_NAME ==~ /(develop|ENG-[0-9]+-.*)/ }
       }
 
       steps {
