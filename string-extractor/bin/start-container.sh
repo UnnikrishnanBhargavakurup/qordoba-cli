@@ -12,7 +12,7 @@
 
 PROJECT=qordoba-devel
 IMAGE_NAME=string-extractor
-IMAGE_VERSION=ENG-1400-StringExtractorBETA-0.0.7
+IMAGE_VERSION=ENG-1400-StringExtractorBETA-0.0.8
 
 INPUT_PATH=$1
 INPUT_FILE=.
