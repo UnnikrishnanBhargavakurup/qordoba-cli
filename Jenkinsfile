@@ -7,7 +7,7 @@ pipeline {
     VERSION = "${BRANCH_NAME}-0.0.${BUILD_NUMBER}"
     BASE_IMAGE_NAME = "qordoba-builder"
     BASE_IMAGE_VERSION = "0.0.8"
-    DOCKER_DIR = "string-extractor/docker"
+    DOCKER_DIR = "docker"
 
     // Default to dev
     PROJECT = "qordoba-devel"
