@@ -3,8 +3,8 @@ package com.qordoba.cli
 import com.opencsv.CSVWriter
 import com.qordoba.cli.grammar.StringExtractorLexer
 import com.qordoba.cli.grammar.StringExtractorLexer.{DOCSTRING, STRING_LITERAL}
-import com.qordoba.cli.grammar.HtmlStringExtractorLexer
-import com.qordoba.cli.grammar.HtmlStringExtractorLexer.{HTML_TEXT}
+import com.qordoba.cli.grammar.HTMLLexer
+import com.qordoba.cli.grammar.HTMLLexer.HTML_TEXT
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import java.io.{BufferedWriter, File, FileWriter, StringWriter}
 
@@ -140,7 +140,7 @@ class StringExtractorApp(infileName: String, outfileName: String) extends LazyLo
         // Html files
         println("html")
         val input: CharStream = CharStreams.fromFileName(infileName)
-        val lexer: HtmlStringExtractorLexer = new HtmlStringExtractorLexer(input)
+        val lexer: HTMLLexer = new HTMLLexer(input)
         val tokenStream: CommonTokenStream = new CommonTokenStream(lexer)
 
         // Activate the lexer

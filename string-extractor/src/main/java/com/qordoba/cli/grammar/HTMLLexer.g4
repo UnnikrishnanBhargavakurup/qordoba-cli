@@ -1,20 +1,5 @@
-grammar HtmlStringExtractor;
+lexer grammar  HTMLLexer;
 
-textfile: line+;
-
-// Split stringLiterals from the rest of the line
-line
-    : htmltext NEWLINE
-    | ANY+ NEWLINE
-    ;
-
-htmltext: HTML_TEXT;
-
-NEWLINE
-    : '\r'? '\n'
-    ;
-
-    
 HTML_COMMENT
     : '<!--' .*? '-->'
     ;
@@ -44,6 +29,17 @@ SEA_WS
     :  (' '|'\t'|'\r'? '\n')+
     ;
 
+SCRIPT_OPEN
+    : '<script' .*? '>' ->pushMode(SCRIPT)
+    ;
+
+STYLE_OPEN
+    : '<style' .*? '>'  ->pushMode(STYLE)
+    ;
+
+TAG_OPEN
+    : '<' -> pushMode(TAG)
+    ;
 
 HTML_TEXT
     : ~'<'+
@@ -52,10 +48,25 @@ HTML_TEXT
 //
 // tag declarations
 //
+mode TAG;
 
+TAG_CLOSE
+    : '>' -> popMode
+    ;
+
+TAG_SLASH_CLOSE
+    : '/>' -> popMode
+    ;
 
 TAG_SLASH
     : '/'
+    ;
+
+//
+// lexing mode for attribute values
+//
+TAG_EQUALS
+    : '=' -> pushMode(ATTVALUE)
     ;
 
 TAG_NAME
@@ -101,6 +112,38 @@ TAG_NameStartChar
 //
 // <scripts>
 //
+mode SCRIPT;
+
+SCRIPT_BODY
+    : .*? '</script>' -> popMode
+    ;
+
+SCRIPT_SHORT_BODY
+    : .*? '</>' -> popMode
+    ;
+
+//
+// <styles>
+//
+mode STYLE;
+
+STYLE_BODY
+    : .*? '</style>' -> popMode
+    ;
+
+STYLE_SHORT_BODY
+    : .*? '</>' -> popMode
+    ;
+
+//
+// attribute values
+//
+mode ATTVALUE;
+
+// an attribute value may have spaces b/t the '=' and the value
+ATTVALUE_VALUE
+    : [ ]* ATTRIBUTE -> popMode
+    ;
 
 ATTRIBUTE
     : DOUBLE_QUOTE_STRING
@@ -145,4 +188,3 @@ fragment SINGLE_QUOTE_STRING
     : '\'' ~[<']* '\''
     ;
 
-ANY : .;
