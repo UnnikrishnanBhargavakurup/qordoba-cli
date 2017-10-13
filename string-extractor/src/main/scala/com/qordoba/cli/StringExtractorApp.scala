@@ -13,7 +13,6 @@ import org.antlr.v4.runtime.{CharStream, CharStreams, CommonTokenStream, Token}
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
-import scala.io.Source
 
 /**
   * Application that uses a precompiled ANTLR grammar to extract string literals from a given file
@@ -140,7 +139,7 @@ class StringExtractorApp(infileName: String, outfileName: String) extends LazyLo
       try {
         // Html files
         val input: CharStream = CharStreams.fromFileName(infileName)
-        val lexer: HtmlStringExtractorLexer.tokens = new HtmlStringExtractorLexer.tokens(input)
+        val lexer: HtmlStringExtractorLexer = new HtmlStringExtractorLexer(input)
         val tokenStream: CommonTokenStream = new CommonTokenStream(lexer)
 
         // Activate the lexer
