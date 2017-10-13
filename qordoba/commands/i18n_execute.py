@@ -39,7 +39,6 @@ class i18nExecutionClass(BaseClass):
                         picked_line = picked_line.replace("'" + v['text']+"'", "${" + v['generated_keys'] + "}")
                         picked_line = picked_line.replace('"' + v['text'] + '"', "${" + v['generated_keys'] + "}")
                     else:
-                        print(v['existing_keys'])
                         picked_line = picked_line.replace("'" + v['text']+"'", "${" + v['existing_keys'] + "}")
                         picked_line = picked_line.replace('"' + v['text'] + '"', "${" + v['existing_keys'] + "}")
 
