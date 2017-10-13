@@ -1,6 +1,9 @@
 from qordoba.commands.i18n_base import BaseClass
 import pandas as pd
 import os
+import logging
+log = logging.getLogger('qordoba')
+
 
 class ReportNotValid(Exception):
     """
@@ -24,46 +27,52 @@ class i18nExecutionClass(BaseClass):
     def __init__(self):
         self.next = False
 
+    def final_replace(self, key_type, picked_line, v):
+        picked_line_1 = picked_line.replace("'" + v['text'].strip() + "'", "${" + v[key_type].strip() + "}")
+        picked_line_2 = picked_line_1.replace('"' + v['text'].strip() + '"', "${" + v[key_type].strip() + "}")
+        picked_line_3 = picked_line_2.replace(v['text'].strip(), "${" + v[key_type].strip() + "}")
+        return picked_line_3
     # file is list of strings. replaces strings in list
     def replace_strings_for_keys(self, df_to_dict, file_array):
         # Python 2
         try:
             for k, v in df_to_dict.iteritems():
-                idx_start  = v['startLineNumber']
+                idx_start = v['startLineNumber']
                 idx_end = v['endLineNumber']
-                if  idx_start == idx_end:
+                if idx_start == idx_end:
                     picked_line = file_array[idx_start]
                     # replaces with html keys. "STRING" -->  ${KEY}
-
                     if v['existing_keys'] is None:
-                        picked_line = picked_line.replace("'" + v['text']+"'", "${" + v['generated_keys'] + "}")
-                        picked_line = picked_line.replace('"' + v['text'] + '"', "${" + v['generated_keys'] + "}")
+                        replaced_line = self.final_replace('generated_keys', picked_line, v)
                     else:
-                        picked_line = picked_line.replace("'" + v['text']+"'", "${" + v['existing_keys'] + "}")
-                        picked_line = picked_line.replace('"' + v['text'] + '"', "${" + v['existing_keys'] + "}")
-
-                    file_array[idx_start] = picked_line
+                        replaced_line = self.final_replace('existing_keys', picked_line, v)
+                    file_array[idx_start] = replaced_line
 
                 if idx_start < idx_end:
                     picked_lines = list()
                     for i in range(idx_start, idx_end):
                         picked_lines.append(file_array[i])
-                    joined_lines = '\n'.join(picked_lines)
-                    if v['existing_keys'] is None:
-                        joined_lines = joined_lines.replace("'" + v['text'] + "'", "${" + v['generated_keys'] + "}")
-                        joined_lines = joined_lines.replace('"' + v['text'] + '"', "${" + v['generated_keys'] + "}")
+                    if v['filename'][-4:] == 'html':
+                        joined_lines = ''.join(picked_lines)
                     else:
-                        joined_lines = joined_lines.replace("'" + v['text'] + "'", "${" + v['existing_keys'] + "}")
-                        joined_lines = joined_lines.replace('"' + v['text'] + '"', "${" + v['existing_keys'] + "}")
+                        joined_lines = '\n'.join(picked_lines)
 
-                    file_array[idx_end] = joined_lines
+                    if v['existing_keys'] is None:
+                        replaced_line = self.final_replace('generated_keys', joined_lines, v)
+                    else:
+                        replaced_line = self.final_replace('existing_keys', joined_lines, v)
+
+                    file_array[idx_end] = replaced_line
+
                     for i in range(idx_start, idx_end):
                         file_array[i] = None
+
             file_array_list = list()
             # print(max(map(int, file_array)))
             for i in range(len(file_array)):
-                idx = i+1
+                idx = i + 1
                 file_array_list.append(file_array[idx])
+
             return file_array_list
 
         # Python 3
@@ -75,32 +84,36 @@ class i18nExecutionClass(BaseClass):
                     picked_line = file_array[idx_start]
                     # replaces with html keys. "STRING" -->  ${KEY}
                     if v['existing_keys'] is None:
-                        picked_line = picked_line.replace("'" + v['text'] + "'", "${" + v['generated_keys'] + "}")
-                        picked_line = picked_line.replace('"' + v['text'] + '"', "${" + v['generated_keys'] + "}")
+                        replaced_line = self.final_replace('generated_keys', picked_line, v)
                     else:
-                        picked_line = picked_line.replace("'" + v['text'] + "'", "${" + v['existing_keys'] + "}")
-                        picked_line = picked_line.replace('"' + v['text'] + '"', "${" + v['existing_keys'] + "}")
-                    file_array[idx_start] = picked_line
+                        replaced_line = self.final_replace('existing_keys', picked_line, v)
+                    file_array[idx_start] = replaced_line
 
                 if idx_start < idx_end:
                     picked_lines = list()
                     for i in range(idx_start, idx_end):
                         picked_lines.append(file_array[i])
-                    joined_lines = '\n'.join(picked_lines)
-                    if v['existing_keys'] is None:
-                        joined_lines = joined_lines.replace("'" + v['text'] + "'", "${" + v['generated_keys'] + "}")
-                        joined_lines = joined_lines.replace('"' + v['text'] + '"', "${" + v['generated_keys'] + "}")
+                    if v['filename'][-4:] == 'html':
+                        joined_lines = ''.join(picked_lines)
                     else:
-                        joined_lines = joined_lines.replace("'" + v['text'] + "'", "${" + v['existing_keys'] + "}")
-                        joined_lines = joined_lines.replace('"' + v['text'] + '"', "${" + v['existing_keys'] + "}")
-                    file_array[idx_end] = joined_lines
+                        joined_lines = '\n'.join(picked_lines)
+
+                    if v['existing_keys'] is None:
+                        replaced_line = self.final_replace('generated_keys', joined_lines, v)
+                    else:
+                        replaced_line = self.final_replace('existing_keys', joined_lines, v)
+
+                    file_array[idx_end] = replaced_line
+
                     for i in range(idx_start, idx_end):
                         file_array[i] = None
+
             file_array_list = list()
             # print(max(map(int, file_array)))
             for i in range(len(file_array)):
                 idx = i + 1
                 file_array_list.append(file_array[idx])
+
             return file_array_list
 
     # loads file into list. Items of list are lines in file
@@ -111,7 +124,10 @@ class i18nExecutionClass(BaseClass):
             with open(file_path, "r") as ins:
                 for line in ins:
                     count += 1
-                    file_dict[count] = line
+                    if file_path[-4:] == 'html':
+                        file_dict[count] = line.replace("'", "")
+                    else:
+                        file_dict[count] = line
             return file_dict
         except IOError:
             print("File '{}' does not exist.".format(file_path))
@@ -142,6 +158,7 @@ class i18nExecutionClass(BaseClass):
             # batch lines in report with same filepath, apply replace
             files_in_report = set(files)
             for file_in_report in files_in_report:
+                log.info("Replacing strings with keys in `{}`.".format(file_in_report))
                 project_file_path = directory + file_in_report[11:]
                 df_single_file = df[df.filename == file_in_report]
                 df_to_dict = df_single_file.T.to_dict()
@@ -158,9 +175,14 @@ class i18nExecutionClass(BaseClass):
 
                 # remove old file, dump new
                 os.remove(project_file_path)
+                print("THIS IS A NEW FILE AND I DONT KNOW WHY ITS NOT WORKING")
+                print(new_file_dict_1)
                 Html_file = open(project_file_path, "w")
+                if project_file_path[-4:] == 'html':
+                    ''.join(new_file_dict_1)
                 Html_file.write("".join(new_file_dict_1))
                 Html_file.close()
+
 
             # create localization file in output folder
             if output[-1] == '/':

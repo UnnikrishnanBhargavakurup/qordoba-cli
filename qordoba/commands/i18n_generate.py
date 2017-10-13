@@ -81,7 +81,8 @@ class i18nGenerateClass(BaseClass):
         if KEY_COUNT%20 == 0:
             log.info("{} keys created ".format(KEY_COUNT))
 
-        ANC_csv = '../resources/ANC-all-count.csv'
+        # ANC_csv = '../resources/ANC-all-count.csv'
+        ANC_csv = 'ANC-all-count.csv'
         column_names = ['word', 'againWords', 'type', 'count']
         try:
             df_ANC = pd.read_csv(ANC_csv, names=column_names)
@@ -143,10 +144,11 @@ class i18nGenerateClass(BaseClass):
 
             df = pd.read_csv(filename_path, header=0)
             # converting StringLiterals to pure strings
-            (df.text) = (df.text).apply(lambda x: x.replace('"', ''))
-            (df.text) = (df.text).apply(lambda x: x.replace("'", ''))
-
-
+            (df.text) = (df.text).apply(lambda x: x[:4].replace('"', ''))
+            (df.text) = (df.text).apply(lambda x: x[:4].replace("'", ''))
+            (df.text) = (df.text).apply(lambda x: x[-4:].replace('"', ''))
+            (df.text) = (df.text).apply(lambda x: x[-4:].replace("'", ''))
+            (df.text) = (df.text).apply(lambda x: x.strip())
             """
             Based on the given localization directory. 
             Getting existing key value pairs from localization files and updating dataframe.
