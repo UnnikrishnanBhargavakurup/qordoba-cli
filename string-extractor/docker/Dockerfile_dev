@@ -1,4 +1,4 @@
-FROM gcr.io/qordoba-devel/qordoba-build
+FROM gcr.io/qordoba-devel/qordoba-builder:0.0.8
 
 ADD . /string-extractor/
 WORKDIR /string-extractor
