@@ -1,6 +1,6 @@
-package com.qordoba.cli.grammar;
 // Generated from HtmlStringExtractor.g4 by ANTLR 4.7
 
+package com.qordoba.cli.grammar;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;

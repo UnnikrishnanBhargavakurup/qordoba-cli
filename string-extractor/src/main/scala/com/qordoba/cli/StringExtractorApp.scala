@@ -134,10 +134,11 @@ class StringExtractorApp(infileName: String, outfileName: String) extends LazyLo
     * @return iterator of tokens
     */
   def getTokens(infileName: String): Iterator[Token] = {
-
+    println(infileName)
     if (infileName.toLowerCase.endsWith(".html")) {
       try {
         // Html files
+        println("html")
         val input: CharStream = CharStreams.fromFileName(infileName)
         val lexer: HtmlStringExtractorLexer = new HtmlStringExtractorLexer(input)
         val tokenStream: CommonTokenStream = new CommonTokenStream(lexer)
@@ -155,6 +156,7 @@ class StringExtractorApp(infileName: String, outfileName: String) extends LazyLo
       }
     } else {
       // Python files
+      println("python")
       try {
         val input: CharStream = CharStreams.fromFileName(infileName)
         val lexer: StringExtractorLexer = new StringExtractorLexer(input)
