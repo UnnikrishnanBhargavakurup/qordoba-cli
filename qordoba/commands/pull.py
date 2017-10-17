@@ -6,7 +6,7 @@ import os
 import shutil
 from argparse import ArgumentTypeError
 import requests, zipfile
-from mock.mock import self
+# from mock.mock import self
 
 try:
     import StringIO
@@ -152,6 +152,22 @@ def pull_command(curdir, config, files=(), force=False, bulk=False, workflow=Fal
                         print("dismissing file `{}` with wrong version {}".format(filename, version_tag))
                         continue
 
+                    if distinct:
+                        source_name = page_status['name']
+                        tag = page_status['version_tag']
+                        try:
+                            pattern_name = pattern.split('/')[-1]
+                        except AttributeError:
+                            pattern_name = files[0]
+
+                        if tag:
+                            real_filename = tag + '_' + source_name
+                        else:
+                            real_filename = source_name
+
+                        if real_filename != pattern_name:
+                            continue
+
                     # when '--workflow' parameter is set, user can pick of which workflow files should be downloaded
                     if workflow or workflow_all:
                         milestones_resp = api.get_milestone(language.id, page_status['assignees'][0]['id'])
@@ -216,18 +232,6 @@ def pull_command(curdir, config, files=(), force=False, bulk=False, workflow=Fal
                         if not custom and pattern and valid_extension != "<extension>" and valid_extension != file_extension:
                             continue
 
-                        if distinct:
-                            source_name = page_status['name']
-                            tag = page_status['version_tag']
-                            pattern_name = pattern.split('/')[-1]
-
-                            if tag:
-                                real_filename = tag + '_' + source_name
-                            else:
-                                real_filename = source_name
-
-                            if real_filename != pattern_name:
-                                continue
 
                         log.info(
                             'Starting Download of translation file(s) for src `{}`, language `{}` and pattern {}'.format(
@@ -270,7 +274,7 @@ def pull_command(curdir, config, files=(), force=False, bulk=False, workflow=Fal
                             'Downloaded translation file `{}` for src `{}` and language `{}`'.format(dest_path.native_path,
                                                                                                      format_file_name(page),
                                                                                                  language.code))
-            if not is_started:
+            if not is_started and not bulk:
                 log.info(
                     'Nothing to download for language `{}`. Check if your file translation status is `completed`.'.format(
                         language.code))
