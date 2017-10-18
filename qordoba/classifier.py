@@ -1,5 +1,5 @@
 import os
-from binaryornot.check import is_binary
+# from binaryornot.check import is_binary
 import logging
 log = logging.getLogger('qordoba')
 
@@ -42,8 +42,8 @@ class Classifier():
             for f in files:
                 if '.DS_Store' in str(f):
                     pass
-                elif is_binary(subdir + "/" + f):
-                    pass
+                # elif is_binary(subdir + "/" + f):
+                #     pass
                 else:
                     y_train.append(lang)
                     with open(subdir + "/" + f, "r") as lang_file:

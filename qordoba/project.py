@@ -231,6 +231,25 @@ class ProjectAPI(object):
 
         return resp.json()['languages']
 
+
+    def get_milestone(self, language_id, user_id):
+        """
+         api / projects /:project_id / languages /:language_id / users /:user_id / milestones
+        """
+        params = (
+            'projects',
+            str(self._config['project_id']),
+            'languages',
+            str(language_id),
+            'users',
+            str(user_id),
+            'milestones'
+        )
+
+        resp = self.do_get(self.build_url(*params))
+        return resp.json()['milestones']
+
+
     def get_project(self):
         params = (
             'projects',
@@ -242,6 +261,7 @@ class ProjectAPI(object):
         return resp.json()['project']
 
     @paginated('projects')
+
     def get_projects(self, limit=50, offset=0):
         """
         Example response:
@@ -522,6 +542,7 @@ class ProjectAPI(object):
         download_url = self.build_url(*params, **query)
 
         return self.do_get(download_url, stream=True)
+
 
     def download_file(self, page_id, language_id, milestone=None):
         if milestone is None:

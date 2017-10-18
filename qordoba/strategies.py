@@ -3,7 +3,6 @@ from __future__ import unicode_literals, print_function
 import logging
 import os
 import yaml
-import re
 
 log = logging.getLogger('qordoba')
 

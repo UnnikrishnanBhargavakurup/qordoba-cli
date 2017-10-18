@@ -27,12 +27,10 @@ STRATEGIES = [
 
 FRAMEWORKS = Framework()
 
-
 class FilesNotFound(Exception):
     """
     Files not found
     """
-
 
 class FindNewClass(BaseClass):
     def empty(self, fileobj):

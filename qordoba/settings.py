@@ -81,7 +81,6 @@ def dump_settings(path, data):
 
 
 def load_settings(**kwargs):
-    log.info('Loading Qordoba config...')
 
     settings = None
     loaded = False
@@ -128,14 +127,14 @@ def get_find_new_blacklist_pattern(config):
 
 def get_push_pattern(config):
     try:
-        return config['push']['sources'][0]['file']
+        return config['push']['sources']
     except (KeyError, IndexError):
         raise PatternNotFound('Pattern not found for source files')
 
 
 def get_pull_pattern(config, default=NOTDEFINED):
     try:
-        return config['pull']['targets'][0]['file']
+        return config['pull']['targets']
     except (KeyError, IndexError):
         if default is not NOTDEFINED:
             return None
@@ -195,3 +194,4 @@ def get_i18n_app_pattern(config):
         return [pattern_row for pattern_row in config['qordoba']['search']['paths']]
     except (KeyError, IndexError):
         raise PatternNotFound('Pattern not found for source files')
+

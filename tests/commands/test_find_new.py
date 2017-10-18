@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import pytest
 
 @pytest.fixture
@@ -10,4 +11,6 @@ def test_valid_file():
     filename = '.test.yml'
     assert vendored_or_documented(filename) == False
 
+=======
+>>>>>>> origin
 

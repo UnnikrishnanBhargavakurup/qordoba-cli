@@ -1,6 +1,6 @@
 from buildtools import update
 
-from mock.mock import self
+# from mock.mock import self
 
 from qordoba.commands.i18n_base import BaseClass, IGNOREFILES
 from qordoba.settings import get_i18n_move_key_pattern, get_i18n_app_pattern
