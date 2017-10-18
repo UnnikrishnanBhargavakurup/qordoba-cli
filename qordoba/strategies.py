@@ -1,10 +1,9 @@
 from __future__ import unicode_literals, print_function
-
+from qordoba.utils import get_data
 import logging
 import os
 import yaml
 
-import re
 
 log = logging.getLogger('qordoba')
 
@@ -12,7 +11,8 @@ class Extension(object):
     def __init__(self):
         self.strategy_name = 'extension'
         self.language_extension_mappings = {}
-        with open("../resources/language.yml", 'r') as stream:
+        language_path = get_data('resources/language.yml')
+        with open(language_path, 'r') as stream:
             try:
                 data = yaml.load(stream)
                 for ext_key_value in self.find_ext(data, 'extensions'):
@@ -83,7 +83,8 @@ class Filename():
     def __init__(self):
         self.strategy_name = 'filename'
         self.language_filename_mappings = {}
-        with open("../resources/language.yml", 'r') as stream:
+        language_path = get_data('resources/language.yml')
+        with open(language_path, 'r') as stream:
             try:
                 data = yaml.load(stream)
                 for ext_key_value in self.find_filename(data, 'filenames'):

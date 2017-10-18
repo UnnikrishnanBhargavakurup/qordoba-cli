@@ -11,19 +11,7 @@ class ReportNotValid(Exception):
     """
 
 class i18nExecutionClass(BaseClass):
-    '''
-     CSV as dataframe
-     While filename the same
-         get line , end of line
-         merge list components
-         replace key
-         append to new list
-         write line by line to file, with extension
 
-     Get file: load
-     Lines to list
-
-     '''
     def __init__(self):
         self.next = False
 
@@ -35,86 +23,44 @@ class i18nExecutionClass(BaseClass):
     # file is list of strings. replaces strings in list
     def replace_strings_for_keys(self, df_to_dict, file_array):
         # Python 2
-        try:
-            for k, v in df_to_dict.iteritems():
-                idx_start = v['startLineNumber']
-                idx_end = v['endLineNumber']
-                if idx_start == idx_end:
-                    picked_line = file_array[idx_start]
-                    # replaces with html keys. "STRING" -->  ${KEY}
-                    if v['existing_keys'] is None:
-                        replaced_line = self.final_replace('generated_keys', picked_line, v)
-                    else:
-                        replaced_line = self.final_replace('existing_keys', picked_line, v)
-                    file_array[idx_start] = replaced_line
+        for k, v in self.iterate_items(df_to_dict):
+            idx_start = v['startLineNumber']
+            idx_end = v['endLineNumber']
+            if idx_start == idx_end:
+                picked_line = file_array[idx_start]
+                # replaces with html keys. "STRING" -->  ${KEY}
+                if v['existing_keys'] is None:
+                    replaced_line = self.final_replace('generated_keys', picked_line, v)
+                else:
+                    replaced_line = self.final_replace('existing_keys', picked_line, v)
+                file_array[idx_start] = replaced_line
 
-                if idx_start < idx_end:
-                    picked_lines = list()
-                    for i in range(idx_start, idx_end):
-                        picked_lines.append(file_array[i])
-                    if v['filename'][-4:] == 'html':
-                        joined_lines = ''.join(picked_lines)
-                    else:
-                        joined_lines = '\n'.join(picked_lines)
+            if idx_start < idx_end:
+                picked_lines = list()
+                for i in range(idx_start, idx_end):
+                    picked_lines.append(file_array[i])
+                if v['filename'][-4:] == 'html':
+                    joined_lines = ''.join(picked_lines)
+                else:
+                    joined_lines = '\n'.join(picked_lines)
 
-                    if v['existing_keys'] is None:
-                        replaced_line = self.final_replace('generated_keys', joined_lines, v)
-                    else:
-                        replaced_line = self.final_replace('existing_keys', joined_lines, v)
+                if v['existing_keys'] is None:
+                    replaced_line = self.final_replace('generated_keys', joined_lines, v)
+                else:
+                    replaced_line = self.final_replace('existing_keys', joined_lines, v)
 
-                    file_array[idx_end] = replaced_line
+                file_array[idx_end] = replaced_line
 
-                    for i in range(idx_start, idx_end):
-                        file_array[i] = None
+                for i in range(idx_start, idx_end):
+                    file_array[i] = None
 
-            file_array_list = list()
-            # print(max(map(int, file_array)))
-            for i in range(len(file_array)):
-                idx = i + 1
-                file_array_list.append(file_array[idx])
+        file_array_list = list()
+        # print(max(map(int, file_array)))
+        for i in range(len(file_array)):
+            idx = i + 1
+            file_array_list.append(file_array[idx])
 
-            return file_array_list
-
-        # Python 3
-        except AttributeError:
-            for k, v in df_to_dict.items():
-                idx_start = v['startLineNumber']
-                idx_end = v['endLineNumber']
-                if idx_start == idx_end:
-                    picked_line = file_array[idx_start]
-                    # replaces with html keys. "STRING" -->  ${KEY}
-                    if v['existing_keys'] is None:
-                        replaced_line = self.final_replace('generated_keys', picked_line, v)
-                    else:
-                        replaced_line = self.final_replace('existing_keys', picked_line, v)
-                    file_array[idx_start] = replaced_line
-
-                if idx_start < idx_end:
-                    picked_lines = list()
-                    for i in range(idx_start, idx_end):
-                        picked_lines.append(file_array[i])
-                    if v['filename'][-4:] == 'html':
-                        joined_lines = ''.join(picked_lines)
-                    else:
-                        joined_lines = '\n'.join(picked_lines)
-
-                    if v['existing_keys'] is None:
-                        replaced_line = self.final_replace('generated_keys', joined_lines, v)
-                    else:
-                        replaced_line = self.final_replace('existing_keys', joined_lines, v)
-
-                    file_array[idx_end] = replaced_line
-
-                    for i in range(idx_start, idx_end):
-                        file_array[i] = None
-
-            file_array_list = list()
-            # print(max(map(int, file_array)))
-            for i in range(len(file_array)):
-                idx = i + 1
-                file_array_list.append(file_array[idx])
-
-            return file_array_list
+        return file_array_list
 
     # loads file into list. Items of list are lines in file
     def get_filerows_as_list(self, file_path):

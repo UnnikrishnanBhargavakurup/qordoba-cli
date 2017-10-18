@@ -1,12 +1,11 @@
 from __future__ import unicode_literals, print_function
 
 import logging
-from qordoba.settings import get_qorignore
 from qordoba.strategies import Extension, Shebang, Filename
 # from qordoba.classifier import Classifier
 from qordoba.framework import Framework
-from qordoba.commands.i18n_base import BaseClass, FilesNotFound, FileExtensionNotAllowed
-
+from qordoba.commands.i18n_base import BaseClass, FilesNotFound
+from qordoba.utils import get_data
 import os
 import yaml
 import re
@@ -101,8 +100,8 @@ class FindNewSourceClass(BaseClass):
         return framework
 
     def find_new_source_command(self, curdir, directory, output):
-
-        log.info(".. Loading .qorignore")
+        pass
+        log.info(".. Loading i18n-config.yml")
         blacklist_pattern = get_qorignore(directory)
         # walk through whole path
         log.info('\n Starting to read files from path {}'.format(directory))
@@ -131,8 +130,10 @@ class FindNewSourceClass(BaseClass):
         for file_path in files:
 
             # filtering out vendored code such as library
-            vendor_code = self.regex_file_match("../resources/vendor.yml", file_path)
-            documentation_code = self.regex_file_match("../resources/documentation.yml", file_path)
+            vendor_path = get_data('resources/vendor.yml')
+            documentation_path = get_data('resources/documentation.yml')
+            vendor_code = self.regex_file_match(vendor_path, file_path)
+            documentation_code = self.regex_file_match(documentation_path, file_path)
             if not self.valid_file(file_path):
                 files_ignored += 1
                 continue

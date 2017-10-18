@@ -5,7 +5,7 @@ import os
 import yaml, csv, json
 import datetime
 import pandas as pd
-
+import sys
 
 log = logging.getLogger('qordoba')
 
@@ -40,9 +40,31 @@ class FileExtensionNotAllowed(Exception):
     """
 
 
-
 class BaseClass(object):
 
+    def strip_qoutes(self, string):
+        if string[:1] == "'" and string[-1] == "'" or string[:1] == '"' and string[-1] == '"':
+            string = string[1:-1].strip()
+            string = self.strip_qoutes(string)
+        return string
+
+    # change dir path e.g. 'command/dirs/' to 'command/dirs'
+    def change_dir_path_to_default(self, dir_path):
+        default_directory = str(dir_path).strip()
+        if default_directory[-1] == '/':
+            default_directory = default_directory[:-1]
+        return default_directory
+
+    # iterate python 2 and 3 compatible
+    def iterate_items(self, to_iterate):
+        if (sys.version_info > (3, 0)):
+            # Python 3 code in this block
+            return to_iterate.items()
+        else:
+            # Python 2 code in this block
+            return to_iterate.iteritems()
+
+    # validates csv report for i18n-generate (keys=False), i18n-execute (keys=True)
     def validate_report(self, file_path, keys=False):
         df = pd.read_csv(file_path)
         columns = list(df.columns.values)
@@ -67,29 +89,11 @@ class BaseClass(object):
                 return False
             return True
 
-
     def get_files_in_Dir(self, report):
         files=list()
         for file_ in os.listdir(report):
             files.append(file_)
         return files
-
-    def get_content_type_code(self, path):
-        extension = path.split('.')[-1]
-        if extension not in ALLOWED_EXTENSIONS:
-            raise FileExtensionNotAllowed("File format `{}` not in allowed list of file formats: {}"
-                                          .format(extension, ', '.join(ALLOWED_EXTENSIONS)))
-        return ALLOWED_EXTENSIONS[extension]
-
-    @classmethod
-    def makeoutputdir(self):
-        desktop = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop', 'Output_Qordoba')
-        try:
-            os.makedirs(desktop)
-            return desktop
-        except OSError:
-            return desktop
-            pass
 
     def convert(self, input):
         if isinstance(input, dict):
@@ -104,6 +108,64 @@ class BaseClass(object):
         else:
             return input
 
+    # json_dictionary, list(), dict()
+    def get_all_keys(self, json_dictionary, path, c):
+        for key, value in json_dictionary.items():
+
+            path.append(key)
+            if type(value) is not dict:
+                s_path = '.'.join(path)
+                c[s_path] = value
+            else:
+                self.get_all_keys(value, path, c)
+            path.pop()
+
+        return c
+
+    def get_nested_dictionary(self, file):
+
+        if 'json' in file[-4:]:
+            json_data = json.loads(open(file, "r").read())
+            return json_data
+
+        if any(x in file[-4:] for x in ['yml', 'yaml']):
+            with open(file, 'r') as stream:
+                try:
+                    i18n_key_values_yml = yaml.load(stream)
+                    return i18n_key_values_yml
+                except yaml.YAMLError as exc:
+                    print(exc)
+
+        if 'csv' in file[-4:]:
+
+            with open(file, mode='r') as infile:
+                reader = csv.reader(infile)
+                mydict = dict(row[:2] for row in reader if row)
+            return mydict
+
+    """
+    Base methods for move, find, remove command
+    and
+    find-new source
+    """
+
+    def makeoutputdir(self):
+        desktop = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop', 'Output_Qordoba')
+        try:
+            os.makedirs(desktop)
+            return desktop
+        except OSError:
+            return desktop
+            pass
+
+    def get_content_type_code(self, path):
+        extension = path.split('.')[-1]
+        if extension not in ALLOWED_EXTENSIONS:
+            raise FileExtensionNotAllowed("File format `{}` not in allowed list of file formats: {}"
+                                          .format(extension, ', '.join(ALLOWED_EXTENSIONS)))
+        return ALLOWED_EXTENSIONS[extension]
+
+
     def find_files_by_pattern(self, curpath, pattern):
 
         for path in glob.iglob(pattern):
@@ -114,8 +176,8 @@ class BaseClass(object):
 
             yield path
 
-    def delete_keys_from_dict(self, dict_del, lst_keys):
 
+    def delete_keys_from_dict(self, dict_del, lst_keys):
         for k in lst_keys:
             try:
                 del dict_del[k]
@@ -128,20 +190,6 @@ class BaseClass(object):
 
         return dict_del
 
-    #json_dictionary, list(), dict()
-    def get_all_keys(self, json_dictionary, path, c):
-
-        for key, value in json_dictionary.items():
-
-            path.append(key)
-            if type(value) is not dict:
-                s_path = '.'.join(path)
-                c[s_path] = value
-            else:
-                self.get_all_keys(value, path, c)
-            path.pop()
-
-        return c
 
     def get_line(self, filepath, i18n_keys_values):
         try:
@@ -219,27 +267,6 @@ class BaseClass(object):
             with open(file, 'r') as stream:
                 try:
                     i18n_key_values_yml = self.get_all_keys(yaml.load(stream), list(), dict())
-                    return i18n_key_values_yml
-                except yaml.YAMLError as exc:
-                    print(exc)
-
-        if 'csv' in file[-4:]:
-
-            with open(file, mode='r') as infile:
-                reader = csv.reader(infile)
-                mydict = dict(row[:2] for row in reader if row)
-            return mydict
-
-    def get_nested_dictionary(self, file):
-
-        if 'json' in file[-4:]:
-            json_data = json.loads(open(file, "r").read())
-            return json_data
-
-        if any(x in file[-4:] for x in ['yml', 'yaml']):
-            with open(file, 'r') as stream:
-                try:
-                    i18n_key_values_yml = yaml.load(stream)
                     return i18n_key_values_yml
                 except yaml.YAMLError as exc:
                     print(exc)

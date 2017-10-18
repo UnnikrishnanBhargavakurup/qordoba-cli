@@ -15,6 +15,10 @@ if PY3:
 else:
     from urllib import quote as urlquote
 
+def get_data(path):
+    _ROOT = os.path.abspath(os.path.dirname(__file__))
+    return os.path.join(_ROOT, path)
+
 
 def python_2_unicode_compatible(klass):
     """

@@ -34,7 +34,6 @@ log = logging.getLogger('qordoba')
 try:
     import signal
 
-
     def exithandler(signum, frame):
         signal.signal(signal.SIGINT, signal.SIG_IGN)
         signal.signal(signal.SIGTERM, signal.SIG_IGN)

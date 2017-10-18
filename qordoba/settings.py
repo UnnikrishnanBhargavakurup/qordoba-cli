@@ -142,12 +142,12 @@ def get_pull_pattern(config, default=NOTDEFINED):
         raise PatternNotFound('Pattern not found for target files')
 
 def get_qorignore(directory=None):
-    qor_filename = '.qorignore'
+    qor_filename = 'i18n-config.yml'
     if directory:
         if directory.strip()[-1] == '/':
-            qor_filename = directory + '.qorignore'
+            qor_filename = directory + 'i18n-config.yml'
         else:
-            qor_filename = directory + '/.qorignore'
+            qor_filename = directory + '/i18n-config.yml'
     try:
         with open(qor_filename) as file:
             ignore_list = [line.rstrip() for line in file.readlines()]

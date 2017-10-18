@@ -1,9 +1,10 @@
-
 from qordoba.commands.i18n_base import BaseClass, IGNOREFILES
-
+from qordoba.utils import get_data
 import logging
 import pprint
 from subprocess import Popen,PIPE
+import pandas as pd
+import os
 
 pp = pprint.PrettyPrinter(indent=4)
 log = logging.getLogger('qordoba')
@@ -19,13 +20,8 @@ class i18nExtractClass(BaseClass):
 
     def extract(self,directory, output):
 
-        directory = str(directory).strip()
-        output = str(output).strip()
-        if directory[-1] == '/':
-            directory = directory[:-1]
-        if output[-1] == '/':
-            output = output[:-1]
-
+        directory = self.change_dir_path_to_default(directory)
+        output = self.change_dir_path_to_default(output)
 
         log.info('\b')
         log.info( " loading data from outer space ..." + '\b')
@@ -37,17 +33,14 @@ class i18nExtractClass(BaseClass):
         log.info("strings are now being exported from your files")
         log.info('\b')
 
-        Process = Popen('../string-extractor/bin/start-container.sh %s %s' % (directory, output), shell=True)
+        start_container_path =  get_data('string-extractor/bin/start-container.sh')
+        Process = Popen('%s %s %s' % (start_container_path, directory, output), shell=True)
         log.info(Process.communicate())
 
         log.info('\b')
 
-        import pandas as pd
-        import os
-        if output[:-1] == '/':
-            file_path = output + 'string-literal.csv'
-        else:
-            file_path = output + '/' + 'string-literals.csv'
+        output = self.change_dir_path_to_default(output)
+        file_path = output + '/' + 'string-literals.csv'
 
         df_file = pd.read_csv(file_path, sep=',', names=['filename', 'startLineNumber', 'startCharIdx', 'endLineNumber', 'endCharIdx', 'text'])
         os.remove(file_path)

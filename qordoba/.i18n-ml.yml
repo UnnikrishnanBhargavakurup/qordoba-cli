@@ -1,0 +1,22 @@
+i18n:
+  input directory:
+    - bla
+
+  report:
+    - bla
+
+  exclude:
+    - app/assets/images/*
+    - app/resources/iam.png
+  
+  keys:
+    html:
+      - ${KEYi18n}
+
+  localization:
+    existing:
+      - app/folder/localization
+    export:
+      - JSON
+    
+
