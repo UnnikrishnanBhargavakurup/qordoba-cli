@@ -83,11 +83,11 @@ def select_source_columns(columns):
     }
 
 
-def upload_file(api, path, version=None, **kwargs):
+def upload_file(api, path, remote_content_type_codes, version=None, **kwargs):
     log.info('Uploading {}'.format(path.native_path))
 
     file_name = path.unique_name
-    content_type_code = get_content_type_code(path)
+    content_type_code = get_content_type_code(path, remote_content_type_codes)
     version_tag = version
 
     with open(path.native_path, 'rb') as f:
@@ -95,8 +95,9 @@ def upload_file(api, path, version=None, **kwargs):
                                        **kwargs)
     log.debug('File `{}` uploaded. Name - `{}`. Adding to the project...'.format(path.native_path, file_name))
 
+    # if resp.get('version_tags') or resp.get('version_tags') == []:
     if resp.get('version_tags', ()):
-        if version_tag is None or version_tag in resp.get('version_tags'):
+        if version_tag is None or version_tag == 'None' or version_tag in resp.get('version_tags'):
             version_tag = select_version_tag(file_name, resp.get('version_tags'))
 
     if resp.get('columns'):
@@ -104,7 +105,11 @@ def upload_file(api, path, version=None, **kwargs):
 
     resp = api.append_file(resp['upload_id'], file_name, version_tag=version_tag, **kwargs)
 
-    log.info('Uploaded {} successfully as {}'.format(path.native_path, file_name))
+    if version:
+        log.info('Uploaded {} successfully as {} with version tag `{}`'.format(path.native_path, file_name, version_tag))
+    else:
+        log.info('Uploaded {} successfully as {}'.format(path.native_path, file_name))
+
 
 
 def update_file(api, path, remote_files, version=None):
@@ -123,26 +128,24 @@ def update_file(api, path, remote_files, version=None):
 
     resp = api.apply_upload_file(resp['id'], remote_file['page_id'])
 
-    log.info('Updated {} from {} successfully.'.format(file_name))
+    log.info('Updated {} successfully.'.format(file_name))
 
 def find_directories(pattern):
     directory = pattern.split('/')
     del directory[-1]
-    directory = '/'.join(directory)
+    directory = '/'.join(directory) + '/'
     directory_list = list()
     directory_list.append(directory)
-    for root, dirs, files in os.walk(directory, topdown=False):
-        for name in dirs:
-            directory_list.append(os.path.join(root, name))
-    return directory_list
+    directory_listing = [x[0] for x in os.walk(directory)]
+    return directory_listing
 
-def final_push(project, curdir, pattern, api,  update, version):
+def final_push(project, curdir, pattern, api,  update, version, remote_content_type_codes):
 
     source_lang = get_source_language(project)
     lang = next(get_destination_languages(project))
-    files = list(find_files_by_pattern(curdir, pattern, source_lang))
+    files = list(find_files_by_pattern(curdir, pattern, source_lang, remote_content_type_codes))
 
-    if not files:
+    if len(files) == 0:
         log.info('Files for the given push pattern `{}` do not exists.' .format(pattern))
 
     for file in files:
@@ -155,31 +158,34 @@ def final_push(project, curdir, pattern, api,  update, version):
         if remote_file_pages and update:
             update_file(api, path, remote_file_pages, version=version)
         else:
-            upload_file(api, path, version=version)
+            upload_file(api, path, remote_content_type_codes, version=version)
 
 
-def push_command(curdir, config, update=False, version=None, files=()):
+def push_command(curdir, config, update, version=None, files=()):
     api = ProjectAPI(config)
     project = api.get_project()
+    remote_content_type_codes = project['content_type_codes']
     init_language_storage(api)
     add_project_file_formats(get_project_file_formats(config))
-
 
     if not files:
         pattern_list = get_push_pattern(config)
         if pattern_list is None:
-            pattern_list = [None]
+            log.info("No push pattern found in config. Taking files from current directory")
+            pass
 
-        for pattern in pattern_list:
+    if files:
+        pattern_list = []
+        for file_ in files:
+            pattern_list.append(file_)
 
-            if pattern is not None and find_directories(pattern):
-                    pattern_extension = pattern.split('/')[-1]
-                    directory_list = find_directories(pattern)
-                    for dir_ in directory_list:
-                        dir_ = dir_ + '/' + pattern_extension
-                        final_push(project, curdir, dir_, api,  update=False, version=None)
-            else:
-                final_push(project, curdir, pattern, api, update=False, version=None)
-
-
-
+    for pattern in pattern_list:
+        assert len(pattern_list) != 0
+        if pattern[-2:] == '/*':
+            pattern_extension = pattern.split('/')[-1]
+            directory_list = find_directories(pattern)
+            for dir_ in directory_list:
+                dir_ = dir_ + '/' + pattern_extension
+                final_push(project, curdir, dir_, api,  update, version, remote_content_type_codes)
+        else:
+            final_push(project, curdir, pattern, api, update, version, remote_content_type_codes)

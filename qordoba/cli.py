@@ -76,7 +76,7 @@ class BaseHandler(with_metaclass(ABCMeta)):
         config, loaded = load_settings(access_token=self.access_token,
                                        project_id=self.project_id,
                                        organization_id=self.organization_id)
-        config.validate()
+        # config.validate()
         if not loaded:
             log.info('Config not found...')
         return config
@@ -196,8 +196,8 @@ class PullHandler(BaseHandler):
     def register(cls, *args, **kwargs):
         parser = super(PullHandler, cls).register(*args, **kwargs)
         parser.add_argument('files', nargs='*', metavar='FILE', default=None, help="")
-        # parser.add_argument('--in-progress', dest='in_progress', action='store_true',
-        #                     help='Allow to download not completed translations.')
+        parser.add_argument('--in-progress', dest='in_progress', action='store_true',
+                            help='Allow to download not completed translations.')
         parser.add_argument('-l', '--languages', dest='languages', nargs='+', type=CommaSeparatedSet(),
                             help="Work only on specified (comma-separated) languages.")
         parser.add_argument('-f', '--force', dest='force', action='store_true',
@@ -242,7 +242,7 @@ class PushHandler(BaseHandler):
 
     def load_settings(self):
         config = super(PushHandler, self).load_settings()
-        # config.validate(keys=('organization_id',))
+        config.validate(keys=('organization_id',))
         return config
 
     @classmethod

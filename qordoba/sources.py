@@ -170,7 +170,7 @@ def validate_push_pattern(pattern):
     #     raise PatternNotValid('Push pattern is not valid. Pattern should contain one of the values: *,?')
     pass
 
-def create_target_path_by_pattern(curdir, language, version_tag, source_name,  pattern=None, distinct=False, content_type_code=None):
+def create_target_path_by_pattern(curdir, language,  source_name, version_tag=False, pattern=None, distinct=False, content_type_code=None):
 
     if not distinct and pattern is not None and not pull_pattern_validate_regexp.search(pattern):
         raise PatternNotValid(
