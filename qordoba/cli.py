@@ -95,6 +95,30 @@ class BaseHandler(with_metaclass(ABCMeta)):
         kwargs.setdefault('name', cls.name)
         kwargs.setdefault('help', cls.help)
         kwargs['add_help'] = False
+
+        parser = root.add_parser(**kwargs)
+        fix_parser_titles(parser)
+        parser.set_defaults(_handler=cls)
+        parser.add_argument('--project-id', required=False, type=int, dest='project_id',
+                            help='The ID of your Qordoba project.',
+                            default=None)
+        parser.add_argument('--access-token', required=False, type=str, dest='access_token',
+                            help='Your Qordoba access token.',
+                            default=None)
+        parser.add_argument('--organization-id', required=False, type=int, dest='organization_id',
+                            help='The ID of your Qordoba organization.',
+                            default=None)
+        parser.add_argument('--traceback', dest='traceback', action='store_true')
+        parser.add_argument('--debug', dest='debug', default=False, action='store_true')
+        parser.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS,
+                            help='Show this help message and exit.')
+
+        return parser
+
+    def register_i18n(cls, root, **kwargs):
+        kwargs.setdefault('name', cls.name)
+        kwargs.setdefault('help', cls.help)
+        kwargs['add_help'] = False
         parser = root.add_parser(**kwargs)
         fix_parser_titles(parser)
         parser.set_defaults(_handler=cls)
@@ -328,7 +352,7 @@ class i18nExtractHandler(BaseHandler):
     """
 
     @classmethod
-    def register(cls, *args, **kwargs):
+    def register_i18n(cls, *args, **kwargs):
         parser = super(i18nExtractHandler, cls).register(*args, **kwargs)
         fix_parser_titles(parser)
         parser.set_defaults(_handler=cls)
@@ -345,7 +369,7 @@ class i18nGenerateHandler(BaseHandler):
     """
 
     @classmethod
-    def register(cls, *args, **kwargs):
+    def register_i18n(cls, *args, **kwargs):
         parser = super(i18nGenerateHandler, cls).register(*args, **kwargs)
         fix_parser_titles(parser)
         parser.set_defaults(_handler=cls)
@@ -362,7 +386,7 @@ class i18nExecuteHandler(BaseHandler):
     """
 
     @classmethod
-    def register(cls, *args, **kwargs):
+    def register_i18n(cls, *args, **kwargs):
         parser = super(i18nExecuteHandler, cls).register(*args, **kwargs)
         fix_parser_titles(parser)
         parser.set_defaults(_handler=cls)
@@ -388,7 +412,7 @@ class i18n_RemoveHandler(BaseHandler):
     """
 
     @classmethod
-    def register(cls, *args, **kwargs):
+    def register_i18n(cls, *args, **kwargs):
         parser = super(i18n_RemoveHandler, cls).register(*args, **kwargs)
         parser.add_argument('keyword', nargs='*', default=None, type=str, help="Filter your i18n keys by that keyword")
         return parser
@@ -405,7 +429,7 @@ class i18n_FindHandler(BaseHandler):
     """
 
     @classmethod
-    def register(cls, *args, **kwargs):
+    def register_i18n(cls, *args, **kwargs):
         parser = super(i18n_FindHandler, cls).register(*args, **kwargs)
         parser.add_argument('keyword', nargs='*', default=None, type=str, help="Filter your i18n keys by that keyword")
 
@@ -423,7 +447,7 @@ class i18n_MoveHandler(BaseHandler):
     """
 
     @classmethod
-    def register(cls, *args, **kwargs):
+    def register_i18n(cls, *args, **kwargs):
         parser = super(i18n_MoveHandler, cls).register(*args, **kwargs)
         fix_parser_titles(parser)
         parser.set_defaults(_handler=cls)
