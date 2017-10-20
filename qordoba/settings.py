@@ -10,9 +10,9 @@ log = logging.getLogger('qordoba')
 DEFAULT_SETTING_PATH = os.path.abspath(os.path.join(os.getcwd(), 'config.yml'))
 
 SETTING_PATHS = (
-    os.environ.get('QORDOBA_CONFIG', ''),
+    # os.environ.get('QORDOBA_CONFIG', ''),
     DEFAULT_SETTING_PATH,
-    os.path.abspath(os.path.join(os.path.expanduser('~'), '.qordoba.yml'))
+    # os.path.abspath(os.path.join(os.path.expanduser('~'), '.qordoba.yml'))
 )
 
 
@@ -42,15 +42,15 @@ class SettingsDict(dict):
         if validate:
             self.validate()
 
-    # def validate(self, keys=('project_id', 'access_token')):
-    #     for key in keys:
-    #         try:
-    #             v = self[key]
-    #             if v is None:
-    #                 raise KeyError
-    #         except KeyError:
-    #             raise SettingsValidationError(
-    #                 """{} param is required. Please provide it by argument or in config file.""".format(key))
+    def validate(self, keys=('project_id', 'access_token')):
+        for key in keys:
+            try:
+                v = self[key]
+                if v is None:
+                    raise KeyError
+            except KeyError:
+                raise SettingsValidationError(
+                    """{} param is required. Please provide it by argument or in config file.""".format(key))
 
 
 def load_settings_from_file(path):
