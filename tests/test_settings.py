@@ -15,9 +15,9 @@ def env_config_path(curdir):
 def mock_env_config_path(monkeypatch, env_config_path):
     monkeypatch.setenv('QORDOBA_CONFIG', env_config_path)
     monkeypatch.setattr('qordoba.settings.SETTING_PATHS', (env_config_path,
-                                                           os.path.abspath(os.path.join(os.getcwd(), '.qordoba.yml')),
+                                                           os.path.abspath(os.path.join(os.getcwd(), 'nonon.yml')),
                                                            os.path.abspath(
-                                                               os.path.join(os.path.expanduser('~'), '.qordoba.yml'))
+                                                               os.path.join(os.path.expanduser('~'), 'nonon.yml'))
                                                            ))
 
 
@@ -28,8 +28,8 @@ def mock_change_dir(monkeypatch, curdir):
     monkeypatch.chdir(chdir_path)
     monkeypatch.setattr('qordoba.settings.SETTING_PATHS', (
         os.environ.get('QORDOBA_CONFIG', ''),
-        '.qordoba.yml',
-        os.path.abspath(os.path.join(os.path.expanduser('~'), '.qordoba.yml')))
+        'nonon.yml',
+        os.path.abspath(os.path.join(os.path.expanduser('~'), 'nonon.yml')))
                         )
 
 

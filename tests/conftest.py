@@ -66,7 +66,7 @@ def page_search_response(curdir):
 @pytest.fixture
 def config(monkeypatch, curdir):
     root = os.path.abspath(curdir)
-    monkeypatch.setattr('qordoba.settings.SETTING_PATHS', (os.path.join(root, 'fixtures', '.qordoba.yml'), ))
+    monkeypatch.setattr('qordoba.settings.SETTING_PATHS', (os.path.join(root, 'fixtures', 'nonon.yml'), ))
     return load_settings()
 
 @pytest.fixture

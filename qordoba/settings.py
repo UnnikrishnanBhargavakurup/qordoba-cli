@@ -7,7 +7,7 @@ import yaml.parser
 
 log = logging.getLogger('qordoba')
 
-DEFAULT_SETTING_PATH = os.path.abspath(os.path.join(os.getcwd(), '.qordoba.yml'))
+DEFAULT_SETTING_PATH = os.path.abspath(os.path.join(os.getcwd(), 'nonon.yml'))
 
 SETTING_PATHS = (
     # os.environ.get('QORDOBA_CONFIG', ''),
@@ -178,10 +178,10 @@ def get_find_new_blacklist_pattern(config):
 def get_localization_files(config):
     if not config or config is None:
         try:
-            with open('../.qordoba.yml') as info:
+            with open('../nonon.yml') as info:
                 config = yaml.load(info)
         except IOError:
-            log.info('No `.qordoba.yml` file, needs infos to continue')
+            log.info('No `nonon.yml` file, needs infos to continue')
     try:
         return [pattern_row for pattern_row in config['qordoba']['push']['sources']]
     except (KeyError, IndexError):
