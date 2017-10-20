@@ -261,7 +261,7 @@ def _ishidden(path):
     return path[0] in ('.', b'.'[0])
 
 
-def find_files_by_pattern(curpath, pattern, lang):
+def find_files_by_pattern(curpath, pattern, lang, remote_content_type_codes):
     validate_push_pattern(pattern)
 
     for path in glob.iglob(pattern):
@@ -274,7 +274,7 @@ def find_files_by_pattern(curpath, pattern, lang):
         path = validate_path(curpath, path, lang)
 
         try:
-            _ = get_content_type_code(path)
+            _ = get_content_type_code(path, remote_content_type_codes)
         except FileExtensionNotAllowed as e:
             log.info('File path ignored: {}'.format(e))
             continue
@@ -295,7 +295,7 @@ def add_project_file_formats(formats, target_dict=ALLOWED_EXTENSIONS):
     return target_dict
 
 
-def get_content_type_code(path):
+def get_content_type_code(path, remote_content_type_codes):
     """
     :param qordoba.sources.TranslationFile path:
     :return:

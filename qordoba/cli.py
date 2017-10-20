@@ -242,7 +242,7 @@ class PushHandler(BaseHandler):
 
     def load_settings(self):
         config = super(PushHandler, self).load_settings()
-        config.validate(keys=('organization_id',))
+        # config.validate(keys=('organization_id',))
         return config
 
     @classmethod
