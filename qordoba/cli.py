@@ -140,7 +140,7 @@ class BaseHandler(with_metaclass(ABCMeta)):
 class InitHandler(BaseHandler):
     name = 'init'
     help = """
-    Create your config.yml configuration file.
+    Create your .qordoba.yml configuration file.
     """
 
     def main(self):
@@ -195,18 +195,9 @@ class PullHandler(BaseHandler):
     @classmethod
     def register(cls, *args, **kwargs):
         parser = super(PullHandler, cls).register(*args, **kwargs)
-        parser.add_argument('--project-id', required=False, type=int, dest='project_id',
-                            help='The ID of your Qordoba project.',
-                            default=None)
-        parser.add_argument('--access-token', required=False, type=str, dest='access_token',
-                            help='Your Qordoba access token.',
-                            default=None)
-        parser.add_argument('--organization-id', required=False, type=int, dest='organization_id',
-                            help='The ID of your Qordoba organization.',
-                            default=None)
-        parser.add_argument('--in-progress', dest='in_progress', action='store_true',
-                            help='Allow to download not completed translations.')
-
+        parser.add_argument('files', nargs='*', metavar='FILE', default=None, help="")
+        # parser.add_argument('--in-progress', dest='in_progress', action='store_true',
+        #                     help='Allow to download not completed translations.')
         parser.add_argument('-l', '--languages', dest='languages', nargs='+', type=CommaSeparatedSet(),
                             help="Work only on specified (comma-separated) languages.")
         parser.add_argument('-f', '--force', dest='force', action='store_true',
@@ -251,21 +242,12 @@ class PushHandler(BaseHandler):
 
     def load_settings(self):
         config = super(PushHandler, self).load_settings()
-        config.validate(keys=('organization_id',))
+        # config.validate(keys=('organization_id',))
         return config
 
     @classmethod
     def register(cls, *args, **kwargs):
         parser = super(PushHandler, cls).register(*args, **kwargs)
-        parser.add_argument('--project-id', required=False, type=int, dest='project_id',
-                            help='The ID of your Qordoba project.',
-                            default=None)
-        parser.add_argument('--access-token', required=False, type=str, dest='access_token',
-                            help='Your Qordoba access token.',
-                            default=None)
-        parser.add_argument('--organization-id', required=False, type=int, dest='organization_id',
-                            help='The ID of your Qordoba organization.',
-                            default=None)
         parser.add_argument('files', nargs='*', metavar='PATH', default=None, type=FilePathType(), help="")
         parser.add_argument('--update', dest='update', action='store_true', help="Force to update file.")
         parser.add_argument('--version', dest='version', default=None, type=str, help="Set version tag.")
@@ -302,15 +284,6 @@ class DeleteHandler(BaseHandler):
     @classmethod
     def register(cls, *args, **kwargs):
         parser = super(DeleteHandler, cls).register(*args, **kwargs)
-        parser.add_argument('--project-id', required=False, type=int, dest='project_id',
-                            help='The ID of your Qordoba project.',
-                            default=None)
-        parser.add_argument('--access-token', required=False, type=str, dest='access_token',
-                            help='Your Qordoba access token.',
-                            default=None)
-        parser.add_argument('--organization-id', required=False, type=int, dest='organization_id',
-                            help='The ID of your Qordoba organization.',
-                            default=None)
         parser.add_argument('file', default=(), type=str,
                             help="Define resource name or ID.")
         parser.add_argument('-f', '--force', dest='force', action='store_true', help='Force delete resources.')
