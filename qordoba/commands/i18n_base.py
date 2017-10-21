@@ -28,19 +28,41 @@ IGNOREFILES = [
 
 OUTPUT = dict()
 
+DEFAULT_CONFIG_PATH = os.path.abspath(os.path.join(os.getcwd(), '.i18n-ml.yml'))
+
 class FilesNotFound(Exception):
     """
     Files not found
     """
-
 
 class FileExtensionNotAllowed(Exception):
     """
     The file extension doesn't match any file format allowed for this project
     """
 
+class SettingsError(Exception):
+    """
+    Settings error
+    """
 
 class BaseClass(object):
+
+    def load_i18n_ml_config(self):
+        try:
+            with open(DEFAULT_CONFIG_PATH, 'r') as f:
+                config = yaml.safe_load(f)
+                if not config or not config.get('i18n', None):
+                    log.warning('Could not parse i18n config file: {}'.format(DEFAULT_CONFIG_PATH))
+                    return {}
+
+                return config['i18n']
+
+        except (yaml.parser.ParserError, KeyError):
+            log.debug('Could not parse i18n config file: {}'.format(DEFAULT_CONFIG_PATH))
+            raise SettingsError('Could not parse i18n config file: {}'.format(DEFAULT_CONFIG_PATH))
+        except IOError:
+            raise SettingsError('Could not open i18n config file: {}'.format(DEFAULT_CONFIG_PATH))
+
 
     def strip_qoutes(self, string):
         if string[:1] == "'" and string[-1] == "'" or string[:1] == '"' and string[-1] == '"':

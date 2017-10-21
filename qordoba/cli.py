@@ -299,8 +299,8 @@ class FindNewSourceHandler(BaseHandler):
     @classmethod
     def register(cls, *args, **kwargs):
         parser = super(FindNewSourceHandler, cls).register(*args, **kwargs)
-        parser.add_argument("-d", "--directory", type=str, required=True)
-        parser.add_argument("-o", "--output", type=str, required=True)
+        parser.add_argument("-d", "--directory", type=str, required=False)
+        parser.add_argument("-o", "--output", type=str, required=False)
         return parser
 
     def main(self):
@@ -317,8 +317,8 @@ class i18nExtractHandler(BaseHandler):
         parser = super(i18nExtractHandler, cls).register(*args, **kwargs)
         fix_parser_titles(parser)
         parser.set_defaults(_handler=cls)
-        parser.add_argument("-d", "--directory", type=str, required=True)
-        parser.add_argument("-o", "--output", type=str, required=True)
+        parser.add_argument("-d", "--directory", type=str, required=False)
+        parser.add_argument("-o", "--output", type=str, required=False)
 
     def main(self):
         i18nExtractClass().extract(directory=self.directory, output=self.output)
@@ -334,7 +334,7 @@ class i18nGenerateHandler(BaseHandler):
         parser = super(i18nGenerateHandler, cls).register(*args, **kwargs)
         fix_parser_titles(parser)
         parser.set_defaults(_handler=cls)
-        parser.add_argument("-r", "--report", type=str, required=True)
+        parser.add_argument("-r", "--report", type=str, required=False)
         parser.add_argument("-l", "--localization", type=str, required=False)
 
     def main(self):
@@ -351,9 +351,9 @@ class i18nExecuteHandler(BaseHandler):
         parser = super(i18nExecuteHandler, cls).register(*args, **kwargs)
         fix_parser_titles(parser)
         parser.set_defaults(_handler=cls)
-        parser.add_argument("-d", "--directory", type=str, required=True)
-        parser.add_argument("-r", "--report", type=str, required=True)
-        parser.add_argument("-o", "--output", type=str, required=True)
+        parser.add_argument("-d", "--directory", type=str, required=False)
+        parser.add_argument("-r", "--report", type=str, required=False)
+        parser.add_argument("-o", "--output", type=str, required=False)
 
     def main(self):
         i18nExecutionClass().execute(self._curdir, report=self.report, directory=self.directory, output=self.output)
