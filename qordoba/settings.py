@@ -30,25 +30,25 @@ class PatternNotFound(SettingsError):
 
 
 class SettingsDict(dict):
-    def __init__(self, path=DEFAULT_SETTING_PATH, validate=True, **kwargs):
+    def __init__(self, path=DEFAULT_SETTING_PATH, validate=False, **kwargs):
         super(SettingsDict, self).__init__()
         self.path = path
 
         for k, v in kwargs.items():
             self[k.lower()] = v
 
-        # if validate:
-        #     self.validate()
+        if validate:
+            self.validate()
 
-def validate(self, keys=('project_id', 'access_token')):
-    for key in keys:
-        try:
-            v = self[key]
-            if v is None:
-                raise KeyError
-        except KeyError:
-            raise SettingsValidationError(
-                """{} param is required. Please provide it by argument or in config file.""".format(key))
+    def validate(self, keys=('project_id', 'access_token')):
+        for key in keys:
+            try:
+                v = self[key]
+                if v is None:
+                    raise KeyError
+            except KeyError:
+                raise SettingsValidationError(
+                    """{} param is required. Please provide it by argument or in config file.""".format(key))
 
 
 def load_settings_from_file(path):

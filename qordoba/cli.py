@@ -92,7 +92,7 @@ class BaseHandler(with_metaclass(ABCMeta)):
 
 
     @classmethod
-    def register(cls, root, i18n=False, **kwargs):
+    def register(cls, root, **kwargs):
         kwargs.setdefault('name', cls.name)
         kwargs.setdefault('help', cls.help)
         kwargs['add_help'] = False
@@ -100,15 +100,14 @@ class BaseHandler(with_metaclass(ABCMeta)):
         parser = root.add_parser(**kwargs)
         fix_parser_titles(parser)
         parser.set_defaults(_handler=cls)
-        if not i18n:
-            parser.add_argument('--project-id', required=False, type=int, dest='project_id',
-                                help='The ID of your Qordoba project.',
-                                default=None)
-            parser.add_argument('--access-token', required=False, type=str, dest='access_token',
-                                help='Your Qordoba access token.',
-                                default=None)
-            parser.add_argument('--organization-id', required=False, type=int, dest='organization_id',
-                                help='The ID of your Qordoba organization.',
+        parser.add_argument('--project-id', required=False, type=int, dest='project_id',
+                            help='The ID of your Qordoba project.',
+                            default=None)
+        parser.add_argument('--access-token', required=False, type=str, dest='access_token',
+                            help='Your Qordoba access token.',
+                            default=None)
+        parser.add_argument('--organization-id', required=False, type=int, dest='organization_id',
+                            help='The ID of your Qordoba organization.',
                                 default=None)
         parser.add_argument('--traceback', dest='traceback', action='store_true')
         parser.add_argument('--debug', dest='debug', default=False, action='store_true')
@@ -137,7 +136,7 @@ class InitHandler(BaseHandler):
                      force=self.force)
 
     @classmethod
-    def register(cls, root, i18n=False, **kwargs):
+    def register(cls, root, **kwargs):
         kwargs.setdefault('name', cls.name)
         kwargs.setdefault('help', cls.help)
         kwargs['add_help'] = False
@@ -145,15 +144,14 @@ class InitHandler(BaseHandler):
         parser = root.add_parser(**kwargs)
         fix_parser_titles(parser)
         parser.set_defaults(_handler=cls)
-        if not i18n:
-            parser.add_argument('--organization-id', type=int, required=False, dest='organization_id',
-                                help='The ID of your Qordoba organization.')
-            parser.add_argument('--access-token', type=str, required=True, dest='access_token',
-                                help='Your Qordoba access token.',
-                                default=None)
-            parser.add_argument('--project-id', type=int, required=True, dest='project_id',
-                                help='The ID of your Qordoba project.',
-                                default=None)
+        parser.add_argument('--organization-id', type=int, required=False, dest='organization_id',
+                            help='The ID of your Qordoba organization.')
+        parser.add_argument('--access-token', type=str, required=True, dest='access_token',
+                            help='Your Qordoba access token.',
+                            default=None)
+        parser.add_argument('--project-id', type=int, required=True, dest='project_id',
+                            help='The ID of your Qordoba project.',
+                            default=None)
 
         parser.add_argument('--traceback', dest='traceback', action='store_true')
         parser.add_argument('--debug', dest='debug', action='store_true')
@@ -232,7 +230,7 @@ class PushHandler(BaseHandler):
 
     def load_settings(self):
         config = super(PushHandler, self).load_settings()
-       # config.validate(keys=('organization_id',))
+        config.validate(keys=('organization_id',))
         return config
 
     @classmethod
