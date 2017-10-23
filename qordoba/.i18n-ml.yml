@@ -1,22 +1,15 @@
 i18n:
-  input directory:
-    - bla
-
+  input:
+    - /Users/franzi/Workspace/artifacts_stringExtractor/directory_cloudflare/
   report:
-    - bla
-
+    - /Users/franzi/Workspace/artifacts_stringExtractor/report_cloudflare
   exclude:
-    - app/assets/images/*
-    - app/resources/iam.png
-  
+    - /Users/franzi/Workspace/artifacts_stringExtractor/
   keys:
     html:
-      - ${KEYi18n}
-
+      - ${KEY-i18n}
   localization:
     existing:
-      - app/folder/localization
+      - /Users/franzi/Workspace/artifacts_stringExtractor/localization_files
     export:
       - JSON
-    
-
