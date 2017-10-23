@@ -103,8 +103,16 @@ class i18nGenerateClass(BaseClass):
             return '.'.join(set(([w1,w2])))
 
     def generate(self, _curdir, report=None, localization=None):
-        for filename in os.listdir(report):
 
+        config = self.load_i18n_ml_config()
+        if report is None:
+            report = config['report'][0]
+            report = self.change_dir_path_to_default(report)
+
+        if localization is None:
+            localization = config["localization"]["existing"]
+
+        for filename in os.listdir(report):
             # validating report
             if not filename.endswith(".csv"):
                 continue
@@ -121,9 +129,15 @@ class i18nGenerateClass(BaseClass):
             #    If yes, return key, otherwise None.
             if localization:
                 localization_files = []
-                for loc_file in os.listdir(localization):
-                    if not loc_file.startswith('.'):
-                        localization_files.append(localization + '/' + loc_file)
+                for i in range(len(localization)):
+                    log.info('Reading files from directory `{}`.'.format(localization[i]))
+                    for loc_file in os.listdir(localization[i]):
+                        localization_dir = self.change_dir_path_to_default(localization[i])
+                        # skipping non json localization files
+                        if not loc_file.startswith('.') and loc_file.endswith('json'):
+                            localization_files.append(localization_dir + '/' + loc_file)
+                        else:
+                            log.info("Skipping file  `{}`. Not a valid json localization file".format(loc_file))
 
                 localization_k_v = self.get_existing_i18n_key_values(localization_files)
                 log.info(" ... searching if existing keys exist.")
