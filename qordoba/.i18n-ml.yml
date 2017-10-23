@@ -11,6 +11,5 @@ i18n:
   localization:
     existing:
       - /Users/franzi/Workspace/artifacts_stringExtractor/localization_files
-      - /Users/franzi/Workspace/artifacts_stringExtractor/report_cloudflare
     export:
       - JSON

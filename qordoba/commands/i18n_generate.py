@@ -107,7 +107,7 @@ class i18nGenerateClass(BaseClass):
         config = self.load_i18n_ml_config()
         if report is None:
             report = config['report'][0]
-            report = self.change_dir_path_to_default(report)
+            report = os.path.realpath(report)
 
         if localization is None:
             localization = config["localization"]["existing"]
@@ -132,7 +132,7 @@ class i18nGenerateClass(BaseClass):
                 for i in range(len(localization)):
                     log.info('Reading files from directory `{}`.'.format(localization[i]))
                     for loc_file in os.listdir(localization[i]):
-                        localization_dir = self.change_dir_path_to_default(localization[i])
+                        localization_dir = os.path.realpath(localization[i])
                         # skipping non json localization files
                         if not loc_file.startswith('.') and loc_file.endswith('json'):
                             localization_files.append(localization_dir + '/' + loc_file)

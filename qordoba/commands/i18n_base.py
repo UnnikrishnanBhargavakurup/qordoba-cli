@@ -1,16 +1,16 @@
-import logging
 import glob
-from collections import OrderedDict
 import os
 import yaml, csv, json
 import datetime
 import pandas as pd
 import sys
+import logging
+
+from collections import OrderedDict
 
 log = logging.getLogger('qordoba')
 
 CONTENT_TYPE_CODES = OrderedDict()
-
 CONTENT_TYPE_CODES['YAML'] = ('yml', 'yaml')
 CONTENT_TYPE_CODES['YAMLi18n'] = ('yml', 'yaml')
 CONTENT_TYPE_CODES['csv'] = ('csv',)
@@ -27,8 +27,6 @@ IGNOREFILES = [
 ]
 
 OUTPUT = dict()
-
-DEFAULT_CONFIG_PATH = os.path.abspath(os.path.join(os.getcwd(), '.i18n-ml.yml'))
 
 class FilesNotFound(Exception):
     """
@@ -47,35 +45,11 @@ class SettingsError(Exception):
 
 class BaseClass(object):
 
-    def load_i18n_ml_config(self):
-        try:
-            with open(DEFAULT_CONFIG_PATH, 'r') as f:
-                config = yaml.safe_load(f)
-                if not config or not config.get('i18n', None):
-                    log.warning('Could not parse i18n config file: {}'.format(DEFAULT_CONFIG_PATH))
-                    return {}
-
-                return config['i18n']
-
-        except (yaml.parser.ParserError, KeyError):
-            log.debug('Could not parse i18n config file: {}'.format(DEFAULT_CONFIG_PATH))
-            raise SettingsError('Could not parse i18n config file: {}'.format(DEFAULT_CONFIG_PATH))
-        except IOError:
-            raise SettingsError('Could not open i18n config file: {}'.format(DEFAULT_CONFIG_PATH))
-
-
     def strip_qoutes(self, string):
         if string[:1] == "'" and string[-1] == "'" or string[:1] == '"' and string[-1] == '"':
             string = string[1:-1].strip()
             string = self.strip_qoutes(string)
         return string
-
-    # change dir path e.g. 'command/dirs/' to 'command/dirs'
-    def change_dir_path_to_default(self, dir_path):
-        default_directory = str(dir_path).strip()
-        if default_directory[-1] == '/':
-            default_directory = default_directory[:-1]
-        return default_directory
 
     # iterate python 2 and 3 compatible
     def iterate_items(self, to_iterate):

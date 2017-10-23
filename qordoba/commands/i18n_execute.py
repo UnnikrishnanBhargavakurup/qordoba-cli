@@ -1,9 +1,10 @@
-from qordoba.commands.i18n_base import BaseClass
 import pandas as pd
 import os
 import logging
-log = logging.getLogger('qordoba')
 
+from qordoba.commands.i18n_base import BaseClass
+from qordoba.commands.i18n_utils import Config
+log = logging.getLogger('qordoba')
 
 class ReportNotValid(Exception):
     """
@@ -12,14 +13,12 @@ class ReportNotValid(Exception):
 
 class i18nExecutionClass(BaseClass):
 
-    def __init__(self):
-        self.next = False
-
     def final_replace(self, key_type, picked_line, v):
         picked_line_1 = picked_line.replace("'" + v['text'].strip() + "'", "${" + v[key_type].strip() + "}")
         picked_line_2 = picked_line_1.replace('"' + v['text'].strip() + '"', "${" + v[key_type].strip() + "}")
         picked_line_3 = picked_line_2.replace(v['text'].strip(), "${" + v[key_type].strip() + "}")
         return picked_line_3
+
     # file is list of strings. replaces strings in list
     def replace_strings_for_keys(self, df_to_dict, file_array):
         # Python 2
@@ -80,18 +79,12 @@ class i18nExecutionClass(BaseClass):
             pass
 
     def execute(self, curdir, report, directory, output):
-        output = str(output).strip()
-        report = str(report).strip()
-        directory = str(directory).strip()
-        if report[-1] == '/':
-            report = report[:-1]
-        if output[-1] == '/':
-            output = output[:-1]
 
-        reports = self.get_files_in_Dir(report)
-        reports_file_path = [report + '/' + x for x in reports if x.endswith('.csv')]
-        for report_path in reports_file_path:
+        config = Config(directory, report, None, None)
 
+        reports = self.get_files_in_Dir(config.report)
+
+        for report_path in reports:
             if not self.validate_report(report_path, keys=True):
                 raise ReportNotValid("The given report is not valid. ")
 
