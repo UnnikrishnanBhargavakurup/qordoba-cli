@@ -19,9 +19,8 @@ class i18nExecutionClass(BaseClass):
         picked_line_3 = picked_line_2.replace(v['text'].strip(), "${" + v[key_type].strip() + "}")
         return picked_line_3
 
-    # file is list of strings. replaces strings in list
     def replace_strings_for_keys(self, df_to_dict, file_array):
-        # Python 2
+        # file is list of strings. replaces strings in list
         for k, v in self.iterate_items(df_to_dict):
             idx_start = v['startLineNumber']
             idx_end = v['endLineNumber']
@@ -54,15 +53,15 @@ class i18nExecutionClass(BaseClass):
                     file_array[i] = None
 
         file_array_list = list()
-        # print(max(map(int, file_array)))
         for i in range(len(file_array)):
             idx = i + 1
             file_array_list.append(file_array[idx])
 
         return file_array_list
 
-    # loads file into list. Items of list are lines in file
+
     def get_filerows_as_list(self, file_path):
+        # loads file into list. Items of list are lines in file
         file_dict = {}
         count= 0
         try:
@@ -78,13 +77,12 @@ class i18nExecutionClass(BaseClass):
             print("File '{}' does not exist.".format(file_path))
             pass
 
-    def execute(self, curdir, report, directory, output):
+    def execute(self, curdir, report, directory, output, key):
 
         config = Config(directory, report, None, None)
-
-        reports = self.get_files_in_Dir(config.report)
-
+        reports = self.get_files_in_Dir(config.report[0])
         for report_path in reports:
+
             if not self.validate_report(report_path, keys=True):
                 raise ReportNotValid("The given report is not valid. ")
 
@@ -114,8 +112,6 @@ class i18nExecutionClass(BaseClass):
 
                 # remove old file, dump new
                 os.remove(project_file_path)
-                print("THIS IS A NEW FILE AND I DONT KNOW WHY ITS NOT WORKING")
-                print(new_file_dict_1)
                 Html_file = open(project_file_path, "w")
                 if project_file_path[-4:] == 'html':
                     ''.join(new_file_dict_1)
@@ -124,9 +120,7 @@ class i18nExecutionClass(BaseClass):
 
 
             # create localization file in output folder
-            if output[-1] == '/':
-                report = output[:-1]
-            new_localization_file = output + '/qordoba_localization_file.json'
+            new_localization_file = config.export_i18n[0] + '/qordoba_localization_file.json'
             # WTF! NEEDS REFACTURING
             del df['filename']
             del df['startLineNumber']

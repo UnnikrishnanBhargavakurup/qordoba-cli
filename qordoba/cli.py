@@ -354,9 +354,10 @@ class i18nExecuteHandler(BaseHandler):
         parser.add_argument("-d", "--directory", type=str, required=False)
         parser.add_argument("-r", "--report", type=str, required=False)
         parser.add_argument("-o", "--output", type=str, required=False)
+        parser.add_argument("-k", "--key", type=str, required=False)
 
     def main(self):
-        i18nExecutionClass().execute(self._curdir, report=self.report, directory=self.directory, output=self.output)
+        i18nExecutionClass().execute(self._curdir, report=self.report, directory=self.directory, output=self.output, key=self.key)
 
 """
 - RemoveHandler

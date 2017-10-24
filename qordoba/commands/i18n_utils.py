@@ -20,7 +20,7 @@ class Config(object):
         self._directory = directory
         self._report = report
         self._existing_i18n = exsisting_i18n
-        self._exported_i18n = export_i18n
+        self._export_i18n = export_i18n
         self.config = self.load_i18n_ml_config()
 
     def load_i18n_ml_config(self):
@@ -41,7 +41,7 @@ class Config(object):
     @property
     def directory(self):
         if self._directory:
-            return self.realpath(self.directory)
+            return self.realpath(self._directory)
         if self._directory is None:
             return self.realpath(self.config['input'])
         raise FileNotFound("No input directory found")
