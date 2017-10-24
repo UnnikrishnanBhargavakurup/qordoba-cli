@@ -41,7 +41,7 @@ class Config(object):
     @property
     def directory(self):
         if self._directory:
-            return self.realpath(self._directory)
+            return [os.path.realpath(self._directory)]
         if self._directory is None:
             return self.realpath(self.config['input'])
         raise FileNotFound("No input directory found")
@@ -49,7 +49,7 @@ class Config(object):
     @property
     def report(self):
         if self._report:
-            return self.realpath(self._report)
+            return [os.path.realpath(self._report)]
         if self._report is None:
             return self.realpath(self.config['report'])
         raise FileNotFound("No report directory found")
@@ -57,7 +57,7 @@ class Config(object):
     @property
     def exsisting_i18n(self):
         if self._existing_i18n:
-            return self.realpath(self._existing_i18n)
+            return [os.path.realpath(self._existing_i18n)]
         if self._existing_i18n is None:
             try:
                 return self.realpath(self.config['localization']['existing'])
@@ -67,7 +67,7 @@ class Config(object):
     @property
     def export_i18n(self):
         if self._export_i18n:
-            return self.realpath(self._export_i18n)
+            return [os.path.realpath(self._existing_i18n)]
         if self._export_i18n is None:
             return self.realpath(self.config['localization']['export'])
         raise FileNotFound("Please specify output directory")
