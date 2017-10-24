@@ -1,18 +1,20 @@
 import pandas as pd
 from qordoba.commands.i18n_base import BaseClass
+from qordoba.commands.i18n_utils import Config
 from qordoba.utils import get_data
+import os
+import logging
+
 try: # Python 2
     from itertools import izip
 except ImportError: # Python 3
     izip = zip
-import os
-import logging
-log = logging.getLogger('qordoba')
 
 class ReportNotValid(Exception):
     """
     Files not found
     """
+log = logging.getLogger('qordoba')
 KEY_COUNT = 0
 
 """
@@ -103,20 +105,16 @@ class i18nGenerateClass(BaseClass):
             return '.'.join(set(([w1,w2])))
 
     def generate(self, _curdir, report=None, localization=None):
+        """ Given localization files exists, gives back existing keys.
+        Further, generating new keys for values
+        """
+        config = Config(None, report, localization, None)
+        for filename in os.listdir(config.report[0]):
 
-        config = self.load_i18n_ml_config()
-        if report is None:
-            report = config['report'][0]
-            report = os.path.realpath(report)
-
-        if localization is None:
-            localization = config["localization"]["existing"]
-
-        for filename in os.listdir(report):
-            # validating report
             if not filename.endswith(".csv"):
                 continue
-            filename_path = report + '/' + filename
+
+            filename_path = config.report[0] + '/' + filename
 
             if not self.validate_report(filename_path, keys=False):
                 raise ReportNotValid("The given report is not valid. {}".format(filename_path))
@@ -124,23 +122,24 @@ class i18nGenerateClass(BaseClass):
             df = pd.read_csv(filename_path, header=0)
             df.text = (df.text).apply(lambda x: self.strip_qoutes(x))
 
-            # Getting existing key value pairs from localization files.
-            # --> lookup if stringliteral exists as value or key in a localization file.
-            #    If yes, return key, otherwise None.
-            if localization:
+            # lookup if stringliteral exists as value or key in a localization file.. If yes, return key, otherwise None.
+            localization_file_list = config.exsisting_i18n
+
+            if localization_file_list:
                 localization_files = []
-                for i in range(len(localization)):
-                    log.info('Reading files from directory `{}`.'.format(localization[i]))
-                    for loc_file in os.listdir(localization[i]):
-                        localization_dir = os.path.realpath(localization[i])
+
+                for i in range(len(localization_file_list)):
+                    log.info('Reading files from file `{}`.'.format(localization_file_list[i]))
+
+                    for loc_file in os.listdir(localization_file_list[i]):
                         # skipping non json localization files
                         if not loc_file.startswith('.') and loc_file.endswith('json'):
-                            localization_files.append(localization_dir + '/' + loc_file)
+                            localization_files.append(localization_file_list[i] + '/' + loc_file)
                         else:
                             log.info("Skipping file  `{}`. Not a valid json localization file".format(loc_file))
 
                 localization_k_v = self.get_existing_i18n_key_values(localization_files)
-                log.info(" ... searching if existing keys exist.")
+                log.info(" ... searching for existing keys.")
                 df['existing_keys'], df['existing_localization_file'] = izip(*df.iloc[:,-1].apply(lambda x: self.index_lookup(x, localization_k_v)))
 
                 log.info("  " + u"\U0001F4AB" + u"\U0001F52E" + " .. starting to generate new keys for you - based on the extracted Strings from your files.")

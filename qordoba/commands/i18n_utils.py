@@ -3,25 +3,26 @@ import yaml
 import logging
 log = logging.getLogger('qordoba')
 
-DEFAULT_CONFIG_PATH = os.path.abspath(os.path.join(os.getcwd(), '.i18n-ml.yml'))
 
-class SettingsError(Exception):
+class FileNotFound(Exception):
     """
     Settings error
     """
+
+
+DEFAULT_CONFIG_PATH = os.path.abspath(os.path.join(os.getcwd(), '.i18n-ml.yml'))
 
 class Config(object):
     """
     Represents the i18n-ml config
     """
-    def __init__(self, directory, report, localization_input, localization_export):
-        self.directory = directory
-        self.report = report
-        self.localization_input = localization_input
-        self.localization_export = localization_export
+    def __init__(self, directory, report, exsisting_i18n, export_i18n):
+        self._directory = directory
+        self._report = report
+        self._existing_i18n = exsisting_i18n
+        self._exported_i18n = export_i18n
+        self.config = self.load_i18n_ml_config()
 
-
-    @classmethod
     def load_i18n_ml_config(self):
         try:
             with open(DEFAULT_CONFIG_PATH, 'r') as f:
@@ -30,49 +31,43 @@ class Config(object):
                     log.warning('Could not parse i18n config file: {}'.format(DEFAULT_CONFIG_PATH))
                     return {}
                 return config['i18n']
+        except FileNotFound:
+            return None
 
-        except (yaml.parser.ParserError, KeyError):
-            log.debug('Could not parse i18n config file: {}'.format(DEFAULT_CONFIG_PATH))
-            raise SettingsError('Could not parse i18n config file: {}'.format(DEFAULT_CONFIG_PATH))
-        except IOError:
-            raise SettingsError('Could not open i18n config file: {}'.format(DEFAULT_CONFIG_PATH))
-
-    @classmethod
-    def get_real_path(self, path_list):
-        real_paths = [os.path.realpath(k) for k in path_list]
-        return real_paths
-
-    DIRECTORY = load_i18n_ml_config)['input']
-    REPORT = load_i18n_ml_config['report']
-    LOCALIZATION_INPUT = load_i18n_ml_config['localization']['existing']
-    LOCALIZATION_EXPORT = load_i18n_ml_config['localization']['export']
+    def realpath(self, dir):
+        dirs = [os.path.realpath(file) for file in dir]
+        return dirs
 
     @property
     def directory(self):
-        if self.directory is None:
-            return self.get_real_path(self.DIRECTORY)
-        else:
-            return self.get_real_path(self.directory)
+        if self._directory:
+            return self.realpath(self.directory)
+        if self._directory is None:
+            return self.realpath(self.config['input'])
+        raise FileNotFound("No input directory found")
 
+    @property
     def report(self):
-        if self.report is None:
-            return self.get_real_path(self.REPORT)
-        else:
-            return self.get_real_path(self.report)
+        if self._report:
+            return self.realpath(self._report)
+        if self._report is None:
+            return self.realpath(self.config['report'])
+        raise FileNotFound("No report directory found")
 
-    def localization_input(self):
-        if self.localization_input is None:
-            return self.get_real_path(self.LOCALIZATION_INPUT)
-        else:
-            return self.get_real_path(self.localization_input)
+    @property
+    def exsisting_i18n(self):
+        if self._existing_i18n:
+            return self.realpath(self._existing_i18n)
+        if self._existing_i18n is None:
+            try:
+                return self.realpath(self.config['localization']['existing'])
+            except FileNotFound("No localization files found"):
+                return None
 
-    def localization_export(self):
-        if self.localization_export is None:
-            return self.get_real_path(self.LOCALIZATION_EXPORT)
-        elif self.localization_export:
-            return self.get_real_path(self.localization_export)
-        else:
-            raise ValueError('No config found type: {}'.format(self.text))
-
-    def __repr__(self):
-        return 'command {} and paths "{}"'.format(self.qid, self.text)
+    @property
+    def export_i18n(self):
+        if self._export_i18n:
+            return self.realpath(self._export_i18n)
+        if self._export_i18n is None:
+            return self.realpath(self.config['localization']['export'])
+        raise FileNotFound("Please specify output directory")

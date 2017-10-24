@@ -23,10 +23,8 @@ class i18nExtractClass(BaseClass):
 
         config = Config(directory, output, None, None)
 
+        for i in range(len(config.directory)):
 
-        for i in range(config.directory):
-            single_dir = config.directory[i]
-            output = config.report[0]
             log.info('\b')
             log.info( " loading data from outer space ..." + '\b')
             log.info('\b')
@@ -38,12 +36,12 @@ class i18nExtractClass(BaseClass):
             log.info('\b')
 
             start_container_path =  get_data('string-extractor/bin/start-container.sh')
-            Process = Popen('%s %s %s' % (start_container_path, single_dir, output), shell=True)
+            Process = Popen('%s %s %s' % (start_container_path, config.directory[i], config.report[0]), shell=True)
             log.info(Process.communicate())
 
             log.info('\b')
 
-            file_path = output + '/' + 'string-literals.csv'
+            file_path = config.report[0] + '/' + 'string-literals.csv'
 
             df_file = pd.read_csv(file_path, sep=',', names=['filename', 'startLineNumber', 'startCharIdx', 'endLineNumber', 'endCharIdx', 'text'])
             os.remove(file_path)
