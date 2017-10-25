@@ -16,11 +16,12 @@ class Config(object):
     """
     Represents the i18n-ml config
     """
-    def __init__(self, directory, report, exsisting_i18n, export_i18n):
+    def __init__(self, directory, report, exsisting_i18n, export_i18n, key):
         self._directory = directory
         self._report = report
         self._existing_i18n = exsisting_i18n
         self._export_i18n = export_i18n
+        self._key = key
         self.config = self.load_i18n_ml_config()
 
     def load_i18n_ml_config(self):
@@ -38,13 +39,24 @@ class Config(object):
         dirs = [os.path.realpath(file) for file in dir]
         return dirs
 
+
+    def key(self, ext):
+        if self._key:
+            return self._key
+        if self._key is None:
+            try:
+                return self.config['keys'][str(ext)]
+            except KeyError:
+                log.info('Please provide ket for {} file'.format(ext))
+        raise FileNotFound("Please specify keys for `{}`".format(ext))
+
     @property
     def directory(self):
         if self._directory:
             return [os.path.realpath(self._directory)]
         if self._directory is None:
             return self.realpath(self.config['input'])
-        raise FileNotFound("No input directory found")
+        return None
 
     @property
     def report(self):

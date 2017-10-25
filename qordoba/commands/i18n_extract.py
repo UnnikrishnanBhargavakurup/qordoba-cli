@@ -21,7 +21,7 @@ class i18nExtractClass(BaseClass):
 
     def extract(self, directory, output):
 
-        config = Config(directory, output, None, None)
+        config = Config(directory, output, None, None, None)
 
         for i in range(len(config.directory)):
 

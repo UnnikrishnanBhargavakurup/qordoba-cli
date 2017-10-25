@@ -22,8 +22,8 @@ ALLOWED_EXTENSIONS = OrderedDict(
 
 IGNOREFILES = [
     ".DS_Store",
-    '.gitignore',
-    '.git'
+    ".gitignore",
+    ".git"
 ]
 
 OUTPUT = dict()
@@ -90,8 +90,8 @@ class BaseClass(object):
         files=list()
         for file_ in os.listdir(report):
             files.append(report + '/' + file_)
-
-        return [file for file in files if file not in IGNOREFILES]
+        files = [file for file in files if file not in IGNOREFILES]
+        return files
 
     def convert(self, input):
         if isinstance(input, dict):

@@ -8,6 +8,10 @@ i18n:
   keys:
     html:
       - ${KEY-i18n}
+    js:
+      - ${KEYrambazamba}
+    json:
+      - thisistheKEY
   localization:
     existing:
       - /Users/franzi/Workspace/artifacts_stringExtractor/localization_files
