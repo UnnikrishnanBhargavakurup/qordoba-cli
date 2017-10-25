@@ -86,10 +86,12 @@ class BaseClass(object):
             return True
 
     def get_files_in_Dir(self, report):
+        report = os.path.realpath(report)
         files=list()
         for file_ in os.listdir(report):
-            files.append(file_)
-        return files
+            files.append(report + '/' + file_)
+
+        return [file for file in files if file not in IGNOREFILES]
 
     def convert(self, input):
         if isinstance(input, dict):
