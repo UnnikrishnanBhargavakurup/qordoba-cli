@@ -14,6 +14,7 @@ class ReportNotValid(Exception):
 class i18nExecutionClass(BaseClass):
 
     def transform_keys(self, key, key_format):
+
         key_value = key.strip()
         if key_format is not None:
             key = key_format.replace('KEY', key_value)
@@ -30,7 +31,8 @@ class i18nExecutionClass(BaseClass):
         picked_line_3 = picked_line_2.replace(v['text'].strip(), key)
         return picked_line_3
 
-    def replace_strings_for_keys(self, df_to_dict, file_array, key):
+    def replace_strings_for_keys(self, report_to_dict, file_dict, key):
+        print(file_dict)
         # file is list of strings. replaces strings in list
         for k, v in self.iterate_items(df_to_dict):
             idx_start = v['startLineNumber']
@@ -71,20 +73,21 @@ class i18nExecutionClass(BaseClass):
         return file_array_list
 
     def get_filerows_as_list(self, file_path):
-        # loads file into list. Items of list are lines in file
+        # loads file into dict. Items of dict are lines in file with linenumber.
         file_dict = {}
         count= 0
         try:
-            with open(file_path, "r") as ins:
-                for line in ins:
+            with open(file_path, "r") as file:
+                for line in file:
                     count += 1
-                    file_dict[count] = line.strip()
+                    file_dict[count] = line.rstrip()
             return file_dict
         except IOError:
             print("File '{}' does not exist.".format(file_path))
             pass
 
     def get_files_in_report(self, report_path):
+
         df_nan = pd.read_csv(report_path)
         df = df_nan.where((pd.notnull(df_nan)), None)
         files = list()
@@ -94,6 +97,7 @@ class i18nExecutionClass(BaseClass):
         return set(files), df
 
     def get_key_for_filetype(self, config, file_in_report):
+
         ext = file_in_report.split('.')[-1]
         key = config.key(ext)
         return key[0]
@@ -130,12 +134,11 @@ class i18nExecutionClass(BaseClass):
 
                 key = self.get_key_for_filetype(config, file_in_report)
                 new_file_dict = self.replace_strings_for_keys(report_to_dict, file_dict, key)
-
-                print("old")
-                print(file_dict[191])
-                print("new")
-                print(new_file_dict[191])
-                new_file_dict_1 = [x for x in new_file_dict if x != None]
+                # print("old")
+                # print(file_dict)
+                # print("new")
+                # print(new_file_dict)
+                # new_file_dict_1 = [x for x in new_file_dict if x != None]
 
                 # remove old file, dump new
                 # os.remove(project_file_path)

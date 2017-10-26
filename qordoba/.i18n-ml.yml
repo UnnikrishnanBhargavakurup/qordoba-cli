@@ -7,7 +7,7 @@ i18n:
     - /Users/franzi/Workspace/artifacts_stringExtractor/
   keys:
     html:
-      - ${KEY-i18n}
+      - KEY-geil!!!
     js:
       - ${KEYrambazamba}
     json:
