@@ -50,8 +50,8 @@ class i18nExecutionClass(BaseClass):
             # multi-line replacement
             if idx_start < idx_end:
                 picked_lines = list()
+
                 for i in range(idx_start, idx_end+1):
-                    print((file_dict))
                     picked_lines.append(file_dict[i])
                 joined_lines = '\n'.join(picked_lines)
 
@@ -86,15 +86,12 @@ class i18nExecutionClass(BaseClass):
             print("File '{}' does not exist.".format(file_path))
             pass
 
-    def get_files_in_report(self, report_path):
-
-        df_nan = pd.read_csv(report_path)
-        df = df_nan.where((pd.notnull(df_nan)), None)
+    def get_files_in_report(self, df, report_path):
         files = list()
         for index, row in df.iterrows():
             files.append(row.filename)
          # batch lines in report with same filepath, apply replace
-        return set(files), df
+        return set(files)
 
     def get_key_for_filetype(self, config, file_in_report):
 
@@ -102,24 +99,25 @@ class i18nExecutionClass(BaseClass):
         key = config.key(ext)
         return key[0]
 
-    def execute(self, curdir, report, directory, output, key):
+    def execute(self, curdir, directory, report, output, key, export_format):
 
-        config = Config(directory, report, None, output, key)
+        config = Config(directory, report, None, key, output, export_format)
         reports = self.get_files_in_Dir(config.report[0])
         for report_path in reports:
-            DataFrame = None
 
             if not self.validate_report(report_path, keys=True):
                 log.info("The given report `{}` is not valid.".format(report_path))
                 continue
 
-            files_in_report, df = self.get_files_in_report(report_path)
+            df_nan = pd.read_csv(report_path)
+            df = df_nan.where((pd.notnull(df_nan)), None)
+            files_in_report = self.get_files_in_report(df, report_path)
             for file_in_report in files_in_report:
                 log.info("Replacing strings with keys in `{}`.".format(file_in_report))
 
                 df_filtered_for_single_file = df[df.filename == file_in_report]
+
                 report_to_dict = df_filtered_for_single_file.T.to_dict()
-                print(df)
                 project_file_path = config.directory[0] + '/' + file_in_report[11:]
                 file_dict = self.get_filerows_as_list(project_file_path)
 
@@ -137,7 +135,6 @@ class i18nExecutionClass(BaseClass):
                 new_file_dict_1 = [x for x in new_file_dict if x != None]
 
                 # remove old file, dump new
-
                 os.remove(project_file_path)
                 Html_file = open(project_file_path, "w")
                 if project_file_path[-4:] == 'html':
@@ -145,16 +142,17 @@ class i18nExecutionClass(BaseClass):
                 Html_file.write("".join(new_file_dict_1))
                 Html_file.close()
 
-
             # create localization file in output folder
-            new_localization_file = config.export_i18n[0] + '/qordoba_localization_file.json'
-            # WTF! NEEDS REFACTURING
-            del df['filename']
-            del df['startLineNumber']
-            del df['startCharIdx']
-            del df['endLineNumber']
-            del df['endCharIdx']
-            del df['existing_localization_file']
+            try:
+                del df['filename']
+                del df['startLineNumber']
+                del df['startCharIdx']
+                del df['endLineNumber']
+                del df['endCharIdx']
+                del df['existing_localization_file']
+            except KeyError:
+                log.info("Report `{}` is empty.".format(report_path))
+
             json_dump = dict()
             for index, row in df.iterrows():
                 if row['existing_keys'] is None:
@@ -162,6 +160,10 @@ class i18nExecutionClass(BaseClass):
                 else:
                     json_dump[row['existing_keys']] = row['text']
 
-            import json
-            with open(new_localization_file, "w") as jsonFile:
-                json.dump(json_dump, jsonFile, sort_keys=True, indent=4, separators=(',', ': '))
+            if config.export_format[0] == 'JSON' or config.export_format[0] == 'json':
+                import json
+                new_localization_file = config.new_i18n[0] + '/qordoba_localization_file.json'
+                with open(new_localization_file, "w") as jsonFile:
+                    json.dump(json_dump, jsonFile, sort_keys=True, indent=4, separators=(',', ': '))
+            else:
+                log.info("Currently we only support JSON localization files")

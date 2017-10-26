@@ -127,7 +127,8 @@ class i18nGenerateClass(BaseClass):
         """ Given localization files exists, gives back existing keys.
         Further, generating new keys for values
         """
-        config = Config(None, report, localization, None, None)
+        config = Config(None, report, localization, None, None, None)
+
         for filename in os.listdir(config.report[0]):
 
             if not filename.endswith(".csv"):

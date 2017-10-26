@@ -16,12 +16,13 @@ class Config(object):
     """
     Represents the i18n-ml config
     """
-    def __init__(self, directory, report, exsisting_i18n, export_i18n, key):
+    def __init__(self, directory, report, exsisting_i18n, key, new_i18n, export_format):
         self._directory = directory
         self._report = report
         self._existing_i18n = exsisting_i18n
-        self._export_i18n = export_i18n
+        self._export_format = export_format
         self._key = key
+        self._new_i18n = new_i18n
         self.config = self.load_i18n_ml_config()
 
     def load_i18n_ml_config(self):
@@ -77,9 +78,18 @@ class Config(object):
                 return None
 
     @property
-    def export_i18n(self):
-        if self._export_i18n:
-            return [os.path.realpath(self._existing_i18n)]
-        if self._export_i18n is None:
-            return self.realpath(self.config['localization']['export'])
-        raise FileNotFound("Please specify output directory")
+    def new_i18n(self):
+        if self._new_i18n:
+            return [os.path.realpath(self._new_i18n)]
+        if self._new_i18n is None:
+            return self.realpath(self.config['localization']['new'])
+        raise FileNotFound("Please specify New localisation directory")
+
+    @property
+    def export_format(self):
+        if self._export_format:
+            return [os.path.realpath(self._export_format)]
+        if self._export_format is None:
+            return self.config['localization']['export_format']
+        raise FileNotFound("Please specify export_format for localization files")
+

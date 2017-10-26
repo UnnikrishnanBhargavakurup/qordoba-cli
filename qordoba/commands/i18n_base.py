@@ -90,7 +90,7 @@ class BaseClass(object):
         files=list()
         for file_ in os.listdir(report):
             files.append(report + '/' + file_)
-        files = [file for file in files if file not in IGNOREFILES]
+        files = [file for file in files if file.split('/')[-1] not in IGNOREFILES]
         return files
 
     def convert(self, input):
