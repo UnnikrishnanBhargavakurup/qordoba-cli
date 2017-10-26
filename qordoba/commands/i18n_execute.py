@@ -32,26 +32,26 @@ class i18nExecutionClass(BaseClass):
         return picked_line_3
 
     def replace_strings_for_keys(self, report_to_dict, file_dict, key):
-        print(file_dict)
         # file is list of strings. replaces strings in list
-        for k, v in self.iterate_items(df_to_dict):
+        for k, v in self.iterate_items(report_to_dict):
+
             idx_start = v['startLineNumber']
             idx_end = v['endLineNumber']
 
             if idx_start == idx_end:
-                picked_line = file_array[idx_start]
+                picked_line = file_dict[idx_start]
                 # replaces with html keys. "STRING" -->  ${KEY}
                 if v['existing_keys'] is None:
                     replaced_line = self.final_replace('generated_keys', picked_line, v, key)
                 else:
                     replaced_line = self.final_replace('existing_keys', picked_line, v, key)
-                file_array[idx_start] = replaced_line
+                file_dict[idx_start] = replaced_line
 
             # multi-line replacement
             if idx_start < idx_end:
                 picked_lines = list()
                 for i in range(idx_start, idx_end):
-                    picked_lines.append(file_array[i])
+                    picked_lines.append(file_dict[i])
                 joined_lines = '\n'.join(picked_lines)
 
                 if v['existing_keys'] is None:
@@ -59,16 +59,16 @@ class i18nExecutionClass(BaseClass):
                 else:
                     replaced_line = self.final_replace('existing_keys', joined_lines, v, key)
 
-                file_array[idx_end] = replaced_line
+                file_dict[idx_end] = replaced_line
 
                 # adding to the lost indexes none, so df is not fucked up for later
                 for i in range(idx_start, idx_end):
-                    file_array[i] = None
+                    file_dict[i] = None
 
         file_array_list = list()
-        for i in range(len(file_array)):
+        for i in range(len(file_dict)):
             idx = i + 1
-            file_array_list.append(file_array[idx])
+            file_array_list.append(file_dict[idx])
 
         return file_array_list
 
@@ -134,10 +134,10 @@ class i18nExecutionClass(BaseClass):
 
                 key = self.get_key_for_filetype(config, file_in_report)
                 new_file_dict = self.replace_strings_for_keys(report_to_dict, file_dict, key)
-                # print("old")
-                # print(file_dict)
-                # print("new")
-                # print(new_file_dict)
+                print("old")
+                print(file_dict)
+                print("new")
+                print(new_file_dict)
                 # new_file_dict_1 = [x for x in new_file_dict if x != None]
 
                 # remove old file, dump new
