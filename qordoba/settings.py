@@ -39,8 +39,8 @@ class SettingsDict(dict):
         for k, v in kwargs.items():
             self[k.lower()] = v
 
-        if validate:
-            self.validate()
+        # if validate:
+        #     self.validate()
 
     def validate(self, keys=('project_id', 'access_token')):
         for key in keys:

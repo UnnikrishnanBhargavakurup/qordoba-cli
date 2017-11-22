@@ -297,6 +297,28 @@ class DeleteHandler(BaseHandler):
         delete_command(self._curdir, config, self.file, force=self.force)
 
 
+from commands.i18n_extract import extract
+
+class ExtractHandler(BaseHandler):
+    name = 'i18n-extract'
+    help = """
+    Give the i18n-extract command your directory path. It will extract all the stringliterals from your project.
+    """
+
+    @classmethod
+    def register(cls, *args, **kwargs):
+        parser = super(ExtractHandler, cls).register(*args, **kwargs)
+        fix_parser_titles(parser)
+        parser.set_defaults(_handler=cls)
+        parser.add_argument("-i", "--input", type=str, required=False)
+        parser.add_argument("-o", "--output", type=str, required=False)
+        parser.add_argument("-l", "--lexer", type=str, required=False)
+
+    def main(self):
+        log.info('Starting extraction...')
+        extract(self._curdir, input=self.input, output=self.output, lexer=self.lexer)
+
+
 def parse_arguments():
     parser = argparse.ArgumentParser(
         description="""
@@ -322,6 +344,7 @@ def parse_arguments():
     PushHandler.register(subparsers, **args)
     ListHandler.register(subparsers, **args)
     DeleteHandler.register(subparsers, **args)
+    ExtractHandler.register(subparsers, **args)
 
     args = parser.parse_args()
     return args, parser
