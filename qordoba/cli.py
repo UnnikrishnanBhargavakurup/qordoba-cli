@@ -312,11 +312,11 @@ class ExtractHandler(BaseHandler):
         parser.set_defaults(_handler=cls)
         parser.add_argument("-i", "--input", type=str, required=False)
         parser.add_argument("-o", "--output", type=str, required=False)
-        parser.add_argument("-l", "--lexer", type=str, required=False)
+        parser.add_argument("-l", "--lexer_custom", type=str, required=False)
 
     def main(self):
         log.info('Starting extraction...')
-        extract(self._curdir, input=self.input, output=self.output, lexer=self.lexer)
+        extract(self._curdir, input=self.input, output=self.output, lexer_custom=self.lexer)
 
 
 def parse_arguments():
