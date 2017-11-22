@@ -39,16 +39,13 @@ def get_lexer(file_name, code, lexer_custom=None):
 def extract(curdir, input=None, output=None, lexer_custom=None, bulk_report=False):
 
     absolute_path = get_root_path(input)
-    print(absolute_path)
-    files = get_files_in_Dir(input)
+    files = get_files_in_Dir(absolute_path)
 
     if bulk_report: #if True, the report will reflect all files in the directory
         json_report = dict()
         json_report[file_] = {}
 
     for file_ in files:
-        print(file_)
-
         if not bulk_report:
             json_report = {}
             json_report[file_] = {}
@@ -62,19 +59,22 @@ def extract(curdir, input=None, output=None, lexer_custom=None, bulk_report=Fals
         
         for item in results_generator: #unpacking content of generator
             pos, token, value = item
-            print(1)
             #filter for stringliterals
             if str(token) in ["Token.Literal.String", "Token.Text"] and not re.match(r'\n', value) and value.strip() != '':
-                print(2)
-                pos, token, value = item
+                pos_start, token, value = item
+            
+                # calculating fileline of string based on charcter position of entire file
+                file_chunk = code[:pos_start]
+                start_line = file_chunk.count('\n')
+                multilinestring = value.count("\n")
+                end_line = start_line + multilinestring
+
                 value = value.strip()
-                json_report[file_][value] = {"value": value, "pos": pos}
+                json_report[file_][value] = {"start_line": start_line+1, "end_line": end_line+1}
 
         if not bulk_report:
-            print(3)
             file_path = output + '/qordoba-report-' + file_name + "-" + date +'.json'
             save_to_jsonfile(file_path, json_report)
-
 
     # creating report file for bulk
     if bulk_report:
