@@ -6,18 +6,32 @@ import re
 import datetime
 now = datetime.datetime.now()
 date = now.strftime("%Y%m%d%H%M")
+from collections import defaultdict
+
 
 """
  The Extract Handler takes in a directory and extracts stringliterals file by file
  input: Directory of the files
  output: location where the JSON report is stored
 
-
  toDo:
- bulk
- custom lexer
+ usecase to define 
+ a. a pygments lexer e.g. html
+ b. pull a qordoba lexer and execute that
+ 
+ custom lexer: e.g. fileextension "*.scala" or language  "scala"
+
+ add dict 
 
  """
+
+ 
+ # ["Token.Literal.String", "Token.Text"]
+
+LEXER_STRINGS = dict()
+LEXER_STRINGS['pygments.lexers.html.HtmlLexer'] = ("Token.Text",)
+
+
 import pygments
 from pygments.lexers import get_lexer_by_name, guess_lexer, get_all_lexers, \
     load_lexer_from_file, get_lexer_for_filename, find_lexer_class_for_filename
@@ -31,7 +45,11 @@ def get_lexer(file_name, code, lexer_custom=None):
     if lexer is None:
         lexer = guess_lexer(file_name)
     if lexer_custom: # if custom lexer is given
-        lexer = get_lexer_by_name(lexer, stripall=True)
+        try:
+            lexer = get_lexer_by_name(lexer, stripall=True)
+        except ClassNotFound:
+            custom_lexer_file = "customLexer.py" 
+            lexer = load_lexer_from_file(custom_lexer_file, stripall=True)
 
     return lexer
 
@@ -42,13 +60,11 @@ def extract(curdir, input=None, output=None, lexer_custom=None, bulk_report=Fals
     files = get_files_in_Dir(absolute_path)
 
     if bulk_report: #if True, the report will reflect all files in the directory
-        json_report = dict()
-        json_report[file_] = {}
+        json_report = defaultdict(dict)
 
     for file_ in files:
         if not bulk_report:
-            json_report = {}
-            json_report[file_] = {}
+            json_report = defaultdict(dict)
 
         f = codecs.open(file_, 'r')
         code = f.read()
@@ -56,11 +72,14 @@ def extract(curdir, input=None, output=None, lexer_custom=None, bulk_report=Fals
 
         lexer = get_lexer(file_name, code, lexer_custom=lexer_custom)
         results_generator = lexer().get_tokens_unprocessed(code)
-        
+        print(lexer)
         for item in results_generator: #unpacking content of generator
             pos, token, value = item
             #filter for stringliterals
-            if str(token) in ["Token.Literal.String", "Token.Text"] and not re.match(r'\n', value) and value.strip() != '':
+            lexer_stringliteral_def = str(lexer)
+            print(type(lexer_stringliteral_def))
+            if str(token) in LEXER_STRINGS[lexer_stringliteral_def] and not re.match(r'\n', value) and value.strip() != '':
+                
                 pos_start, token, value = item
             
                 # calculating fileline of string based on charcter position of entire file
