@@ -26,6 +26,8 @@ IGNOREFILES = [
 
 OUTPUT = dict()
 
+Q_OUTPUT_DIR = os.path.join(os.path.expanduser('~'), "tmp/qordoba/output")
+
 class FilesNotFound(Exception):
     """
     Files not found
@@ -48,13 +50,13 @@ class BaseClass(object):
         return ALLOWED_EXTENSIONS[extension]
 
     @classmethod
-    def makeoutputdir(self):
-        desktop = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop', 'Output_Qordoba')
+    def make_output_dir(self):
+        output_dir = Q_OUTPUT_DIR
         try:
-            os.makedirs(desktop)
-            return desktop
+            os.makedirs(output_dir)
+            return output_dir
         except OSError:
-            return desktop
+            return output_dir
             pass
 
     def find_files_by_pattern(self, curpath, pattern):
@@ -207,7 +209,7 @@ class BaseClass(object):
 
         timestamp = datetime.datetime.now().isoformat()
         file, _  = filename.split('.')
-        outputdir = self.makeoutputdir()
+        outputdir = self.make_output_dir()
         output_file = outputdir + '/i18n_find_' + str(timestamp) + '.yml'
 
         if output == {}:
@@ -223,7 +225,7 @@ class BaseClass(object):
 
             filename = file.split('/')[-1]
             timestamp = datetime.datetime.now().isoformat()
-            outputdir = self.makeoutputdir()
+            outputdir = self.make_output_dir()
             output_filename = outputdir + '/' + str(timestamp) + command + filename
 
             if 'json' in file[-4:]:

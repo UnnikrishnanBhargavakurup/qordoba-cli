@@ -33,7 +33,7 @@ class RemoveClass(BaseClass):
             for file in files:  # JSON, YML, CSV, PO
                 filename = file.split('/')[-1]
                 timestamp = datetime.datetime.now().isoformat()
-                outputdir = self.makeoutputdir()
+                outputdir = self.make_output_dir()
                 output_filename = outputdir + '/' + filename + '_' + str(timestamp)
 
                 if 'json' in file[-4:]:

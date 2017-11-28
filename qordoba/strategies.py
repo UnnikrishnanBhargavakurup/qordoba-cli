@@ -2,6 +2,10 @@ from __future__ import unicode_literals, print_function
 
 import logging
 import os
+
+from pygments.lexers import guess_lexer_for_filename
+from pygments.util import ClassNotFound
+import re
 import yaml
 
 log = logging.getLogger('qordoba')
@@ -113,6 +117,27 @@ class Filename():
         log.info(
             '--- File `{}` with filename {} most certainly is of type {}'.format(file_path, filename, file_languages))
         return file_languages
+
+class Pygments():
+    def __init__(self):
+        self.strategy_name = 'pygments'
+
+    def find_type(self, file_path):
+        try:
+            infile = open(file_path, 'r')
+            lexer = guess_lexer_for_filename(file_path, infile.read())
+
+            # Remove "Lexer" from classname
+            language = re.sub('Lexer$', '', type(lexer).__name__, flags=re.IGNORECASE)
+
+            log.info('--- Pygments thinks that file `{}` is of type {}'.format(file_path, language))
+
+            return [language]
+
+        except ClassNotFound as e:
+            log.info('--- Pygments cannot find a lexer for file `{}`: {}'.format(file_path, e))
+            return []
+
 
 # class Modeline():
 #

@@ -1,0 +1,8 @@
+qordoba: 
+  access_token: 3817ab43-f7cf-4705-8bb8-0438458442e7
+  organization_id: 3003
+  project_id: 2248
+  search:
+    paths:
+    - ../resources/samples/Java
+

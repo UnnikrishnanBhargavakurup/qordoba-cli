@@ -2,10 +2,9 @@ from __future__ import unicode_literals, print_function
 
 import logging
 from qordoba.settings import get_find_new_pattern, get_find_new_blacklist_pattern, get_qorignore
-from qordoba.strategies import Extension, Shebang, Filename
-from qordoba.classifier import Classifier
+from qordoba.strategies import Extension, Filename, Pygments, Shebang
 from qordoba.framework import Framework
-from qordoba.commands.i18n_base import BaseClass, FilesNotFound, FileExtensionNotAllowed
+from qordoba.commands.i18n_base import BaseClass, FilesNotFound
 
 import os
 import yaml
@@ -20,9 +19,8 @@ CUSTOM_BLACKLIST = set(get_qorignore())
 STRATEGIES = [
     Extension(),
     Filename(),
-    # Classifier(),
+    Pygments(),
     Shebang(),
-    # Modeline(),
 ]
 
 FRAMEWORKS = Framework()
@@ -157,12 +155,12 @@ class FindNewClass(BaseClass):
         language_distribution = dict()
 
         STRATEGY_WEIGHTS = {
+            'classifier': 0.4,
             'extension': 0.8,
             'filename': 0.7,
-            'shebang': 0.6,
             'modeline': 0.5,
-            'classifier': 0.4,
-
+            'shebang': 0.6,
+            'pygments': 0.5,
         }
 
         # weighted source result
@@ -195,7 +193,7 @@ class FindNewClass(BaseClass):
 
         timestamp = datetime.datetime.now().isoformat()
 
-        outputdir = self.makeoutputdir()
+        outputdir = self.make_output_dir()
         output_file = outputdir + '/file_sources_' + str(timestamp) + ".yml"
 
         with open(output_file, 'w') as outfile:
@@ -208,3 +206,5 @@ class FindNewClass(BaseClass):
             "\n Source Analyzer finished. Results in {output_file} \n Found total of {total} files in path, trained on {valid} valid files. Framework is {framework}. \n {language_percentage}".format(
                 output_file=output_file, total=len(files), valid=(len(files) - files_ignored), framework=framework,
                 language_percentage=language_percentage))
+
+        return file_sources
