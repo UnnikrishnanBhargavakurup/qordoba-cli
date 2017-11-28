@@ -7,13 +7,20 @@ IGNOREFILES = [
     ".git"
 ]
 
-def get_files_in_Dir(directory):
+def get_files_in_dir_no_subdirs(directory):
     report = os.path.realpath(directory)
     files=list()
     for file_ in os.listdir(directory):
         if file_ in IGNOREFILES or file_.startswith('.'):
             continue
         files.append(directory + '/' + file_)
+    return files
+
+def get_files_in_dir_with_subdirs(path):
+    files = []
+    for root, dirnames, filenames in os.walk(path):
+        for filename in filenames:
+            files.append(os.path.join(root, filename))
     return files
 
 def save_to_jsonfile(file_path, file_content):

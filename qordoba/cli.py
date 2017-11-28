@@ -317,7 +317,7 @@ class ExtractHandler(BaseHandler):
 
     def main(self):
         log.info('Starting extraction...')
-        extract(self._curdir, input=self.input, output=self.output, lexer_custom=self.lexer, bulk_report=self.bulk_report)
+        extract(self._curdir, input=self.input, output=self.output, lexer_custom=self.lexer_custom, bulk_report=self.bulk_report)
 
 
 def parse_arguments():
