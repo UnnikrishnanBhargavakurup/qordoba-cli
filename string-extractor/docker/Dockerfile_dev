@@ -1,9 +1,0 @@
-FROM gcr.io/qordoba-devel/qordoba-build
-
-ADD . /string-extractor/
-WORKDIR /string-extractor
-
-RUN sbt --no-color publish-local
-
-ENTRYPOINT ["/string-extractor/bin/qordoba-string-extractor.sh"]
-

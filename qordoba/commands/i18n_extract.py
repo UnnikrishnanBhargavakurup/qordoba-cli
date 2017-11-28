@@ -15,7 +15,6 @@ import os
 from pygments.lexers import get_lexer_by_name, guess_lexer, get_all_lexers, \
     load_lexer_from_file, get_lexer_for_filename, find_lexer_class_for_filename
 
-
 """
  The Extract Handler takes in a directory and extracts stringliterals file by file
  input: Directory of the files
@@ -39,22 +38,28 @@ LEXER_STRINGS["<pygments.lexers.JavascriptLexer with {'stripall': True}>"] = ("T
 #Scala
 LEXER_STRINGS["<class 'pygments.lexers.scala.ScalaLexer'>"] = ("Token.Literal.String",)
 LEXER_STRINGS["<pygments.lexers.ScalaLexer with {'stripall': True}>"] = ("Token.Literal.String",)
-
+#Ruby
+LEXER_STRINGS["<class 'pygments.lexers.ruby.RubyLexer'>"] = ("Token.Literal.String.Other", "Token.Literal.String.Double")
+LEXER_STRINGS["<pygments.lexers.RubyLexer with {'stripall': True}>"] = ("Token.Literal.String.Other","Token.Literal.String.Double",)
+#text
+LEXER_STRINGS["<class 'pygments.lexers.text.TextLexer'>"] = ("Token.Text")
+LEXER_STRINGS["<pygments.lexers.TextLexer with {'stripall': True}>"] = ("Token.Text",)
+#Nonjucks
 LEXER_STRINGS["<pygments.lexers.Nonjucks with {'stripall': True}>"] = ("Token.Text",)
-
 
 
 IGNOREFILES = [
     ".DS_Store",
     ".gitignore",
-    ".git"
+    ".git",
+    "__init__.pyc",
+    "__init__.py",
 ]
-
 
 def get_lexer(file_name, code, lexer_custom=None):
     # finding the right lexer for filename otherwise guess
     lexer = find_lexer_class_for_filename(file_name)
-    if lexer is None:
+    if lexer is None and not file_name.endswith('.pyc'):
         lexer = get_lexer_for_filename(file_name)
     if lexer is None:
         lexer = guess_lexer(file_name)
@@ -81,9 +86,7 @@ def get_lexer(file_name, code, lexer_custom=None):
 
 def extract(curdir, input=None, output=None, lexer_custom=None, bulk_report=False):
     # first getting all files in directory, than iteration 
-    absolute_path = get_root_path(input)
-
-    files = get_files_in_dir_with_subdirs(absolute_path)
+    files = get_files_in_dir_with_subdirs(input)
     files = [file for file in files if file.split("/")[-1] not in IGNOREFILES]
 
     if bulk_report: #if True, the report will reflect all files as bulk. no single report per file

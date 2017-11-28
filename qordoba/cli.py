@@ -313,7 +313,7 @@ class ExtractHandler(BaseHandler):
         parser.add_argument("-i", "--input", type=str, required=True)
         parser.add_argument("-o", "--output", type=str, required=True)
         parser.add_argument("-l", "--lexer_custom", type=str, required=False)
-        parser.add_argument("-b", "--bulk_report", required=False)
+        parser.add_argument("-b", "--bulk_report", action='store_true', required=False)
 
     def main(self):
         log.info('Starting extraction...')
