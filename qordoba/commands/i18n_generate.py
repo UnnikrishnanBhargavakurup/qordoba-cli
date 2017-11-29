@@ -8,6 +8,13 @@ def get_key(value):
 	key = '.'.join(keywords)
 	return key
 
+def strip_qoutes(string):
+        if string[:1] == "'" and string[-1] == "'" or string[:1] == '"' and string[-1] == '"':
+            string = string[1:-1].strip()
+            string = strip_qoutes(string)
+        return string
+
+
 def generate(_curdir, input=None, output=None, existing_i18nfiles=None):
 	""" Given localization files exists, gives back existing keys.
 	Further, generating new keys for values
@@ -23,12 +30,16 @@ def generate(_curdir, input=None, output=None, existing_i18nfiles=None):
 			continue
 
 		df = pd.read_json(single_report_path)
-		print(df[0])
+		for column in df:
+			for i in range(len(df.index)):
+				#stripping quotes from start and end of sting
+				df[column][i]["value"] = strip_qoutes(df[column][i]["value"])
+				# print(df[column][i]["value"])
+				# # lookup if stringliteral exists as value or key in a localization file.. If yes, return key, otherwise None.
+				# localization_file_list = config.exsisting_i18n
+				break
 
-		# df.text = (df.text).apply(lambda x: self.strip_qoutes(x))
-
-		# # lookup if stringliteral exists as value or key in a localization file.. If yes, return key, otherwise None.
-		# localization_file_list = config.exsisting_i18n
+		
 
 		# if localization_file_list:
 		#     df = self.get_existing_keys(localization_file_list, df)
@@ -43,3 +54,6 @@ def generate(_curdir, input=None, output=None, existing_i18nfiles=None):
 		# os.remove(single_report_path)
 		# df.to_json(single_report_path, encoding='utf-8', index=False)
 		# log.info("Process completed. " + u"\U0001F680" + u"\U0001F4A5")
+
+
+# python cli.py i18n-generate -i /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_report -o /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_report --traceback
