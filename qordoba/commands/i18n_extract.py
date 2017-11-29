@@ -8,6 +8,7 @@ now = datetime.datetime.now()
 date = now.strftime("%Y%m%d%H%M")
 from collections import defaultdict
 import logging
+log = logging.getLogger('qordoba')
 
 
 import pygments
@@ -70,9 +71,9 @@ def get_lexer(file_name, code, lexer_custom=None):
         except AttributeError:
             lexer = load_lexer_from_file(path_to_custom_lexer_clean, lexer_custom, stripall=True)
     
-        logging.info("Custom Lexer defined: `{lexer_custom}`. File `{file}`.".format(lexer_custom=lexer_custom, file=file_name))
+        log.info("Custom Lexer defined: `{lexer_custom}`. File `{file}`.".format(lexer_custom=lexer_custom, file=file_name))
     
-    logging.info("Lexer is {lexer}.".format(lexer=lexer))
+    log.info("Lexer is {lexer}.".format(lexer=lexer))
     return lexer
 
 
@@ -120,13 +121,13 @@ def extract(curdir, input=None, output=None, lexer_custom=None, bulk_report=Fals
         if not bulk_report:
             file_path = output + '/qordoba-report-' + file_name + "-" + date +'.json'
             save_to_jsonfile(file_path, json_report)
-            logging.info("Report saved for file and reportname in: `{}`".format(file_path))
+            log.info("Report saved for file and reportname in: `{}`".format(file_path))
 
     # creating report file for bulk
     if bulk_report:
         file_path = output + '/qordoba-bulkreport-' + date +'.json'
         save_to_jsonfile(file_path, json_report)
-        logging.info("Report saved in bulk for all files in: `{}`".format(file_path))
+        log.info("Report saved in bulk for all files in: `{}`".format(file_path))
 
 
 # from console:

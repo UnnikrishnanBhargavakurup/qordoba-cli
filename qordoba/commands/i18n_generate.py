@@ -4,6 +4,7 @@ import requests
 import json
 import os
 import logging
+log = logging.getLogger('qordoba')
 
 KEY_COUNT = 0
 """
@@ -54,7 +55,7 @@ def accumulate_existing_i18n_key_value_pairs_from_all_files(i18n_file_list):
 	for file_list in i18n_file_list:
 		#this is important due to subdirs
 		for file in file_list:
-			logging.info('Reading in existing i18n-file `{}`.'.format(file))
+			log.info('Reading in existing i18n-file `{}`.'.format(file))
 			dictionary = get_nested_dictionary(file)
 			key_value_pairs = get_all_key_values(dictionary, list(), dict())
 			key_value_pairs = convert_to_unicode(key_value_pairs)
@@ -69,7 +70,7 @@ def index_lookup(stringLiteral, localization_k_v):
 		for key, value in localization_k_v[i18n_file].items():
 			if value.strip() == stringLiteral.strip():
 				return key, i18n_file
-			if key.strip() == stringLiteral.strip():
+			if key.strip() == stringLieral.strip():
 				return key, i18n_file
 	return (None, None)
 
@@ -83,14 +84,12 @@ def add_existing_i18n_keys_to_df(existing_i18nfiles, df):
 		if not loc_file.startswith('.') and loc_file.endswith('json'):
 			i18n_file_list.append(existing_i18nfiles)
 		else:
-			logging.info("Skipping file `{}`. Not a valid json i18n-file".format(loc_file))
+			log.info("Skipping file `{}`. Not a valid json i18n-file".format(loc_file))
 
 	#accumulate all key-values-pairs from the i18n-file
 	existing_i18n_key_value_pairs = accumulate_existing_i18n_key_value_pairs_from_all_files(i18n_file_list)
-	# print("dictionary {}".format((existing_i18n_key_value_pairs)))
 
-
-	logging.info(" ... searching for existing keys.")
+	log.info(" ... searching for existing keys.")
 	for column in df:
 			for i in range(len(df.index)):
 				#stripping quotes from start and end of sting
@@ -123,8 +122,8 @@ def generate(_curdir, input=None, existing_i18nfiles=None):
 		if not single_report_path.endswith(".json"):
 			continue
 
-		logging.info("  " + u"\U0001F4AB" + u"\U0001F52E" + " .. starting to generate new keys for you - based on the extracted Strings from your files.\n (This could Take some time) \n\n ")
-		logging.info("\b")
+		log.info("  " + u"\U0001F4AB" + u"\U0001F52E" + " .. starting to generate new keys for you - based on the extracted Strings from your files.\n (This could Take some time) \n\n ")
+		log.info("\b")
 
 		df = pd.read_json(single_report_path)
 		for column in df:
@@ -138,14 +137,14 @@ def generate(_curdir, input=None, existing_i18nfiles=None):
 					continue
 				if KEY_COUNT%20 == 0:
 					print("{} keys created ".format(KEY_COUNT))
-					logging.info("{} keys created ".format(KEY_COUNT))
+					log.info("{} keys created ".format(KEY_COUNT))
 
 		if existing_i18nfiles:
 			i18n_files = get_files_in_dir_with_subdirs(existing_i18nfiles)
 			i18n_files = ignore_files(i18n_files)
 			df = add_existing_i18n_keys_to_df(i18n_files, df)
 		
-		logging.info("Process completed. " + u"\U0001F680" + u"\U0001F4A5")
+		log.info("Process completed. " + u"\U0001F680" + u"\U0001F4A5")
 		#report ueberschreiben
 		os.remove(single_report_path)
 		df.to_json(single_report_path)
