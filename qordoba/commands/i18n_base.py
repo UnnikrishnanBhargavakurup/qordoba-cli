@@ -1,5 +1,6 @@
 import os
 import json
+import sys
 
 IGNOREFILES = [
     ".DS_Store",
@@ -8,6 +9,29 @@ IGNOREFILES = [
     "__init__.pyc",
     "__init__.py",
 ]
+
+def convert_to_unicode(input):
+    """convert strings into unicode"""
+    if isinstance(input, dict):
+        try:
+            return {convert_to_unicode(key): convert_to_unicode(value) for key, value in iterate_items(input)}
+        except AttributeError:
+            return {convert_to_unicode(key): convert_to_unicode(value) for key, value in iterate_items(input)}
+    elif isinstance(input, list):
+        return [convert_to_unicode(element) for element in input]
+    elif isinstance(input, str) or isinstance(input, unicode):
+        return input.encode('utf-8')
+    else:
+        return input
+
+def iterate_items(to_iterate):
+    # iterate command, compatible for python 2 and 3 
+    if (sys.version_info > (3, 0)):
+        # Python 3 code in this block
+        return to_iterate.items()
+    else:
+        # Python 2 code in this block
+        return to_iterate.iteritems()
 
 def get_files_in_dir_no_subdirs(directory):
     report = os.path.realpath(directory)
