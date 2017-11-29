@@ -1,4 +1,4 @@
-from i18n_base import get_files_in_dir_with_subdirs, save_to_jsonfile, get_root_path
+from i18n_base import get_files_in_dir_with_subdirs, save_to_jsonfile, get_root_path, ignore_files
 
 import codecs
 import re
@@ -48,14 +48,6 @@ LEXER_STRINGS["<pygments.lexers.TextLexer with {'stripall': True}>"] = ("Token.T
 LEXER_STRINGS["<pygments.lexers.Nonjucks with {'stripall': True}>"] = ("Token.Text",)
 
 
-IGNOREFILES = [
-    ".DS_Store",
-    ".gitignore",
-    ".git",
-    "__init__.pyc",
-    "__init__.py",
-]
-
 def get_lexer(file_name, code, lexer_custom=None):
     # finding the right lexer for filename otherwise guess
     lexer = find_lexer_class_for_filename(file_name)
@@ -87,7 +79,7 @@ def get_lexer(file_name, code, lexer_custom=None):
 def extract(curdir, input=None, output=None, lexer_custom=None, bulk_report=False):
     # first getting all files in directory, than iteration 
     files = get_files_in_dir_with_subdirs(input)
-    files = [file for file in files if file.split("/")[-1] not in IGNOREFILES]
+    files = ignore_files(files)
 
     if bulk_report: #if True, the report will reflect all files as bulk. no single report per file
         json_report = defaultdict(dict)
@@ -96,6 +88,7 @@ def extract(curdir, input=None, output=None, lexer_custom=None, bulk_report=Fals
         if not bulk_report:
             json_report = defaultdict(dict)
 
+        count = 0
         f = codecs.open(file_, 'r')
         code = f.read()
         file_name = file_.split('/')[-1]
@@ -114,14 +107,16 @@ def extract(curdir, input=None, output=None, lexer_custom=None, bulk_report=Fals
             if str(token) in LEXER_STRINGS[lexer_stringliteral_def] and not re.match(r'\n', value) and value.strip() != '':
                 
                 pos_start, token, value = item
+                value = value.strip()
+
                 # calculating fileline of string based on charcter position of entire file
                 file_chunk = code[:pos_start]
                 start_line = file_chunk.count("\n")
                 multilinestring = value.count("\n")
                 end_line = start_line + multilinestring
-
-                value = value.strip()
-                json_report[file_][value] = {"start_line": start_line+1, "end_line": end_line+1}
+                
+                json_report[file_][count] = {"value": value, "start_line": start_line+1, "end_line": end_line+1}
+                count += 1
         if not bulk_report:
             file_path = output + '/qordoba-report-' + file_name + "-" + date +'.json'
             save_to_jsonfile(file_path, json_report)
@@ -135,7 +130,7 @@ def extract(curdir, input=None, output=None, lexer_custom=None, bulk_report=Fals
 
 
 # from console:
-# python cli.py i18n-extract -i /Users/franzi/Workspace/artifacts_stringExtractor/directory_cloudflare -o /Users/franzi/Workspace/artifacts_stringExtractor/report_cloudflare --traceback
+# python cli.py i18n-extract -i /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_files -o /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_report --traceback
 
 # within script: 
 # extract('curdir', input="/Users/franzi/Workspace/artifacts_stringExtractor/directory_cloudflare", output="/Users/franzi/Workspace/artifacts_stringExtractor/directory_cloudflare", lexer_custom="NonJunk", bulk_report=False)

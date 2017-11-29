@@ -4,7 +4,9 @@ import json
 IGNOREFILES = [
     ".DS_Store",
     ".gitignore",
-    ".git"
+    ".git",
+    "__init__.pyc",
+    "__init__.py",
 ]
 
 def get_files_in_dir_no_subdirs(directory):
@@ -32,3 +34,7 @@ def save_to_jsonfile(file_path, file_content):
 def get_root_path(path):
     _ROOT = os.path.abspath(os.path.dirname(__file__))
     return os.path.join(_ROOT, path)
+
+def ignore_files(files):
+    cleaned_files = [file for file in files if file.split("/")[-1] not in IGNOREFILES]
+    return cleaned_files

@@ -15,6 +15,9 @@ from qordoba.commands.init import init_command
 from qordoba.commands.ls import ls_command
 from qordoba.commands.pull import pull_command
 from qordoba.commands.push import push_command
+from commands.i18n_extract import extract
+from commands.i18n_generate import generate
+
 from qordoba.commands.status import status_command, status_command_json
 from qordoba.settings import load_settings, SettingsError
 from qordoba.utils import with_metaclass, FilePathType, CommaSeparatedSet
@@ -25,12 +28,10 @@ log = logging.getLogger('qordoba')
 try:
     import signal
 
-
     def exithandler(signum, frame):
         signal.signal(signal.SIGINT, signal.SIG_IGN)
         signal.signal(signal.SIGTERM, signal.SIG_IGN)
         sys.exit(1)
-
 
     signal.signal(signal.SIGINT, exithandler)
     signal.signal(signal.SIGTERM, exithandler)
@@ -40,13 +41,11 @@ try:
 except KeyboardInterrupt:
     sys.exit(1)
 
-
 class ArgsHelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
     def add_usage(self, usage, actions, groups, prefix=None):
         if prefix is None:
             prefix = 'Usage: '
         return super(ArgsHelpFormatter, self).add_usage(usage, actions, groups, prefix)
-
 
 def fix_parser_titles(parser):
     parser._positionals.title = 'Positional arguments'
@@ -297,7 +296,6 @@ class DeleteHandler(BaseHandler):
         delete_command(self._curdir, config, self.file, force=self.force)
 
 
-from commands.i18n_extract import extract
 
 class ExtractHandler(BaseHandler):
     name = 'i18n-extract'
@@ -318,6 +316,25 @@ class ExtractHandler(BaseHandler):
     def main(self):
         log.info('Starting extraction...')
         extract(self._curdir, input=self.input, output=self.output, lexer_custom=self.lexer_custom, bulk_report=self.bulk_report)
+
+class GenerateHandler(BaseHandler):
+    name = 'i18n-generate'
+    help = """
+    Give the i18n-generate command your qordoba reports directory. It will then generate new keys for your strings.
+    """
+
+    @classmethod
+    def register(cls, *args, **kwargs):
+        parser = super(GenerateHandler, cls).register(*args, **kwargs)
+        fix_parser_titles(parser)
+        parser.set_defaults(_handler=cls)
+        parser.add_argument("-i", "--input", type=str, required=True)
+        parser.add_argument("-o", "--output", type=str, required=True)
+        parser.add_argument("--existing_i18nfiles", type=str, required=False)
+
+    def main(self):
+        log.info('Starting generation of keys...')
+        generate(self._curdir, input=self.input, output=self.output, existing_i18nfiles=self.existing_i18nfiles)
 
 
 def parse_arguments():
@@ -346,6 +363,7 @@ def parse_arguments():
     ListHandler.register(subparsers, **args)
     DeleteHandler.register(subparsers, **args)
     ExtractHandler.register(subparsers, **args)
+    GenerateHandler.register(subparsers, **args)
 
     args = parser.parse_args()
     return args, parser
