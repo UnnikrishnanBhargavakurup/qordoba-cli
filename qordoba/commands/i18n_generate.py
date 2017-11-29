@@ -5,10 +5,14 @@ import json
 import os
 import logging
 
+KEY_COUNT = 0
 """
-test with subdirs etc. ob das get_files_in_dir_with_subdirs wirklich functioniert auf allen ebenen
+1. test with subdirs etc. ob das get_files_in_dir_with_subdirs wirklich functioniert auf allen ebenen
+2. in index_lookup. instead of == could say 99%match. e.g. "Ruby is fun." vs "Ruby is fun"
 """
 def generate_new_key(value):
+	global KEY_COUNT
+	KEY_COUNT += 1
 	r = requests.post('https://qordoba-devel.appspot.com/convert', data = {'text': value})
 	keywords = r.json()["keywords"]
 	key = '.'.join(keywords)
@@ -42,11 +46,10 @@ def get_nested_dictionary(file):
 		return json_data
 
 
-def match_key_values_in_i18n_files(i18n_file_list):
+def accumulate_existing_i18n_key_value_pairs_from_all_files(i18n_file_list):
 	"""
 	Getting key values from json or nested json dict
 	"""
-	print(i18n_file_list)
 	sum_of_keys_values_from_i18n_files = dict()
 	for file_list in i18n_file_list:
 		#this is important due to subdirs
@@ -60,7 +63,17 @@ def match_key_values_in_i18n_files(i18n_file_list):
 	# return self.convert(sum_of_keys_values_from_i18n_files)
 	return sum_of_keys_values_from_i18n_files
 
-def accumulate_existing_i18n_key_value_pairs_from_all_files(existing_i18nfiles, df):
+def index_lookup(stringLiteral, localization_k_v):
+	# checks if stringLiteral exists in values, gives back corresponding key or None
+	for i18n_file in localization_k_v:
+		for key, value in localization_k_v[i18n_file].items():
+			if value.strip() == stringLiteral.strip():
+				return key, i18n_file
+			if key.strip() == stringLiteral.strip():
+				return key, i18n_file
+	return (None, None)
+
+def add_existing_i18n_keys_to_df(existing_i18nfiles, df):
 	"""Reading in list of i18n-filepaths and current df.
 	Giving out the new df with existing keys added.
 	"""
@@ -73,46 +86,36 @@ def accumulate_existing_i18n_key_value_pairs_from_all_files(existing_i18nfiles, 
 			logging.info("Skipping file `{}`. Not a valid json i18n-file".format(loc_file))
 
 	#accumulate all key-values-pairs from the i18n-file
-	existing_i18n_key_value_pairs = match_key_values_in_i18n_files(i18n_file_list)
-	print("dictionary {}".format((existing_i18n_key_value_pairs)))
+	existing_i18n_key_value_pairs = accumulate_existing_i18n_key_value_pairs_from_all_files(i18n_file_list)
+	# print("dictionary {}".format((existing_i18n_key_value_pairs)))
+
 
 	logging.info(" ... searching for existing keys.")
 	for column in df:
 			for i in range(len(df.index)):
 				#stripping quotes from start and end of sting
 				try:
-					df[column][i]["value"] = strip_qoutes(df[column][i]["value"])
+
+					if index_lookup(df[column][i]["value"], existing_i18n_key_value_pairs) == (None, None):
+						continue
+					else:
+						key, i18n_file = index_lookup(df[column][i]["value"], existing_i18n_key_value_pairs)
+						df[column][i]["existing_key"] = {"key":key, "i18n_file": i18n_file}
 				except TypeError:
 					continue
-	df['existing_keys'], df['existing_localization_file'] = izip(*df.iloc[:, -1].apply(lambda x: self.index_lookup(x, localization_k_v)))
+	
+
+				# df['existing_keys'], df['existing_localization_file'] = izip(*df.iloc[:, -1].apply(lambda x: self.index_lookup(x, localization_k_v)))
 	return df
 
-def add_existing_i18n_keys_to_df(self, localization_file_list, df):
-    localization_files = []
 
-    for i in range(len(localization_file_list)):
-        log.info('Reading files from file `{}`.'.format(localization_file_list[i]))
-
-        for loc_file in os.listdir(localization_file_list[i]):
-            # skipping non json localization files
-            if not loc_file.startswith('.') and loc_file.endswith('json'):
-                localization_files.append(localization_file_list[i] + '/' + loc_file)
-            else:
-                log.info("Skipping file  `{}`. Not a valid json localization file".format(loc_file))
-
-    localization_k_v = self.get_existing_i18n_key_values(localization_files)
-    log.info(" ... searching for existing keys.")
-    df['existing_keys'], df['existing_localization_file'] = izip(*df.iloc[:, -1].apply(lambda x: self.index_lookup(x, localization_k_v)))
-
-    return df
-
-
-def generate(_curdir, input=None, output=None, existing_i18nfiles=None):
+def generate(_curdir, input=None, existing_i18nfiles=None):
 	""" Given localization files exists, gives back existing keys.
 	Further, generating new keys for values
 	"""
 	report_files = get_files_in_dir_with_subdirs(input)
-	# report_files = ignore_files(report_files)
+	report_files = ignore_files(report_files)
+	
 	for single_report_path in report_files:
 		"""
 	    Validate report
@@ -120,35 +123,34 @@ def generate(_curdir, input=None, output=None, existing_i18nfiles=None):
 		if not single_report_path.endswith(".json"):
 			continue
 
+		logging.info("  " + u"\U0001F4AB" + u"\U0001F52E" + " .. starting to generate new keys for you - based on the extracted Strings from your files.\n (This could Take some time) \n\n ")
+		logging.info("\b")
+
 		df = pd.read_json(single_report_path)
 		for column in df:
 			for i in range(len(df.index)):
-				#stripping quotes from start and end of sting
 				try:
+					#stripping quotes from start and end of sting
 					df[column][i]["value"] = strip_qoutes(df[column][i]["value"])
+					key = generate_new_key(df[column][i]["value"])
+					df[column][i]["generated_key"] = {"key": key}
 				except TypeError:
 					continue
+				if KEY_COUNT%20 == 0:
+					print("{} keys created ".format(KEY_COUNT))
+					logging.info("{} keys created ".format(KEY_COUNT))
 
 		if existing_i18nfiles:
 			i18n_files = get_files_in_dir_with_subdirs(existing_i18nfiles)
 			i18n_files = ignore_files(i18n_files)
-			df = accumulate_existing_i18n_key_value_pairs_from_all_files(i18n_files, df)
-			df = add_existing_i18n_keys_to_df(localization_file_list, df)
-
-		# log.info(
-		#     "  " + u"\U0001F4AB" + u"\U0001F52E" + " .. starting to generate new keys for you - based on the extracted Strings from your files.")
-		# log.info(" (This could Take some time)")
-		# log.info("\b")
-
-		# # New keys are generated by picking the two lowest frequence word of english corpus within given string
-		# df['generated_keys'] = (df.text).apply(lambda x: self.generate_new_keys(x))
-		# os.remove(single_report_path)
-		# df.to_json(single_report_path, encoding='utf-8', index=False)
-		# log.info("Process completed. " + u"\U0001F680" + u"\U0001F4A5")
+			df = add_existing_i18n_keys_to_df(i18n_files, df)
+		
+		logging.info("Process completed. " + u"\U0001F680" + u"\U0001F4A5")
+		#report ueberschreiben
+		os.remove(single_report_path)
+		df.to_json(single_report_path)
 
 # python cli.py i18n-generate -i /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_report -o /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_report --existing_i18nfiles /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_i18n_existing --traceback
-
-
-
+# python cli.py i18n-generate -i /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_report --existing_i18nfiles /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_i18n_existing --traceback
 
 

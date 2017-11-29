@@ -329,12 +329,11 @@ class GenerateHandler(BaseHandler):
         fix_parser_titles(parser)
         parser.set_defaults(_handler=cls)
         parser.add_argument("-i", "--input", type=str, required=True)
-        parser.add_argument("-o", "--output", type=str, required=True)
         parser.add_argument("--existing_i18nfiles", type=str, required=False)
 
     def main(self):
         log.info('Starting generation of keys...')
-        generate(self._curdir, input=self.input, output=self.output, existing_i18nfiles=self.existing_i18nfiles)
+        generate(self._curdir, input=self.input, existing_i18nfiles=self.existing_i18nfiles)
 
 
 def parse_arguments():
