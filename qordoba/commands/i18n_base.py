@@ -10,6 +10,9 @@ IGNOREFILES = [
     "__init__.py",
 ]
 
+def unicode_error(String):
+    return unicode(String.strip()).decode('utf-8')
+
 def convert_to_unicode(input):
     """convert strings into unicode"""
     if isinstance(input, dict):
