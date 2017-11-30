@@ -138,26 +138,28 @@ def execute(curdir, input_dir=None, report_dir=None, key_format=None):
 
                 temp_file_all_lines_into_dict = replace_strings_for_keys(singel_file_stringliterals, old_file_all_lines_into_dict, key_format)
                 new_file_all_lines_into_dict = [x for x in temp_file_all_lines_into_dict if x != None]
+                new_file_strings = []
+                for i in range(len(new_file_all_lines_into_dict)):
+                        new_file_strings.append((unicode(new_file_all_lines_into_dict[i])).rstrip())
+                new_file = ''.join(new_file_strings)
                 # remove old file, dump new
                 Html_file = open(single_file_path, "w")
                 if single_file_path.endswith('html'):
-                    for i in range(len(new_file_all_lines_into_dict)):
-                        ''.join(unicode(new_file_all_lines_into_dict[i]))
-                os.remove(single_file_path)
-                Html_file.write("".join(new_file_all_lines_into_dict))
-                Html_file.close()
-            # create localization file in output folder
-            # new_i18n_file =  report_dir + '/new_qordoba_i18n_file.json'
-            
-            # #  Getting key
-            # final_key = singel_file_stringliterals[i]["generated_key"]["key"]
-            # existing_key = singel_file_stringliterals[i].get("existing_key", None) 
-            # if existing_key:
-            #     final_key = existing_key["key"]
+                    os.remove(single_file_path)
+                    with open(single_file_path, 'w') as outfile:
+                        json.dump(new_file, outfile)
+                # create localization file in output folder
+                # new_i18n_file =  report_dir + '/new_qordoba_i18n_file.json'
+                
+                # #  Getting key
+                # final_key = singel_file_stringliterals[i]["generated_key"]["key"]
+                # existing_key = singel_file_stringliterals[i].get("existing_key", None) 
+                # if existing_key:
+                #     final_key = existing_key["key"]
 
-            # import json
-            # with open(new_i18n_file, "w") as jsonFile:
-            #     json.dump(json_dump, jsonFile, sort_keys=True, indent=4, separators=(',', ': '))
+                # import json
+                # with open(new_i18n_file, "w") as jsonFile:
+                #     json.dump(json_dump, jsonFile, sort_keys=True, indent=4, separators=(',', ': '))
                 import sys
                 sys.exit()
 
