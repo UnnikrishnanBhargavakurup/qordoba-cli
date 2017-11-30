@@ -108,7 +108,7 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
             if str(token) in LEXER_STRINGS[lexer_stringliteral_def] and not re.match(r'\n', value) and value.strip() != '':
                 
                 pos_start, token, value = item
-                value = value.strip()
+                value = value.decode('utf-8').strip()
 
                 # calculating fileline of string based on charcter position of entire file
                 file_chunk = code[:pos_start]
@@ -132,6 +132,5 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
 
 # from console:
 # python cli.py i18n-extract -i /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_files -r /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_report --traceback
-
 # within script: 
 # extract('curdir', input="/Users/franzi/Workspace/artifacts_stringExtractor/directory_cloudflare", output="/Users/franzi/Workspace/artifacts_stringExtractor/directory_cloudflare", lexer_custom="NonJunk", bulk_report=False)

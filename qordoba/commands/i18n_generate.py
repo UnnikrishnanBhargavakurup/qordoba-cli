@@ -70,7 +70,7 @@ def index_lookup(stringLiteral, localization_k_v):
 		for key, value in localization_k_v[i18n_file].items():
 			if value.strip() == stringLiteral.strip():
 				return key, i18n_file
-			if key.strip() == stringLieral.strip():
+			if key.strip() == stringLiteral.strip():
 				return key, i18n_file
 	return (None, None)
 
@@ -86,10 +86,10 @@ def add_existing_i18n_keys_to_df(existing_i18nfiles, df):
 		else:
 			log.info("Skipping file `{}`. Not a valid json i18n-file".format(loc_file))
 
+	log.info(" ... searching for existing keys.")
 	#accumulate all key-values-pairs from the i18n-file
 	existing_i18n_key_value_pairs = accumulate_existing_i18n_key_value_pairs_from_all_files(i18n_file_list)
-
-	log.info(" ... searching for existing keys.")
+	
 	for column in df:
 			for i in range(len(df.index)):
 				#stripping quotes from start and end of sting
@@ -136,7 +136,6 @@ def generate(_curdir, report_dir=None, existing_i18nfiles=None):
 				except TypeError:
 					continue
 				if KEY_COUNT%20 == 0:
-					print("{} keys created ".format(KEY_COUNT))
 					log.info("{} keys created ".format(KEY_COUNT))
 
 		if existing_i18nfiles:
@@ -149,7 +148,6 @@ def generate(_curdir, report_dir=None, existing_i18nfiles=None):
 		os.remove(single_report_path)
 		df.to_json(single_report_path)
 
-# python cli.py i18n-generate -r /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_report -o /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_report --existing_i18nfiles /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_i18n_existing --traceback
 # python cli.py i18n-generate -r /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_report --existing_i18nfiles /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_i18n_existing --traceback
 
 

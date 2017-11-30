@@ -1,5 +1,6 @@
-from i18n_base import get_files_in_dir_with_subdirs, ignore_files, iterate_items, unicode_error
+from i18n_base import get_files_in_dir_with_subdirs, ignore_files, iterate_items, unicode_encode, unicode_decode
 
+import os
 import pandas as pd
 import json
 import logging 
@@ -23,7 +24,7 @@ def get_filerows_as_list(file_path):
     try:
         with open(file_path, "r") as file:
             for line in file:
-                file_dict[count] = line.rstrip()
+                file_dict[count] = line.decode('utf-8')
                 count += 1
         
         return file_dict
@@ -35,7 +36,6 @@ def get_filerows_as_list(file_path):
     return file_dict
 
 def transform_keys(key, key_format):
-
         key_value = key.strip()
         if key_format is not None:
             key = key_format.replace('KEY', key_value)
@@ -45,70 +45,77 @@ def transform_keys(key, key_format):
         return key
 
 def final_replace(key, picked_line, stringliteral, key_format):
-	# 
-    key = transform_keys(key, key_format)
-    print(key)
-    picked_line_1 = picked_line.replace("'" + unicode_error(stringliteral) + "'", unicode_error(key))
-    picked_line_2 = picked_line_1.replace('"' + unicode_error(stringliteral) + '"', unicode_error(key))
-    picked_line_3 = picked_line_2.replace('%{' + unicode_error(stringliteral) + '}', unicode_error(key)) #ruby specific %{}
-    picked_line_4 = picked_line_3.replace(unicode_error(stringliteral), unicode_error(key))
+    key_new = transform_keys(key, key_format)
+    picked_line_1 = picked_line.replace("'" + stringliteral + "'", key_new)
+    picked_line_2 = picked_line_1.replace('"' + stringliteral + '"', key_new)
+    picked_line_3 = picked_line_2.replace('%{' + stringliteral + '}', key_new) #ruby specific %{}
+    picked_line_4 = picked_line_3.replace(stringliteral, key)
+
+    print(picked_line_4)
+    
     return picked_line_4
+
+    # except UnicodeEncodeError:
+    #     picked_line_1 = picked_line.replace("'" + unicode_decode(stringliteral) + "'", unicode_decode(key))
+    #     picked_line_2 = picked_line_1.replace('"' + unicode_decode(stringliteral) + '"', unicode_decode(key))
+    #     picked_line_3 = picked_line_2.replace('%{' + unicode_decode(stringliteral) + '}', unicode_decode(key)) #ruby specific %{}
+    #     picked_line_4 = picked_line_3.replace(unicode_decode(stringliteral), unicode_decode(key))
+    #     # print("Replaced stringliteral".format((picked_line_4)))
+    #     return picked_line_4
 
 def replace_strings_for_keys(singel_file_stringliterals, old_file_all_lines_into_dict, key_format):
         # file is list of strings. replaces strings in list
 
-        for i in range(len(singel_file_stringliterals.index)):
-        	stringliteral = singel_file_stringliterals[i]["value"]
-        	idx_start = singel_file_stringliterals[i]["start_line"]
-        	idx_end = singel_file_stringliterals[i]["end_line"]
-        	print("idx_start {}".format(idx_start))
-        	print("idx_end {}".format(idx_end))
-        	print("old line: {}".format(old_file_all_lines_into_dict[idx_start]))
-        	# print("stringliteral {}".format((stringliteral)))
-        	#getting existing_key and generated key
-        	existing_key = singel_file_stringliterals[i].get("existing_key", None) 
-        	if existing_key:
-        		existing_key = existing_key["key"]
-        	generated_key = singel_file_stringliterals[i]["generated_key"]["key"]
+    for i in range(len(singel_file_stringliterals.index)):
+        stringliteral = singel_file_stringliterals[i]["value"]
+        idx_start = singel_file_stringliterals[i]["start_line"]
+        idx_end = singel_file_stringliterals[i]["end_line"]
 
-        	print(singel_file_stringliterals[i]["generated_key"])
-        	if idx_start == idx_end:
-				picked_line = old_file_all_lines_into_dict[idx_start]
-				print("Line: {}".format(old_file_all_lines_into_dict[idx_start]))
-                # replaces with html keys. "STRING" -->  ${KEY}
-                try:
-                	if existing_key is None:
-                		replaced_line = final_replace(generated_key, picked_line, stringliteral, key_format)
-                	else:
-                		replaced_line = final_replace(existing_key, picked_line, stringliteral, key_format)
-                	old_file_all_lines_into_dict[idx_start] = replaced_line
-                except KeyError:
-                	continue
-            	print("new line: {}".format(old_file_all_lines_into_dict[idx_start]))
+        # print("stringliteral {}".format((stringliteral)))
+        #getting existing_key and generated key
+        existing_key = singel_file_stringliterals[i].get("existing_key", None) 
+        if existing_key:
+            existing_key = existing_key["key"]
+        generated_key = singel_file_stringliterals[i]["generated_key"]["key"]
+        if idx_start == idx_end:
+            picked_line = old_file_all_lines_into_dict[idx_start]
+            # replaces with html keys. "STRING" -->  ${KEY}
+            try:
+                if existing_key is None:
+                    replaced_line = final_replace(generated_key, picked_line, stringliteral, key_format)
+                else:
+                    replaced_line = final_replace(existing_key, picked_line, stringliteral, key_format)
+                old_file_all_lines_into_dict[idx_start] = replaced_line
+            except KeyError:
+                pass
 
-        	# multi-line replacement
-        	if idx_start < idx_end:
-        		picked_lines = list()
-        		for i in range(idx_start, idx_end):
-        			picked_lines.append(old_file_all_lines_into_dict[i])
-        		joined_lines = '\n'.join(picked_lines)
-        		try:
-        			if existing_key is None:
-        				replaced_line = final_replace(generated_key, joined_lines, stringliteral, key_format)
-        			else:
-        				replaced_line = final_replace(existing_key, joined_lines, stringliteral, key_format)
-        			old_file_all_lines_into_dict[idx_start] = replaced_line
-        		except KeyError:
-        			continue
-        		print("new line: {}".format(old_file_all_lines_into_dict[idx_start]))
-        		# adding to the lost indexes none, so df is not fucked up for later
-        		for i in range(idx_start, idx_end):
-        			old_file_all_lines_into_dict[i] = None
-        file_array_list = list()
-        for i in range(len(old_file_all_lines_into_dict)):
-        	idx = i + 1
-        	file_array_list.append(old_file_all_lines_into_dict[idx])
-        return file_array_list
+        if idx_start < idx_end:
+            # print("idx_start {}".format(idx_start))
+            # print("idx_end {}".format(idx_end))
+            picked_lines = list()
+            print("old_file_all_lines_into_dict")
+            print(old_file_all_lines_into_dict[idx_start])
+            for i in range(idx_start, idx_end+1):
+                picked_lines.append(old_file_all_lines_into_dict[i])
+            joined_lines = ''.join(picked_lines)
+            try:
+                if existing_key is None:
+                    replaced_line = final_replace(generated_key, joined_lines, stringliteral, key_format)
+                else:
+                    replaced_line = final_replace(existing_key, joined_lines, stringliteral, key_format)
+                old_file_all_lines_into_dict[idx_start] = replaced_line
+            except KeyError:
+                continue
+
+            # adding to the lost indexes none, so df is not fucked up for later
+            for i in range(idx_start, idx_end):
+                old_file_all_lines_into_dict[i] = None
+    
+    file_array_list = list()
+    for i in range(len(old_file_all_lines_into_dict)):
+        idx = i + 1
+        file_array_list.append(old_file_all_lines_into_dict[idx])
+    return file_array_list
 
 def execute(curdir, input_dir=None, report_dir=None, key_format=None):
 		"""
@@ -132,29 +139,24 @@ def execute(curdir, input_dir=None, report_dir=None, key_format=None):
                 # checking if file is empty
                 try:
                     if len(old_file_all_lines_into_dict) == 0:
-                    	print('File {} is empty'.format(single_file_path))
+                    	log.info('File {} is empty'.format(single_file_path))
                     	pass
                 except TypeError:
-                    print('File {} is empty'.format(single_file_path))
+                    log.info('File {} is empty'.format(single_file_path))
                     pass
 
-                new_file_linedict = replace_strings_for_keys(singel_file_stringliterals, old_file_all_lines_into_dict, key_format)
+                temp_file_all_lines_into_dict = replace_strings_for_keys(singel_file_stringliterals, old_file_all_lines_into_dict, key_format)
+                new_file_all_lines_into_dict = [x for x in temp_file_all_lines_into_dict if x != None]
+
+                # remove old file, dump new
+                os.remove(single_file_path)
+                Html_file = open(single_file_path, "w")
+                if single_file_path.endswith('html'):
+                    ''.join(new_file_all_lines_into_dict)
+                Html_file.write("".join(new_file_all_lines_into_dict))
+                Html_file.close()
                 import sys
                 sys.exit()
-#                 print("old")
-#                 print(file_dict)
-#                 print("new")
-#                 print(new_file_dict)
-#                 new_file_dict_1 = [x for x in new_file_dict if x != None]
-
-#                 # remove old file, dump new
-#                 os.remove(project_file_path)
-#                 Html_file = open(project_file_path, "w")
-#                 if project_file_path[-4:] == 'html':
-#                     ''.join(new_file_dict_1)
-#                 Html_file.write("".join(new_file_dict_1))
-#                 Html_file.close()
-
 #             # create localization file in output folder
 #             new_localization_file = config.export_i18n[0] + '/qordoba_localization_file.json'
 #             # WTF! NEEDS REFACTURING
