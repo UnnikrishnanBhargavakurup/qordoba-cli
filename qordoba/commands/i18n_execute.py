@@ -11,11 +11,11 @@ Validate report status
 """
 
 def get_files_in_report(report_path):
-	"""
-	takes the report path and gives back its input files """
-	json_report = open(report_path).read()
-	data = json.loads(json_report)
-	return data.keys()
+    """
+    takes the report path and gives back its input files """
+    json_report = open(report_path).read()
+    data = json.loads(json_report)
+    return data.keys()
 
 def get_filerows_as_list(file_path):
     # loads file into dict. Every line is an index and holds the sting as a value. Starting with line 1
@@ -50,9 +50,6 @@ def final_replace(key, picked_line, stringliteral, key_format):
     picked_line_2 = picked_line_1.replace('"' + stringliteral + '"', key_new)
     picked_line_3 = picked_line_2.replace('%{' + stringliteral + '}', key_new) #ruby specific %{}
     picked_line_4 = picked_line_3.replace(stringliteral, key)
-
-    print(picked_line_4)
-    
     return picked_line_4
 
     # except UnicodeEncodeError:
@@ -116,37 +113,36 @@ def replace_strings_for_keys(singel_file_stringliterals, old_file_all_lines_into
     return file_array_list
 
 def execute(curdir, input_dir=None, report_dir=None, key_format=None):
-		"""
-		Input is the input-directory and qordoba reports. 
-		Output is a replaced input directory - stringliterals for keys - plus a i18n JSON file which contains the new keys
-		"""
-		reports = get_files_in_dir_with_subdirs(report_dir)
-		reports = ignore_files(reports)
-		for report in reports:
-			df = pd.read_json(report)
+        """
+        Input is the input-directory and qordoba reports.
+        Output is a replaced input directory - stringliterals for keys - plus a i18n JSON file which contains the new keys
+        """
+        reports = get_files_in_dir_with_subdirs(report_dir)
+        reports = ignore_files(reports)
+        for report in reports:
+            df = pd.read_json(report)
             #files_in_report are the files where stringliterals have been extracted
             files_paths_in_report = get_files_in_report(report)
             for single_file_path in files_paths_in_report:
                 log.info("Reading old file `{}`.".format(single_file_path))
                 old_file_all_lines_into_dict = get_filerows_as_list(single_file_path)
-                print(old_file_all_lines_into_dict)
                 singel_file_stringliterals = (df[single_file_path])
                 # checking if file is empty
                 try:
                     if len(old_file_all_lines_into_dict) == 0:
-                    	log.info('File {} is empty'.format(single_file_path))
-                    	pass
+                        log.info('File {} is empty'.format(single_file_path))
+                        pass
                 except TypeError:
                     log.info('File {} is empty'.format(single_file_path))
                     pass
 
                 temp_file_all_lines_into_dict = replace_strings_for_keys(singel_file_stringliterals, old_file_all_lines_into_dict, key_format)
                 new_file_all_lines_into_dict = [x for x in temp_file_all_lines_into_dict if x != None]
-
                 # remove old file, dump new
                 Html_file = open(single_file_path, "w")
                 if single_file_path.endswith('html'):
-                    ''.join(unicode(new_file_all_lines_into_dict))
+                    for i in range(len(new_file_all_lines_into_dict)):
+                        ''.join(unicode(new_file_all_lines_into_dict[i]))
                 os.remove(single_file_path)
                 Html_file.write("".join(new_file_all_lines_into_dict))
                 Html_file.close()

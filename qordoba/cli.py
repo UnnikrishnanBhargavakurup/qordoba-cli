@@ -353,7 +353,7 @@ class ExecuteHandler(BaseHandler):
         parser.add_argument("-k", "--key_format", type=str, required=False)
 
     def main(self):
-        log.info('Starting generation of keys...')
+        log.info('Starting to replace values with keys...')
         execute(self._curdir, input_dir=self.input_dir, report_dir=self.report_dir, key_format=self.key_format)
 
 def parse_arguments():
