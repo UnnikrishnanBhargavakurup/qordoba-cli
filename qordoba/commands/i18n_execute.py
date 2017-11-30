@@ -11,30 +11,101 @@ Validate report status
 
 
 def get_files_in_report(report_path):
+	"""
+	takes the report path and gives back its input files """
 	json_report = open(report_path).read()
 	data = json.loads(json_report)
 	return data.keys()
 
 def get_filerows_as_list(file_path):
-    # loads file into dict. Items of dict are lines in file with linenumber.
+    # loads file into dict. Every line is an index and holds the sting as a value. Starting with line 1
     file_dict = {}
-    count= 0
+    count= 1
     try:
         with open(file_path, "r") as file:
             for line in file:
-                count += 1
                 file_dict[count] = line.rstrip()
+                count += 1
+        
         return file_dict
+    
     except IOError:
         print("File '{}' does not exist.".format(file_path))
         pass
 
     return file_dict
 
+def transform_keys(self, key, key_format):
+
+        key_value = key.strip()
+        if key_format is not None:
+            key = key_format.replace('KEY', key_value)
+        else:
+            key = key_value
+
+        return key
+
+def final_replace(key_type, picked_line, v, key_format):
+
+    key = self.transform_keys(v[key_type], key_format)
+    picked_line_1 = picked_line.replace("'" + v['text'].strip() + "'", key)
+    picked_line_2 = picked_line_1.replace('"' + v['text'].strip() + '"', key)
+    picked_line_3 = picked_line_2.replace(v['text'].strip(), key)
+    return picked_line_3
+
+def replace_strings_for_keys(report_to_dict, file_dict, key):
+        # file is list of strings. replaces strings in list
+        if key is None:
+        	key = "KEY"
+
+        for i in range(len(report_to_dict.index)):
+			print(report_to_dict[0]["value"])
+			print(report_to_dict[0]["start_line"])
+
+            idx_start = report_to_dict[0]["start_line"]
+            idx_end = report_to_dict[0]["end_line"]
+
+            if idx_start == idx_end:
+                picked_line = file_dict[idx_start]
+                # replaces with html keys. "STRING" -->  ${KEY}
+                try:
+			        if v['existing_keys'] is None:
+			            replaced_line = self.final_replace('generated_keys', picked_line, v, key)
+			        else:
+			            replaced_line = self.final_replace('existing_keys', picked_line, v, key)
+			        file_dict[idx_start] = replaced_line
+			    except KeyError:
+			    	continue
+			    	
+            # multi-line replacement
+            if idx_start < idx_end:
+                picked_lines = list()
+                for i in range(idx_start, idx_end):
+                    picked_lines.append(file_dict[i])
+                joined_lines = '\n'.join(picked_lines)
+
+                if v['existing_keys'] is None:
+                    replaced_line = self.final_replace('generated_keys', joined_lines, v, key)
+                else:
+                    replaced_line = self.final_replace('existing_keys', joined_lines, v, key)
+
+                file_dict[idx_end] = replaced_line
+
+                # adding to the lost indexes none, so df is not fucked up for later
+                for i in range(idx_start, idx_end):
+                    file_dict[i] = None
+
+        file_array_list = list()
+        for i in range(len(file_dict)):
+            idx = i + 1
+            file_array_list.append(file_dict[idx])
+
+        return file_array_list
 
 def execute(curdir, input_dir=None, report_dir=None, key_format=None):
 		"""
-		Input input directory and reports. 
+		Input is the input-directory and qordoba reports. 
+		Output is a replaced input directory - stringliterals for keys - plus a i18n JSON file which contains the new keys
 		"""
 		reports = get_files_in_dir_with_subdirs(report_dir)
 		reports = ignore_files(reports)
@@ -47,25 +118,22 @@ def execute(curdir, input_dir=None, report_dir=None, key_format=None):
 			for file_in_report in files_in_report:
 
 				log.info("Reading old file `{}`.".format(file_in_report))
-				old_file_dict_lines = get_filerows_as_list(file_in_report)
-				new_keys_for_file_in_report = (df[file_in_report])
-				for i in range(len(new_keys_for_file_in_report.index)):
-					print(nn[0]["value"])
+				old_file_linedict = get_filerows_as_list(file_in_report)
+				report_filedict = (df[file_in_report])
 
                 # checking if file is empty
-                try:
-                    if len(old_file_dict_lines) == 0:
-                        print('File {} is empty'.format(file_in_report))
-                        continue
-                except TypeError:
-                    print('File {} is empty'.format(file_in_report))
-                    continue
+                # try:
+                #     if len(old_file_linedict) == 0:
+                #     	print('File {} is empty'.format(file_in_report))
+                #     	continue
+                # except TypeError:
+                #     print('File {} is empty'.format(file_in_report))
+                #     continue
 
-                import sys
-				sys.exit()
+                new_file_linedict = replace_strings_for_keys(report_filedict, old_file_linedict, key_format)
 				
-                key = self.get_key_for_filetype(config, file_in_report)
-#                 new_file_dict = self.replace_strings_for_keys(report_to_dict, file_dict, key)
+				# import sys
+				# sys.exit()
 #                 print("old")
 #                 print(file_dict)
 #                 print("new")
