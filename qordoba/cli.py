@@ -4,6 +4,7 @@ import argparse
 import os
 import sys
 import logging
+log = logging.getLogger('qordoba')
 import itertools
 
 from abc import ABCMeta, abstractmethod
@@ -17,13 +18,13 @@ from qordoba.commands.pull import pull_command
 from qordoba.commands.push import push_command
 from commands.i18n_extract import extract
 from commands.i18n_generate import generate
+from commands.i18n_execute import execute
 
 from qordoba.commands.status import status_command, status_command_json
 from qordoba.settings import load_settings, SettingsError
 from qordoba.utils import with_metaclass, FilePathType, CommaSeparatedSet
 from qordoba.log import init
 
-log = logging.getLogger('qordoba')
 
 try:
     import signal
@@ -308,14 +309,14 @@ class ExtractHandler(BaseHandler):
         parser = super(ExtractHandler, cls).register(*args, **kwargs)
         fix_parser_titles(parser)
         parser.set_defaults(_handler=cls)
-        parser.add_argument("-i", "--input", type=str, required=True)
-        parser.add_argument("-o", "--output", type=str, required=True)
+        parser.add_argument("-i", "--input_dir", type=str, required=True)
+        parser.add_argument("-r", "--report_dir", type=str, required=True)
         parser.add_argument("-l", "--lexer_custom", type=str, required=False)
         parser.add_argument("-b", "--bulk_report", action='store_true', required=False)
 
     def main(self):
         log.info('Starting extraction...')
-        extract(self._curdir, input=self.input, output=self.output, lexer_custom=self.lexer_custom, bulk_report=self.bulk_report)
+        extract(self._curdir, input_dir=self.input_dir, report_dir=self.report_dir, lexer_custom=self.lexer_custom, bulk_report=self.bulk_report)
 
 class GenerateHandler(BaseHandler):
     name = 'i18n-generate'
@@ -328,13 +329,32 @@ class GenerateHandler(BaseHandler):
         parser = super(GenerateHandler, cls).register(*args, **kwargs)
         fix_parser_titles(parser)
         parser.set_defaults(_handler=cls)
-        parser.add_argument("-i", "--input", type=str, required=True)
+        parser.add_argument("-r", "--report_dir", type=str, required=True)
         parser.add_argument("--existing_i18nfiles", type=str, required=False)
 
     def main(self):
         log.info('Starting generation of keys...')
-        generate(self._curdir, input=self.input, existing_i18nfiles=self.existing_i18nfiles)
+        generate(self._curdir, report_dir=self.report_dir, existing_i18nfiles=self.existing_i18nfiles)
 
+class ExecuteHandler(BaseHandler):
+    name = 'i18n-execute'
+    help = """
+    Give the i18n-execute command your qordoba reports directory with generated keys. 
+    It will replace stringliterals with keys.
+    """
+
+    @classmethod
+    def register(cls, *args, **kwargs):
+        parser = super(ExecuteHandler, cls).register(*args, **kwargs)
+        fix_parser_titles(parser)
+        parser.set_defaults(_handler=cls)
+        parser.add_argument("-i", "--input_dir", type=str, required=True)
+        parser.add_argument("-r", "--report_dir", type=str, required=True)
+        parser.add_argument("-k", "--key_format", type=str, required=False)
+
+    def main(self):
+        log.info('Starting generation of keys...')
+        execute(self._curdir, input_dir=self.input_dir, report_dir=self.report_dir, key_format=self.key_format)
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -363,6 +383,7 @@ def parse_arguments():
     DeleteHandler.register(subparsers, **args)
     ExtractHandler.register(subparsers, **args)
     GenerateHandler.register(subparsers, **args)
+    ExecuteHandler.register(subparsers, **args)
 
     args = parser.parse_args()
     return args, parser

@@ -77,9 +77,9 @@ def get_lexer(file_name, code, lexer_custom=None):
     return lexer
 
 
-def extract(curdir, input=None, output=None, lexer_custom=None, bulk_report=False):
+def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_report=False):
     # first getting all files in directory, than iteration 
-    files = get_files_in_dir_with_subdirs(input)
+    files = get_files_in_dir_with_subdirs(input_dir)
     files = ignore_files(files)
 
     if bulk_report: #if True, the report will reflect all files as bulk. no single report per file
@@ -119,19 +119,19 @@ def extract(curdir, input=None, output=None, lexer_custom=None, bulk_report=Fals
                 json_report[file_][count] = {"value": value, "start_line": start_line+1, "end_line": end_line+1}
                 count += 1
         if not bulk_report:
-            file_path = output + '/qordoba-report-' + file_name + "-" + date +'.json'
+            file_path = report_dir + '/qordoba-report-' + file_name + "-" + date +'.json'
             save_to_jsonfile(file_path, json_report)
             log.info("Report saved for file and reportname in: `{}`".format(file_path))
 
     # creating report file for bulk
     if bulk_report:
-        file_path = output + '/qordoba-bulkreport-' + date +'.json'
+        file_path = report_dir + '/qordoba-bulkreport-' + date +'.json'
         save_to_jsonfile(file_path, json_report)
         log.info("Report saved in bulk for all files in: `{}`".format(file_path))
 
 
 # from console:
-# python cli.py i18n-extract -i /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_files -o /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_report --traceback
+# python cli.py i18n-extract -i /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_files -r /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_report --traceback
 
 # within script: 
 # extract('curdir', input="/Users/franzi/Workspace/artifacts_stringExtractor/directory_cloudflare", output="/Users/franzi/Workspace/artifacts_stringExtractor/directory_cloudflare", lexer_custom="NonJunk", bulk_report=False)

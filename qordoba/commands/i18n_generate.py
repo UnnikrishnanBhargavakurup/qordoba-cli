@@ -108,11 +108,11 @@ def add_existing_i18n_keys_to_df(existing_i18nfiles, df):
 	return df
 
 
-def generate(_curdir, input=None, existing_i18nfiles=None):
+def generate(_curdir, report_dir=None, existing_i18nfiles=None):
 	""" Given localization files exists, gives back existing keys.
 	Further, generating new keys for values
 	"""
-	report_files = get_files_in_dir_with_subdirs(input)
+	report_files = get_files_in_dir_with_subdirs(report_dir)
 	report_files = ignore_files(report_files)
 	
 	for single_report_path in report_files:
@@ -149,7 +149,7 @@ def generate(_curdir, input=None, existing_i18nfiles=None):
 		os.remove(single_report_path)
 		df.to_json(single_report_path)
 
-# python cli.py i18n-generate -i /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_report -o /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_report --existing_i18nfiles /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_i18n_existing --traceback
-# python cli.py i18n-generate -i /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_report --existing_i18nfiles /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_i18n_existing --traceback
+# python cli.py i18n-generate -r /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_report -o /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_report --existing_i18nfiles /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_i18n_existing --traceback
+# python cli.py i18n-generate -r /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_report --existing_i18nfiles /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_i18n_existing --traceback
 
 
