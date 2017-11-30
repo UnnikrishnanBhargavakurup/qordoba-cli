@@ -10,12 +10,6 @@ IGNOREFILES = [
     "__init__.py",
 ]
 
-def unicode_encode(String):
-    return unicode(String.strip()).encode('utf-8')
-    
-def unicode_decode(String):
-    return unicode(String.strip()).decode('utf-8')
-
 def convert_to_unicode(input):
     """convert strings into unicode"""
     if isinstance(input, dict):

@@ -1,4 +1,4 @@
-from i18n_base import get_files_in_dir_with_subdirs, ignore_files, iterate_items, unicode_encode, unicode_decode
+from i18n_base import get_files_in_dir_with_subdirs, ignore_files, iterate_items
 
 import os
 import pandas as pd
@@ -93,8 +93,6 @@ def replace_strings_for_keys(singel_file_stringliterals, old_file_all_lines_into
             # print("idx_start {}".format(idx_start))
             # print("idx_end {}".format(idx_end))
             picked_lines = list()
-            print("old_file_all_lines_into_dict")
-            print(old_file_all_lines_into_dict[idx_start])
             for i in range(idx_start, idx_end+1):
                 picked_lines.append(old_file_all_lines_into_dict[i])
             joined_lines = ''.join(picked_lines)
@@ -124,18 +122,15 @@ def execute(curdir, input_dir=None, report_dir=None, key_format=None):
 		"""
 		reports = get_files_in_dir_with_subdirs(report_dir)
 		reports = ignore_files(reports)
-
 		for report in reports:
-			
 			df = pd.read_json(report)
-			#files_in_report are the files where stringliterals have been extracted
-			files_paths_in_report = get_files_in_report(report)
-			for single_file_path in files_paths_in_report:
-
-				log.info("Reading old file `{}`.".format(single_file_path))
-				old_file_all_lines_into_dict = get_filerows_as_list(single_file_path)
-				singel_file_stringliterals = (df[single_file_path])
-
+            #files_in_report are the files where stringliterals have been extracted
+            files_paths_in_report = get_files_in_report(report)
+            for single_file_path in files_paths_in_report:
+                log.info("Reading old file `{}`.".format(single_file_path))
+                old_file_all_lines_into_dict = get_filerows_as_list(single_file_path)
+                print(old_file_all_lines_into_dict)
+                singel_file_stringliterals = (df[single_file_path])
                 # checking if file is empty
                 try:
                     if len(old_file_all_lines_into_dict) == 0:
@@ -149,34 +144,26 @@ def execute(curdir, input_dir=None, report_dir=None, key_format=None):
                 new_file_all_lines_into_dict = [x for x in temp_file_all_lines_into_dict if x != None]
 
                 # remove old file, dump new
-                os.remove(single_file_path)
                 Html_file = open(single_file_path, "w")
                 if single_file_path.endswith('html'):
-                    ''.join(new_file_all_lines_into_dict)
+                    ''.join(unicode(new_file_all_lines_into_dict))
+                os.remove(single_file_path)
                 Html_file.write("".join(new_file_all_lines_into_dict))
                 Html_file.close()
+            # create localization file in output folder
+            # new_i18n_file =  report_dir + '/new_qordoba_i18n_file.json'
+            
+            # #  Getting key
+            # final_key = singel_file_stringliterals[i]["generated_key"]["key"]
+            # existing_key = singel_file_stringliterals[i].get("existing_key", None) 
+            # if existing_key:
+            #     final_key = existing_key["key"]
+
+            # import json
+            # with open(new_i18n_file, "w") as jsonFile:
+            #     json.dump(json_dump, jsonFile, sort_keys=True, indent=4, separators=(',', ': '))
                 import sys
                 sys.exit()
-#             # create localization file in output folder
-#             new_localization_file = config.export_i18n[0] + '/qordoba_localization_file.json'
-#             # WTF! NEEDS REFACTURING
-#             del df['filename']
-#             del df['startLineNumber']
-#             del df['startCharIdx']
-#             del df['endLineNumber']
-#             del df['endCharIdx']
-#             del df['existing_localization_file']
-#             json_dump = dict()
-#             for index, row in df.iterrows():
-#                 if row['existing_keys'] is None:
-#                     json_dump[row['generated_keys']]  = row['text']
-#                 else:
-#                     json_dump[row['existing_keys']] = row['text']
-            
-#             import json
-#             with open(new_localization_file, "w") as jsonFile:
-#                 json.dump(json_dump, jsonFile, sort_keys=True, indent=4, separators=(',', ': '))
-
 
 
 # python cli.py i18n-execute -i /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_files -r /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_report --traceback
