@@ -7,13 +7,13 @@ from setuptools import setup
 # 1.2.0.dev1  # Development release
 # 1.2.0a1     # Alpha Release
 # 1.2.0b1     # Beta Release
-# 1.2.0rc1    # Release Candidate
+# 1.2.0rc1    # Release Candidate 
 # 1.2.0       # Final Release
 # 1.2.0.post1 # Post Release
 # 15.10       # Date based release
 # 23          # Serial release
 
-__version__ = '0.0.9a0'
+__version__ = '0.1.1a0'
 
 packages = [
     'qordoba',

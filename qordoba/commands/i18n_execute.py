@@ -148,20 +148,22 @@ def execute(curdir, input_dir=None, report_dir=None, key_format=None):
                     os.remove(single_file_path)
                     with open(single_file_path, 'w') as outfile:
                         json.dump(new_file, outfile)
-                # create localization file in output folder
+                
+                # create new i18n file in output folder
                 # new_i18n_file =  report_dir + '/new_qordoba_i18n_file.json'
                 
-                # #  Getting key
+                # '''Creating new i18n file'''
                 # final_key = singel_file_stringliterals[i]["generated_key"]["key"]
                 # existing_key = singel_file_stringliterals[i].get("existing_key", None) 
                 # if existing_key:
                 #     final_key = existing_key["key"]
+                # stringliteral = singel_file_stringliterals[i]["value"]
+                # stringliteral = singel_file_stringliterals[i]["value"]
 
-                # import json
                 # with open(new_i18n_file, "w") as jsonFile:
                 #     json.dump(json_dump, jsonFile, sort_keys=True, indent=4, separators=(',', ': '))
-                import sys
-                sys.exit()
+                # import sys
+                # sys.exit()
 
 
 # python cli.py i18n-execute -i /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_files -r /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_report --traceback

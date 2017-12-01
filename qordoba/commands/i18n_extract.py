@@ -27,27 +27,16 @@ from pygments.lexers import get_lexer_by_name, guess_lexer, get_all_lexers, \
  # ["Token.Literal.String", "Token.Text"]
 
 LEXER_STRINGS = dict()
-#HTML
-LEXER_STRINGS["<class 'pygments.lexers.html.HtmlLexer'>"] = ("Token.Text",)
-LEXER_STRINGS["<pygments.lexers.HtmlLexer with {'stripall': True}>"] = ("Token.Text",)
-#Python
-LEXER_STRINGS["<class 'pygments.lexers.python.PythonLexer'>"] = ("Token.Text",)
-LEXER_STRINGS["<pygments.lexers.PythonLexer with {'stripall': True}>"] = ("Token.Text",)
-#JS
+# JS
 LEXER_STRINGS["<class 'pygments.lexers.javascript.JavascriptLexer'>"] = ("Token.Literal.String.Single",)
 LEXER_STRINGS["<pygments.lexers.JavascriptLexer with {'stripall': True}>"] = ("Token.Literal.String.Single",)
-#Scala
+# Scala
 LEXER_STRINGS["<class 'pygments.lexers.scala.ScalaLexer'>"] = ("Token.Literal.String",)
 LEXER_STRINGS["<pygments.lexers.ScalaLexer with {'stripall': True}>"] = ("Token.Literal.String",)
 #Ruby
 LEXER_STRINGS["<class 'pygments.lexers.ruby.RubyLexer'>"] = ("Token.Literal.String.Other", "Token.Literal.String.Double")
 LEXER_STRINGS["<pygments.lexers.RubyLexer with {'stripall': True}>"] = ("Token.Literal.String.Other","Token.Literal.String.Double",)
-#text
-LEXER_STRINGS["<class 'pygments.lexers.text.TextLexer'>"] = ("Token.Text")
-LEXER_STRINGS["<pygments.lexers.TextLexer with {'stripall': True}>"] = ("Token.Text",)
-#Nonjucks
-LEXER_STRINGS["<pygments.lexers.Nonjucks with {'stripall': True}>"] = ("Token.Text",)
-
+# 'pygments.lexers.javascript.JavascriptLexer'
 
 def get_lexer(file_name, code, lexer_custom=None):
     # finding the right lexer for filename otherwise guess
@@ -81,6 +70,8 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
     # first getting all files in directory, than iteration 
     files = get_files_in_dir_with_subdirs(input_dir)
     files = ignore_files(files)
+    if len(files) == 0:
+        log.info("Seems like you have no file in your directory {}".format(input_dir))
 
     if bulk_report: #if True, the report will reflect all files as bulk. no single report per file
         json_report = defaultdict(dict)
@@ -103,12 +94,15 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
 
         for item in results_generator: #unpacking content of generator
             pos, token, value = item
-            #filter for stringliterals. Distinguish here as for Scala the token is e.g. Stringliteral but for python it is token.text
+            '''filter for stringliterals. 
+            Scala's token is e.g. Stringliteral,but for Python it is Token.text
+            For some languages custom filters are applyied. Default is token.text'''
             lexer_stringliteral_def = str(lexer)
-            if str(token) in LEXER_STRINGS[lexer_stringliteral_def] and not re.match(r'\n', value) and value.strip() != '':
-                
+            token_format = LEXER_STRINGS.get(lexer_stringliteral_def, ("Token.text",))
+            if any(x in str(token) for x in token_format) and not re.match(r'\n', value) and value.strip() != '':
                 pos_start, token, value = item
-                value = value.decode('utf-8').strip()
+                value = value.decode('utf-8')
+                # value = value.decode('utf-8').strip()
 
                 # calculating fileline of string based on charcter position of entire file
                 file_chunk = code[:pos_start]
