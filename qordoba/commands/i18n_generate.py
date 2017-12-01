@@ -85,6 +85,7 @@ def add_existing_i18n_keys_to_df(existing_i18nfiles, df):
 			i18n_file_list.append(existing_i18nfiles)
 		else:
 			log.info("Skipping file `{}`. Not a valid json i18n-file".format(loc_file))
+			continue
 
 	log.info(" ... searching for existing keys.")
 	#accumulate all key-values-pairs from the i18n-file
@@ -102,8 +103,6 @@ def add_existing_i18n_keys_to_df(existing_i18nfiles, df):
 						df[column][i]["existing_key"] = {"key":key, "i18n_file": i18n_file}
 				except TypeError:
 					continue
-	
-
 				# df['existing_keys'], df['existing_localization_file'] = izip(*df.iloc[:, -1].apply(lambda x: self.index_lookup(x, localization_k_v)))
 	return df
 
@@ -114,15 +113,18 @@ def generate(_curdir, report_dir=None, existing_i18nfiles=None):
 	"""
 	report_files = get_files_in_dir_with_subdirs(report_dir)
 	report_files = ignore_files(report_files)
+	if not report_files:
+	    log.info("Seems like you have no reports in your directory {}".format(report_dir))
 	
 	for single_report_path in report_files:
 		"""
 	    Validate report
 	    """
 		if not single_report_path.endswith(".json"):
+			log.info("Seems like you dont have valid json report files in your directory {}".format(report_dir))
 			continue
-
-		log.info("  " + u"\U0001F4AB" + u"\U0001F52E" + " .. starting to generate new keys for you - based on the extracted Strings from your files.\n (This could Take some time) \n\n ")
+		log.info("Reading report {}".format(single_report_path))
+		log.info("  " + u"\U0001F4E1" + "  " + " .. loading keys from outer space.\n (This could Take some time) \n\n ")
 		log.info("\b")
 
 		df = pd.read_json(single_report_path)

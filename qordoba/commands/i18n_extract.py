@@ -70,7 +70,7 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
     # first getting all files in directory, than iteration 
     files = get_files_in_dir_with_subdirs(input_dir)
     files = ignore_files(files)
-    if len(files) == 0:
+    if not files:
         log.info("Seems like you have no file in your directory {}".format(input_dir))
 
     if bulk_report: #if True, the report will reflect all files as bulk. no single report per file
@@ -101,9 +101,7 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
             token_format = LEXER_STRINGS.get(lexer_stringliteral_def, ("Token.text",))
             if any(x in str(token) for x in token_format) and not re.match(r'\n', value) and value.strip() != '':
                 pos_start, token, value = item
-                value = value.decode('utf-8')
-                # value = value.decode('utf-8').strip()
-
+                value = value.decode('utf-8').strip()
                 # calculating fileline of string based on charcter position of entire file
                 file_chunk = code[:pos_start]
                 start_line = file_chunk.count("\n")
