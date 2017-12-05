@@ -67,7 +67,7 @@ def get_lexer(file_name, code, lexer_custom=None):
         log.info(
             "Custom Lexer defined: `{lexer_custom}`. File `{file}`.".format(lexer_custom=lexer_custom, file=file_name))
 
-    log.info("Lexer is {lexer}.".format(lexer=lexer))
+    log.info("Lexer is {lexer} for file `{file}`.".format(lexer=lexer, file=file_name))
     return lexer
 
 
@@ -114,13 +114,14 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
                 end_line = start_line + multilinestring
                 json_report[file_][count] = {"value": value, "start_line": start_line + 1, "end_line": end_line + 1}
                 count += 1
+        log.info("Strings extracted!")
         if not bulk_report:
             file_path = report_dir + '/qordoba-report-' + file_name + "-" + date + '.json'
             save_dict_to_JSON(file_path, json_report)
-            log.info("Report saved for file and reportname in: `{}`".format(file_path))
+            log.info("Report saved in: `{}`".format(file_path))
 
     # creating report file for bulk
     if bulk_report:
         file_path = report_dir + '/qordoba-bulkreport-' + date + '.json'
         save_dict_to_JSON(file_path, json_report)
-        log.info("Report saved in bulk for all files in: `{}`".format(file_path))
+        log.info("Bulk-Report saved for all files in: `{}`".format(file_path))

@@ -18,7 +18,10 @@ def generate_new_key(value):
     global KEY_COUNT
     KEY_COUNT += 1
     r = requests.post('https://qordoba-devel.appspot.com/convert', data={'text': value})
-    keywords = r.json()["keywords"]
+    try:
+        keywords = r.json()["keywords"]
+    except ValueError:
+        generate_new_key(value)
     key = '.'.join(keywords)
     return key
 
@@ -136,9 +139,11 @@ def generate(_curdir, report_dir=None, existing_i18nfiles=None):
             log.info("Skipping file `{}`. Not a valid qordoba json report.".format(single_report_path))
             continue
 
+        log.info("\b")
         log.info("Reading report {}".format(single_report_path))
         log.info("  " + u"\U0001F4E1" + "  " + " .. loading keys from outer space.\n (This could Take some time) \n\n ")
         log.info("\b")
+
         df = pd.read_json(single_report_path)
 
         """If i18n files already exists and user defines the path. will add existing keys to df"""
@@ -171,7 +176,8 @@ def generate(_curdir, report_dir=None, existing_i18nfiles=None):
                 if KEY_COUNT % 20 == 0:
                     log.info("{} keys created ".format(KEY_COUNT))
 
-        log.info("Process completed. " + u"\U0001F680" + u"\U0001F4A5")
+        log.info("\nProcess completed. " + u"\U0001F680" + u"\U0001F4A5")
+        log.info("old report replaced by new report with keys")
         # replace report
         os.remove(single_report_path)
         data = df.to_dict()

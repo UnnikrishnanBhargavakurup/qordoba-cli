@@ -16,6 +16,7 @@ shoudl I write existing keys to new i18n file?
 global NEW_I18N_FILE
 NEW_I18N_FILE = dict()
 
+
 def get_files_in_report(report_path):
     """
     takes the report path and gives back its input files """
