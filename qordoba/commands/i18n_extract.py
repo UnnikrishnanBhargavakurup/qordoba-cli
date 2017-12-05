@@ -75,6 +75,11 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
     # first getting all files in directory, than iteration 
     files = get_files_in_dir_with_subdirs(input_dir)
     files = ignore_files(files)
+
+    #load i18n-ml and dismiss files
+
+
+
     if not files:
         log.info("Seems like you have no file in your directory {}".format(input_dir))
 

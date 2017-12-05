@@ -1,0 +1,7 @@
+ignore:
+  - /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_files/boom.js
+  - /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_files/test/
+  - .json
+key_format:
+  js: {NEW KEY}
+  cs: i18n >>> KEY <<<
