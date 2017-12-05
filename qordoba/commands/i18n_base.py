@@ -2,10 +2,12 @@ import os
 import json
 import sys
 import yaml
+import logging
 
-DEFAULT_i18n_ML_YML = os.path.abspath(os.path.join("/".join(os.getcwd().split("/")[:-1]), '.i18n-ml.yml'))
-DEFAULT_i18n_ML_YAML = os.path.abspath(os.path.join("/".join(os.getcwd().split("/")[:-1]), '.i18n-ml.yaml'))
+log = logging.getLogger('qordoba')
 
+DEFAULT_i18n_ML_YML = os.path.abspath(os.path.join(os.getcwd(), '.i18n-ml.yml'))
+DEFAULT_i18n_ML_YAML = os.path.abspath(os.path.join(os.getcwd(), '.i18n-ml.yml'))
 
 """
 Onboarding 
@@ -107,32 +109,49 @@ def ignore_files(files):
     cleaned_files = [file for file in files if file.split("/")[-1] not in IGNOREFILES]
     return cleaned_files
 
+
 def load_i18n_config():
+    """Loading i18n-ml config yaml"""
+    config = None
     if os.path.isfile(DEFAULT_i18n_ML_YML):
         config = (DEFAULT_i18n_ML_YML)
 
     if os.path.isfile(DEFAULT_i18n_ML_YAML):
         config = (DEFAULT_i18n_ML_YML)
 
+    if not config:
+        log.info("No i18n-ml config found. Proceeding without it.")
+        return None
+
     with open(config, 'r') as stream:
         try:
             yml_content = yaml.load(stream)
         except yaml.YAMLError as exc:
             print(exc)
+
     return yml_content
 
 
 def filter_config_files(files):
-    yml_content = load_i18n_config
+    """Excluding files, folders, extensions"""
+    yml_content = load_i18n_config()
+
+    if not yml_content:
+        return files
+
     ignore_list = yml_content['ignore']
-    for path in ignore_list():
+    print(files)
+    for path in ignore_list:
+
         if path.endswith("/"):
             files = [f for f in files if path not in f]
         if path.startswith("."):
             files = [f for f in files if not f.endswith(path)]
-        if path not path.startswith(".") and path not path.endswith("/"):
+        if not path.startswith(".") and not path.endswith("/"):
+            try:
+                files.remove(path)
+            except ValueError:
+                log.info("File in i18n-ml config cant be ignored as it doesnt exists `{}`".format(path))
+                pass
 
-
-
-
-load_files_from_config()
+    return files

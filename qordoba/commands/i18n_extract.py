@@ -9,7 +9,6 @@ now = datetime.datetime.now()
 date = now.strftime("%Y%m%d%H%M")
 from collections import defaultdict
 import logging
-
 log = logging.getLogger('qordoba')
 
 import pygments
@@ -72,14 +71,17 @@ def get_lexer(file_name, code, lexer_custom=None):
 
 
 def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_report=False):
-    # first getting all files in directory, than iteration 
+    # first getting all files in directory, than iteration
+    no_files = False
     files = get_files_in_dir_with_subdirs(input_dir)
     files = ignore_files(files)
 
-    #load i18n-ml and dismiss files which are specified to be ignored
-    filter_config_files(files)
+    # load i18n-ml and dismiss files which are specified to be ignored
+    files = filter_config_files(files)
+    print(files)
 
     if not files:
+        no_files = True
         log.info("Seems like you have no file in your directory {}".format(input_dir))
 
     if bulk_report:  # if True, the report will reflect all files as bulk. no single report per file
@@ -125,7 +127,7 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
             log.info("Report saved in: `{}`".format(file_path))
 
     # creating report file for bulk
-    if bulk_report:
+    if bulk_report and not no_files:
         file_path = report_dir + '/qordoba-bulkreport-' + date + '.json'
         save_dict_to_JSON(file_path, json_report)
         log.info("Bulk-Report saved for all files in: `{}`".format(file_path))
