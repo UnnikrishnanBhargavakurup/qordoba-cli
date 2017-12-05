@@ -9,6 +9,7 @@ log = logging.getLogger('qordoba')
 
 DEFAULT_SETTING_PATH = os.path.abspath(os.path.join(os.getcwd(), '.qordoba.yml'))
 
+
 SETTING_PATHS = (
     os.environ.get('QORDOBA_CONFIG', ''),
     DEFAULT_SETTING_PATH,

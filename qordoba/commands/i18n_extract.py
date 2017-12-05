@@ -1,4 +1,4 @@
-from i18n_base import get_files_in_dir_with_subdirs, save_dict_to_JSON, get_root_path, ignore_files
+from i18n_base import get_files_in_dir_with_subdirs, save_dict_to_JSON, get_root_path, ignore_files, filter_config_files
 
 import codecs
 import re
@@ -76,9 +76,8 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
     files = get_files_in_dir_with_subdirs(input_dir)
     files = ignore_files(files)
 
-    #load i18n-ml and dismiss files
-
-
+    #load i18n-ml and dismiss files which are specified to be ignored
+    filter_config_files(files)
 
     if not files:
         log.info("Seems like you have no file in your directory {}".format(input_dir))
