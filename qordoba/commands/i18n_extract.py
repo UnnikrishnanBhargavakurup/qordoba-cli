@@ -78,7 +78,6 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
 
     # load i18n-ml and dismiss files which are specified to be ignored
     files = filter_config_files(files)
-    print(files)
 
     if not files:
         no_files = True
@@ -102,7 +101,7 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
             results_generator = lexer.get_tokens_unprocessed(code)
         except TypeError:
             results_generator = lexer().get_tokens_unprocessed(code)
-
+        token_format = None
         for item in results_generator:  # unpacking content of generator
             pos, token, value = item
             '''filter for stringliterals. 
@@ -120,7 +119,7 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
                 end_line = start_line + multilinestring
                 json_report[file_][count] = {"value": value, "start_line": start_line + 1, "end_line": end_line + 1}
                 count += 1
-        log.info("Strings extracted!")
+        log.info("Strings extracted! \npygments-token: {} ".format(token_format[0]))
         if not bulk_report:
             file_path = report_dir + '/qordoba-report-' + file_name + "-" + date + '.json'
             save_dict_to_JSON(file_path, json_report)

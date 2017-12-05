@@ -1,7 +1,6 @@
 ignore:
   - /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_files/boom.baaa
   - /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_files/test/
-  - .js
 key_format:
   js: '{NEW KEY}'
   cs: 'i18n >>> KEY <<<'

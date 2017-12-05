@@ -140,7 +140,6 @@ def filter_config_files(files):
         return files
 
     ignore_list = yml_content['ignore']
-    print(files)
     for path in ignore_list:
 
         if path.endswith("/"):
@@ -155,3 +154,18 @@ def filter_config_files(files):
                 pass
 
     return files
+
+
+def get_config_key_format(file_extension):
+    """returns key_format for file_extension based on """
+    yml_content = load_i18n_config()
+    if not yml_content: # if config not exists, return None
+        return  None
+
+    try:
+        key = yml_content["key_format"][file_extension]
+    except KeyError:
+        log.info("For file extension {} is no key format defined.".format(file_extension))
+        return None
+    return key
+

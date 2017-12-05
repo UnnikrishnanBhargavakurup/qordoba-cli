@@ -1,4 +1,4 @@
-from i18n_base import get_files_in_dir_with_subdirs, ignore_files, save_str_list_to_file, save_dict_to_JSON
+from i18n_base import get_files_in_dir_with_subdirs, ignore_files, save_str_list_to_file, save_dict_to_JSON, get_config_key_format, filter_config_files
 
 import os
 import pandas as pd
@@ -56,7 +56,7 @@ def transform_keys(key, key_format):
 
 def final_replace(key, picked_line, stringliteral, key_format):
     key_new = transform_keys(key, key_format)
-    NEW_I18N_FILE[key_new] = stringliteral
+    NEW_I18N_FILE[key] = stringliteral
     picked_line_1 = picked_line.replace("'" + stringliteral + "'", key_new)
     picked_line_2 = picked_line_1.replace('"' + stringliteral + '"', key_new)
     picked_line_3 = picked_line_2.replace('%{' + stringliteral + '}', key_new)  # ruby specific %{}
@@ -122,6 +122,7 @@ def execute(curdir, input_dir=None, report_dir=None, key_format=None):
         df = pd.read_json(report)
         # files_in_report are the files which are named in the report where StringLiterals have been extracted
         files_paths_in_report = get_files_in_report(report)
+        files_paths_in_report = filter_config_files(files_paths_in_report)
         for single_file_path in files_paths_in_report:
 
             log.info("Reading old file `{}`.".format(single_file_path))
@@ -136,6 +137,10 @@ def execute(curdir, input_dir=None, report_dir=None, key_format=None):
             except TypeError:
                 log.info('File {} is empty'.format(single_file_path))
                 continue
+
+            if not key_format: # get key format from config file, returns None if it doesnt exist
+                extension = single_file_path.split('.')[-1]
+                key_format = get_config_key_format(extension)
 
             # replacing StringLiterals for keys
             log.info("Replacing StringLiterals with keys in temp file")
