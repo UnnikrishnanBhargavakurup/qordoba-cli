@@ -43,28 +43,19 @@ LEXER_STRINGS["<pygments.lexers.RubyLexer with {'stripall': True}>"] = (
 
 def get_lexer(file_name, code, lexer_custom=None):
     # finding the right lexer for filename otherwise guess
-
     lexer = find_lexer_class_for_filename(file_name)
-    print("LEXER1: {}".format(lexer))
     if lexer is None and not file_name.endswith('.pyc'):
         try:
             lexer = get_lexer_for_filename(file_name)
         except ValueError:
             lexer = None
-    print("LEXER2: {}".format(lexer))
-
     if lexer is None:
         lexer = guess_lexer(file_name)
-    print("LEXER3: {}".format(lexer))
 
-    lexer_config = get_lexer_from_config(file_name)
-    if lexer_custom or lexer_config:  # if custom lexer is given e.g. pygments "html" or custom e.g. "nonjunk"
-
-        try:
+    if lexer_custom:  # if custom lexer is given e.g. pygments "html" or custom e.g. "nonjunk"
         rel_path = "../pygments_custom/" + lexer_custom + ".py"
         path_to_custom_lexer = get_root_path(rel_path)
         path_to_custom_lexer_clean = path_to_custom_lexer.replace("commands/../", '')
-
         try:
             lexer = get_lexer_by_name(lexer_custom, stripall=True)
         except pygments.util.ClassNotFound:
@@ -106,14 +97,20 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
         code = f.read()
         file_name = file_.split('/')[-1]
 
+        if not lexer_custom: # cmd line input prioritized
+            lexer_custom = get_lexer_from_config(file_)
+
         lexer = get_lexer(file_name, code, lexer_custom=lexer_custom)
+
         # depending on type of lexer class lexer has to be called or not (lexer() vs. lexer)
         try:
             results_generator = lexer.get_tokens_unprocessed(code)
         except TypeError:
             results_generator = lexer().get_tokens_unprocessed(code)
+
         token_format = None
         for item in results_generator:  # unpacking content of generator
+
             pos, token, value = item
             '''filter for stringliterals. 
             Scala's token is e.g. Stringliteral,but for Python it is Token.text
@@ -121,6 +118,7 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
             lexer_stringliteral_def = str(lexer)
             token_format = LEXER_STRINGS.get(lexer_stringliteral_def, ("Token.Text",))
             if any(x in str(token) for x in token_format) and not re.match(r'\n', value) and value.strip() != '':
+
                 pos_start, token, value = item
                 value = value.decode('utf-8').strip()
                 # calculating fileline of string based on character position of entire file
@@ -130,6 +128,7 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
                 end_line = start_line + multilinestring
                 json_report[file_][count] = {"value": value, "start_line": start_line + 1, "end_line": end_line + 1}
                 count += 1
+
         log.info("Strings extracted! \npygments-token: {} ".format(token_format[0]))
         if not bulk_report:
             file_path = report_dir + '/qordoba-report-' + file_name + "-" + date + '.json'

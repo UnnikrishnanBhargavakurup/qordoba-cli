@@ -161,8 +161,8 @@ def get_config_key_format(path):
     file_extension = path.split('.')[-1]
 
     yml_content = load_i18n_config()
-    if not yml_content: # if config not exists, return None
-        return  None
+    if not yml_content:  # if config not exists, return None
+        return None
 
     try:
         key = yml_content["key_format"][file_extension]
@@ -183,4 +183,5 @@ def get_lexer_from_config(path):
         lexer = yml_content["lexer"][file_extension]
     except KeyError:
         return None
+
     return lexer

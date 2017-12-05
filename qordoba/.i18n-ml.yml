@@ -4,5 +4,6 @@ ignore:
 key_format:
   js: '{NEW KEY}'
   cs: 'i18n >>> KEY <<<'
-lexer:
-  erb: html
+lexer: # lexer short names
+  erb: Nonjucks
+  js: python
