@@ -156,8 +156,10 @@ def filter_config_files(files):
     return files
 
 
-def get_config_key_format(file_extension):
+def get_config_key_format(path):
     """returns key_format for file_extension based on """
+    file_extension = path.split('.')[-1]
+
     yml_content = load_i18n_config()
     if not yml_content: # if config not exists, return None
         return  None
@@ -169,3 +171,16 @@ def get_config_key_format(file_extension):
         return None
     return key
 
+
+def get_lexer_from_config(path):
+    """get lexer by file extension in config"""
+    file_extension = path.split('.')[-1]
+    yml_content = load_i18n_config()
+    if not yml_content:  # if config not exists, return None
+        return None
+
+    try:
+        lexer = yml_content["lexer"][file_extension]
+    except KeyError:
+        return None
+    return lexer

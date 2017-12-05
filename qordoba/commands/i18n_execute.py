@@ -139,8 +139,7 @@ def execute(curdir, input_dir=None, report_dir=None, key_format=None):
                 continue
 
             if not key_format: # get key format from config file, returns None if it doesnt exist
-                extension = single_file_path.split('.')[-1]
-                key_format = get_config_key_format(extension)
+                key_format = get_config_key_format(single_file_path)
 
             # replacing StringLiterals for keys
             log.info("Replacing StringLiterals with keys in temp file")

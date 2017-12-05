@@ -1,4 +1,4 @@
-from i18n_base import get_files_in_dir_with_subdirs, save_dict_to_JSON, get_root_path, ignore_files, filter_config_files
+from i18n_base import get_files_in_dir_with_subdirs, save_dict_to_JSON, get_root_path, ignore_files, filter_config_files, get_lexer_from_config
 
 import codecs
 import re
@@ -43,13 +43,24 @@ LEXER_STRINGS["<pygments.lexers.RubyLexer with {'stripall': True}>"] = (
 
 def get_lexer(file_name, code, lexer_custom=None):
     # finding the right lexer for filename otherwise guess
+
     lexer = find_lexer_class_for_filename(file_name)
+    print("LEXER1: {}".format(lexer))
     if lexer is None and not file_name.endswith('.pyc'):
-        lexer = get_lexer_for_filename(file_name)
+        try:
+            lexer = get_lexer_for_filename(file_name)
+        except ValueError:
+            lexer = None
+    print("LEXER2: {}".format(lexer))
+
     if lexer is None:
         lexer = guess_lexer(file_name)
+    print("LEXER3: {}".format(lexer))
 
-    if lexer_custom:  # if custom lexer is given e.g. pygments "html" or custom e.g. "nonjunk"
+    lexer_config = get_lexer_from_config(file_name)
+    if lexer_custom or lexer_config:  # if custom lexer is given e.g. pygments "html" or custom e.g. "nonjunk"
+
+        try:
         rel_path = "../pygments_custom/" + lexer_custom + ".py"
         path_to_custom_lexer = get_root_path(rel_path)
         path_to_custom_lexer_clean = path_to_custom_lexer.replace("commands/../", '')

@@ -5,4 +5,4 @@ key_format:
   js: '{NEW KEY}'
   cs: 'i18n >>> KEY <<<'
 lexer:
-  xslt: Xero
+  erb: html
