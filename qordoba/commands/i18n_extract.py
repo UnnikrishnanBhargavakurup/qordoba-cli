@@ -1,15 +1,16 @@
-from i18n_base import get_files_in_dir_with_subdirs, save_to_jsonfile, get_root_path, ignore_files
+from i18n_base import get_files_in_dir_with_subdirs, save_dict_to_JSON, get_root_path, ignore_files
 
 import codecs
 import re
 
 import datetime
+
 now = datetime.datetime.now()
 date = now.strftime("%Y%m%d%H%M")
 from collections import defaultdict
 import logging
-log = logging.getLogger('qordoba')
 
+log = logging.getLogger('qordoba')
 
 import pygments
 import os
@@ -24,8 +25,6 @@ from pygments.lexers import get_lexer_by_name, guess_lexer, get_all_lexers, \
 
  """
 
- # ["Token.Literal.String", "Token.Text"]
-
 LEXER_STRINGS = dict()
 # JS
 LEXER_STRINGS["<class 'pygments.lexers.javascript.JavascriptLexer'>"] = ("Token.Literal.String.Single",)
@@ -33,10 +32,15 @@ LEXER_STRINGS["<pygments.lexers.JavascriptLexer with {'stripall': True}>"] = ("T
 # Scala
 LEXER_STRINGS["<class 'pygments.lexers.scala.ScalaLexer'>"] = ("Token.Literal.String",)
 LEXER_STRINGS["<pygments.lexers.ScalaLexer with {'stripall': True}>"] = ("Token.Literal.String",)
-#Ruby
-LEXER_STRINGS["<class 'pygments.lexers.ruby.RubyLexer'>"] = ("Token.Literal.String.Other", "Token.Literal.String.Double")
-LEXER_STRINGS["<pygments.lexers.RubyLexer with {'stripall': True}>"] = ("Token.Literal.String.Other","Token.Literal.String.Double",)
+# Ruby
+LEXER_STRINGS["<class 'pygments.lexers.ruby.RubyLexer'>"] = (
+"Token.Literal.String.Other", "Token.Literal.String.Double")
+LEXER_STRINGS["<pygments.lexers.RubyLexer with {'stripall': True}>"] = (
+"Token.Literal.String.Other", "Token.Literal.String.Double",)
+
+
 # 'pygments.lexers.javascript.JavascriptLexer'
+
 
 def get_lexer(file_name, code, lexer_custom=None):
     # finding the right lexer for filename otherwise guess
@@ -45,12 +49,12 @@ def get_lexer(file_name, code, lexer_custom=None):
         lexer = get_lexer_for_filename(file_name)
     if lexer is None:
         lexer = guess_lexer(file_name)
-    
-    if lexer_custom: # if custom lexer is given e.g. pygments "html" or custom e.g. "nonjunk"
+
+    if lexer_custom:  # if custom lexer is given e.g. pygments "html" or custom e.g. "nonjunk"
         rel_path = "../pygments_custom/" + lexer_custom + ".py"
         path_to_custom_lexer = get_root_path(rel_path)
         path_to_custom_lexer_clean = path_to_custom_lexer.replace("commands/../", '')
-        
+
         try:
             lexer = get_lexer_by_name(lexer_custom, stripall=True)
         except pygments.util.ClassNotFound:
@@ -59,9 +63,10 @@ def get_lexer(file_name, code, lexer_custom=None):
             lexer = load_lexer_from_file(path_to_custom_lexer_clean, lexer_custom, stripall=True)
         except AttributeError:
             lexer = load_lexer_from_file(path_to_custom_lexer_clean, lexer_custom, stripall=True)
-    
-        log.info("Custom Lexer defined: `{lexer_custom}`. File `{file}`.".format(lexer_custom=lexer_custom, file=file_name))
-    
+
+        log.info(
+            "Custom Lexer defined: `{lexer_custom}`. File `{file}`.".format(lexer_custom=lexer_custom, file=file_name))
+
     log.info("Lexer is {lexer}.".format(lexer=lexer))
     return lexer
 
@@ -73,7 +78,7 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
     if not files:
         log.info("Seems like you have no file in your directory {}".format(input_dir))
 
-    if bulk_report: #if True, the report will reflect all files as bulk. no single report per file
+    if bulk_report:  # if True, the report will reflect all files as bulk. no single report per file
         json_report = defaultdict(dict)
 
     for file_ in files:
@@ -86,43 +91,36 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
         file_name = file_.split('/')[-1]
 
         lexer = get_lexer(file_name, code, lexer_custom=lexer_custom)
-        #dependend on lexer class it has to be called or not (e.lexer() vs lexer)
+        # depending on type of lexer class lexer has to be called or not (lexer() vs. lexer)
         try:
             results_generator = lexer.get_tokens_unprocessed(code)
         except TypeError:
             results_generator = lexer().get_tokens_unprocessed(code)
 
-        for item in results_generator: #unpacking content of generator
+        for item in results_generator:  # unpacking content of generator
             pos, token, value = item
             '''filter for stringliterals. 
             Scala's token is e.g. Stringliteral,but for Python it is Token.text
             For some languages custom filters are applyied. Default is token.text'''
             lexer_stringliteral_def = str(lexer)
-            token_format = LEXER_STRINGS.get(lexer_stringliteral_def, ("Token.text",))
+            token_format = LEXER_STRINGS.get(lexer_stringliteral_def, ("Token.Text",))
             if any(x in str(token) for x in token_format) and not re.match(r'\n', value) and value.strip() != '':
                 pos_start, token, value = item
                 value = value.decode('utf-8').strip()
-                # calculating fileline of string based on charcter position of entire file
+                # calculating fileline of string based on character position of entire file
                 file_chunk = code[:pos_start]
                 start_line = file_chunk.count("\n")
                 multilinestring = value.count("\n")
                 end_line = start_line + multilinestring
-                
-                json_report[file_][count] = {"value": value, "start_line": start_line+1, "end_line": end_line+1}
+                json_report[file_][count] = {"value": value, "start_line": start_line + 1, "end_line": end_line + 1}
                 count += 1
         if not bulk_report:
-            file_path = report_dir + '/qordoba-report-' + file_name + "-" + date +'.json'
-            save_to_jsonfile(file_path, json_report)
+            file_path = report_dir + '/qordoba-report-' + file_name + "-" + date + '.json'
+            save_dict_to_JSON(file_path, json_report)
             log.info("Report saved for file and reportname in: `{}`".format(file_path))
 
     # creating report file for bulk
     if bulk_report:
-        file_path = report_dir + '/qordoba-bulkreport-' + date +'.json'
-        save_to_jsonfile(file_path, json_report)
+        file_path = report_dir + '/qordoba-bulkreport-' + date + '.json'
+        save_dict_to_JSON(file_path, json_report)
         log.info("Report saved in bulk for all files in: `{}`".format(file_path))
-
-
-# from console:
-# python cli.py i18n-extract -i /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_files -r /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_report --traceback
-# within script: 
-# extract('curdir', input="/Users/franzi/Workspace/artifacts_stringExtractor/directory_cloudflare", output="/Users/franzi/Workspace/artifacts_stringExtractor/directory_cloudflare", lexer_custom="NonJunk", bulk_report=False)
