@@ -3,8 +3,10 @@ import json
 import sys
 import yaml
 import logging
+from qordoba.settings import load_i18n_config
 
 log = logging.getLogger('qordoba')
+
 
 DEFAULT_i18n_ML_YML = os.path.abspath(os.path.join(os.getcwd(), '.i18n-ml.yml'))
 DEFAULT_i18n_ML_YAML = os.path.abspath(os.path.join(os.getcwd(), '.i18n-ml.yml'))
@@ -110,38 +112,23 @@ def ignore_files(files):
     return cleaned_files
 
 
-def load_i18n_config():
-    """Loading i18n-ml config yaml"""
-    config = None
-    if os.path.isfile(DEFAULT_i18n_ML_YML):
-        config = (DEFAULT_i18n_ML_YML)
-
-    if os.path.isfile(DEFAULT_i18n_ML_YAML):
-        config = (DEFAULT_i18n_ML_YML)
-
-    if not config:
-        log.info("No i18n-ml config found. Proceeding without it.")
-        return None
-
-    with open(config, 'r') as stream:
-        try:
-            yml_content = yaml.load(stream)
-        except yaml.YAMLError as exc:
-            print(exc)
-
-    return yml_content
-
-
 def filter_config_files(files):
     """Excluding files, folders, extensions"""
     yml_content = load_i18n_config()
 
     if not yml_content:
         return files
+    try:
+        ignore_list = yml_content['ignore']
+    except KeyError:
+        log.info("No files to ignore in i18m config")
+        return files
+    if not ignore_list:
+        return files
 
-    ignore_list = yml_content['ignore']
     for path in ignore_list:
-
+        if not path:
+            continue
         if path.endswith("/"):
             files = [f for f in files if path not in f]
         if path.startswith("."):
@@ -169,6 +156,8 @@ def get_config_key_format(path):
     except KeyError:
         log.info("For file extension {} is no key format defined.".format(file_extension))
         return None
+    except TypeError:
+        return None
     return key
 
 
@@ -182,6 +171,8 @@ def get_lexer_from_config(path):
     try:
         lexer = yml_content["lexer"][file_extension]
     except KeyError:
+        return None
+    except TypeError:
         return None
 
     return lexer

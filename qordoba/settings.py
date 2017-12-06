@@ -17,6 +17,13 @@ SETTING_PATHS = (
 )
 
 
+DEFAULT_SETTING_PATH_ML = os.path.abspath(os.path.join(os.getcwd(), '.i18n-ml.yml'))
+SETTING_PATHS_ML = (
+    DEFAULT_SETTING_PATH_ML,
+    os.path.abspath(os.path.join(os.path.expanduser('~'), '.i18n-ml.yml'))
+)
+
+
 class SettingsError(Exception):
     """
     Settings error
@@ -33,15 +40,15 @@ class PatternNotFound(SettingsError):
 
 
 class SettingsDict(dict):
-    def __init__(self, path=DEFAULT_SETTING_PATH, validate=True, **kwargs):
+    def __init__(self, path=DEFAULT_SETTING_PATH, validate=False, **kwargs):
         super(SettingsDict, self).__init__()
         self.path = path
 
         for k, v in kwargs.items():
             self[k.lower()] = v
 
-        # if validate:
-        #     self.validate()
+        if validate:
+            self.validate()
 
     def validate(self, keys=('project_id', 'access_token')):
         for key in keys:
@@ -101,7 +108,6 @@ def load_settings(**kwargs):
 
     return settings, loaded
 
-
 NOTDEFINED = object()
 
 
@@ -147,3 +153,32 @@ def get_project_file_formats(config, default=None):
         return config['file_formats']
     except (KeyError, IndexError):
         return None
+
+def load_content_from_i18n_config(path):
+    try:
+        with open(path, 'r') as f:
+            config = yaml.safe_load(f)
+            if not config:
+                log.warning('Could not parse config file: {}'.format(path))
+                return {}
+
+            return config
+
+    except (yaml.parser.ParserError, KeyError):
+        log.debug('Could not parse config file: {}'.format(path))
+        raise SettingsError('Could not parse config file: {}'.format(path))
+    except IOError:
+        raise SettingsError('Could not open config file: {}'.format(path))
+    return None
+
+
+def load_i18n_config():
+    """Loading i18n-ml config yaml"""
+    for path in SETTING_PATHS_ML:
+        try:
+            data = load_content_from_i18n_config(path)
+            return data
+        except SettingsError:
+            data = None
+            pass
+    return data

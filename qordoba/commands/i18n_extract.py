@@ -68,7 +68,7 @@ def get_lexer(file_name, code, lexer_custom=None):
             lexer = load_lexer_from_file(path_to_custom_lexer_clean, lexer_custom, stripall=True)
         except AttributeError:
             lexer = load_lexer_from_file(path_to_custom_lexer_clean, lexer_custom, stripall=True)
-
+        log.info("Next ...")
         log.info(
             "Custom Lexer defined: `{lexer_custom}`. File `{file}`.".format(lexer_custom=lexer_custom, file=file_name))
 
@@ -133,14 +133,16 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
                 json_report[file_][count] = {"value": value, "start_line": start_line + 1, "end_line": end_line + 1}
                 count += 1
 
-        log.info("Strings extracted! \n (pygments-token: {}) ".format(token_format[0]))
+        log.info("Strings extracted!  (pygments-token: {}) ".format(token_format[0]))
         if not bulk_report:
             file_path = report_dir + '/qordoba-report-' + file_name + "-" + date + '.json'
             save_dict_to_JSON(file_path, json_report)
             log.info("Report saved in: `{}`".format(file_path))
+            log.info("")
 
     # creating report file for bulk
     if bulk_report and not no_files:
         file_path = report_dir + '/qordoba-bulkreport-' + date + '.json'
         save_dict_to_JSON(file_path, json_report)
         log.info("Bulk-Report saved for all files in: `{}`".format(file_path))
+        log.info("")
