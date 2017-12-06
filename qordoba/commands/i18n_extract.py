@@ -36,6 +36,10 @@ LEXER_STRINGS["<class 'pygments.lexers.ruby.RubyLexer'>"] = (
 "Token.Literal.String.Other", "Token.Literal.String.Double")
 LEXER_STRINGS["<pygments.lexers.RubyLexer with {'stripall': True}>"] = (
 "Token.Literal.String.Other", "Token.Literal.String.Double",)
+#C sharp
+LEXER_STRINGS["<class 'pygments.lexers.csharp.CSharpLexer'>"] = ("Token.Literal.String",)
+LEXER_STRINGS["<pygments.lexers.CSharpLexer with {'stripall': True}>"] = ("Token.Literal.String",)
+
 
 
 # 'pygments.lexers.javascript.JavascriptLexer'

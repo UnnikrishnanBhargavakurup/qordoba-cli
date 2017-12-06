@@ -14,18 +14,16 @@ from pygments.lexers.jvm import ScalaLexer
 from pygments.lexers.css import CssLexer, _indentation, _starts_block
 from pygments.lexers.ruby import RubyLexer
 
-__all__ = ['nonjucks',]
+__all__ = ['rails_html',]
 
 
-
-
-class nonjucks(RegexLexer):
+class rails_html(RegexLexer):
     """
     For HTML 4 and XHTML 1 markup. Nested JavaScript and CSS is highlighted
     by the appropriate lexer.
     """
 
-    name = 'nonjucks'
+    name = 'rails_html'
     aliases = ['html']
     filenames = ['*.html', '*.htm', '*.xhtml', '*.xslt']
     mimetypes = ['text/html', 'application/xhtml+xml']
@@ -33,11 +31,11 @@ class nonjucks(RegexLexer):
     flags = re.IGNORECASE | re.DOTALL
     tokens = {
         'root': [
-            (r'[^<|{&]+', Text),
+            (r'[^<|{&]+', Text ),
 
-            ('{%', Other, 'javascript'),
+            ('<%', Other, 'javascript'),
             (r'{\?.*?\?}', Other.Preproc),
-            ('{%[^>]*}', Other.Preproc),
+            ('<%[^>]*}', Other.Preproc),
             (r'&\S*?;', Name.Entity),
 
             (r'\<\!\[CDATA\[.*?\]\]\>', Comment.Preproc),
@@ -56,7 +54,7 @@ class nonjucks(RegexLexer):
 
         'javascript': [
             ('[^%]+', Other),
-            ('%}', Other, '#pop'),
+            ('%>', Other, '#pop'),
             ('%', Other),
         ],
 
