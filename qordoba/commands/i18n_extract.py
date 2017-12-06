@@ -129,7 +129,7 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
                 json_report[file_][count] = {"value": value, "start_line": start_line + 1, "end_line": end_line + 1}
                 count += 1
 
-        log.info("Strings extracted! \npygments-token: {} ".format(token_format[0]))
+        log.info("Strings extracted! \n (pygments-token: {}) ".format(token_format[0]))
         if not bulk_report:
             file_path = report_dir + '/qordoba-report-' + file_name + "-" + date + '.json'
             save_dict_to_JSON(file_path, json_report)
