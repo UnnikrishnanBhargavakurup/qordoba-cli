@@ -1,0 +1,9 @@
+qordoba:
+  access_token: 'aaaaaaa-bbbb-cccc-dddd-fffffffff'
+  project_id: 1111
+  push:
+    sources:
+       - '../tests/test_i18n/localization_files/i18n_file_copy.json'
+  search:
+    paths:
+      - '../tests/test_i18n/sample_app_rails_4/app/views/layouts/'

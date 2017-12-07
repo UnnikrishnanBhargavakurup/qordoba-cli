@@ -7,6 +7,7 @@ import itertools
 from argparse import ArgumentTypeError
 
 import furl as furl
+# import furl
 
 PY3 = sys.version_info[0] == 3
 
@@ -14,6 +15,10 @@ if PY3:
     from urllib.parse import quote as urlquote
 else:
     from urllib import quote as urlquote
+
+def get_data(path):
+    _ROOT = os.path.abspath(os.path.dirname(__file__))
+    return os.path.join(_ROOT, path)
 
 
 def python_2_unicode_compatible(klass):

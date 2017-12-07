@@ -15,9 +15,9 @@ def env_config_path(curdir):
 def mock_env_config_path(monkeypatch, env_config_path):
     monkeypatch.setenv('QORDOBA_CONFIG', env_config_path)
     monkeypatch.setattr('qordoba.settings.SETTING_PATHS', (env_config_path,
-                                                           os.path.abspath(os.path.join(os.getcwd(), '.qordoba.yml')),
+                                                           os.path.abspath(os.path.join(os.getcwd(), 'nonon.yml')),
                                                            os.path.abspath(
-                                                               os.path.join(os.path.expanduser('~'), '.qordoba.yml'))
+                                                               os.path.join(os.path.expanduser('~'), 'nonon.yml'))
                                                            ))
 
 
@@ -28,8 +28,8 @@ def mock_change_dir(monkeypatch, curdir):
     monkeypatch.chdir(chdir_path)
     monkeypatch.setattr('qordoba.settings.SETTING_PATHS', (
         os.environ.get('QORDOBA_CONFIG', ''),
-        '.qordoba.yml',
-        os.path.abspath(os.path.join(os.path.expanduser('~'), '.qordoba.yml')))
+        'nonon.yml',
+        os.path.abspath(os.path.join(os.path.expanduser('~'), 'nonon.yml')))
                         )
 
 
@@ -77,11 +77,15 @@ def test_load_settings_overrite(mock_change_dir):
     assert config['access_token'] == test_access_token
     assert config['project_id'] == test_project_id
 
+# def test_get_project_file_formats(mock_change_dir):
+#     settings, loaded = load_settings(access_token='22', project_id='33')
+#     result = get_project_file_formats(settings)
+#     assert result['resx'] == ['resx', 'txt']
 
-def test_get_project_file_formats(mock_change_dir):
-    settings, loaded = load_settings(access_token='22', project_id='33')
-    settings['file_formats'] = {
-        'resx': 'resx'
-    }
-    result = get_project_file_formats(settings)
-    assert result['resx'] == 'resx'
+# def test_get_project_file_formats(mock_change_dir):
+#     settings, loaded = load_settings(access_token='22', project_id='33')
+#     settings['file_formats'] = {
+#         'resx': 'resx'
+#     }
+#     result = get_project_file_formats(settings)
+#     assert result['resx'] == 'resx'

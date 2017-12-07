@@ -10,9 +10,8 @@ log = logging.getLogger('qordoba')
 DEFAULT_SETTING_PATH = os.path.abspath(os.path.join(os.getcwd(), 'config.yml'))
 
 SETTING_PATHS = (
-    os.environ.get('QORDOBA_CONFIG', ''),
     DEFAULT_SETTING_PATH,
-    os.path.abspath(os.path.join(os.path.expanduser('~'), 'config.yml'))
+
 )
 
 
@@ -32,7 +31,7 @@ class PatternNotFound(SettingsError):
 
 
 class SettingsDict(dict):
-    def __init__(self, path=DEFAULT_SETTING_PATH, validate=True, **kwargs):
+    def __init__(self, path=DEFAULT_SETTING_PATH, validate=False, **kwargs):
         super(SettingsDict, self).__init__()
         self.path = path
 
@@ -140,15 +139,20 @@ def get_pull_pattern(config, default=NOTDEFINED):
             return None
         raise PatternNotFound('Pattern not found for target files')
 
-def get_qorignore():
-    with open('.qorignore') as file:
-        ignore_file = file.readlines()
-        return ignore_file
-
-def get_qorignore():
-    with open('.qorignore') as file:
-        ignore_file = file.readlines()
-        return ignore_file
+def get_qorignore(directory=None):
+    qor_filename = 'i18n-config.yml'
+    if directory:
+        if directory.strip()[-1] == '/':
+            qor_filename = directory + 'i18n-config.yml'
+        else:
+            qor_filename = directory + '/i18n-config.yml'
+    try:
+        with open(qor_filename) as file:
+            ignore_list = [line.rstrip() for line in file.readlines()]
+            file.close()
+            return ignore_list
+    except IOError:
+        return
 
 
 def get_project_file_formats(config, default=None):
@@ -170,28 +174,22 @@ def get_find_new_blacklist_pattern(config):
     return [exception_row for exception_row in exclude_list]
 
 
-def get_i18n_find_key_pattern(config):
+def get_localization_files(config):
+    if not config or config is None:
+        try:
+            with open('../nonon.yml') as info:
+                config = yaml.load(info)
+        except IOError:
+            log.info('No `nonon.yml` file, needs infos to continue')
+
     try:
         return [pattern_row for pattern_row in config['qordoba']['push']['sources']]
     except (KeyError, IndexError):
         raise PatternNotFound('Pattern not found for source files')
 
-
-def get_i18n_remove_key_pattern(config):
-    try:
-        return [pattern_row for pattern_row in config['qordoba']['push']['sources']]
-    except (KeyError, IndexError):
-        raise PatternNotFound('Pattern not found for source files')
-
-def get_i18n_move_key_pattern(config):
-    try:
-        return [pattern_row for pattern_row in config['qordoba']['push']['sources']]
-    except (KeyError, IndexError):
-        raise PatternNotFound('Pattern not found for source files')
 
 def get_i18n_app_pattern(config):
     try:
         return [pattern_row for pattern_row in config['qordoba']['search']['paths']]
     except (KeyError, IndexError):
         raise PatternNotFound('Pattern not found for source files')
-

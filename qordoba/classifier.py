@@ -31,8 +31,9 @@ class Classifier():
         y_train = []
 
         # Reading samples as training data
-        for subdir, _, files in os.walk('../resources/samples'):
-            if subdir == "../resources/samples":
+        samples_path = self.get_data('resources/samples')
+        for subdir, _, files in os.walk(samples_path):
+            if '/'.join(subdir.split('/')[-2:]) == "resources/samples":
                 print
                 "skip" + subdir
                 continue
@@ -66,7 +67,8 @@ class Classifier():
     def predict(self, blob):
         global classifier_model
         if not classifier_model:
-            filename = '../resources/finalized_model.joblib.pkl'
+            finalized_model_path = self.get_data('resources/finalized_model.joblib.pkl')
+            filename = finalized_model_path
             classifier_model = joblib.load(filename)
             log.info('Model loaded')
 
@@ -74,7 +76,7 @@ class Classifier():
         log.info("Starting prediction")
 
         Examples = []
-        Files = [blob, '../resources/finalized_model.joblib.pkl']
+        Files = [blob, finalized_model_path]
 
         for file_ in Files:
             if is_binary(file_):
@@ -91,12 +93,13 @@ class Classifier():
         return predict_examples
 
     def find_type(self, blob):
-        if os.path.exists('../resources/finalized_model.joblib.pkl'):
+        finalized_model_path = self.get_data('resources/finalized_model.joblib.pkl')
+        if os.path.exists(finalized_model_path):
             log.info("finalized model exists. \n Starting prediction")
             predictions = self.predict(blob)
             return str(predictions[0])
         else:
-            open("../resources/finalized_model.joblib.pkl", 'w')
+            open(finalized_model_path, 'w')
             self.train()
             log.info("Training done. Starting prediction")
             predictions = self.predict(blob)

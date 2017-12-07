@@ -6,7 +6,7 @@ import datetime
 
 log = logging.getLogger('qordoba')
 
-from qordoba.settings import get_i18n_find_key_pattern, get_i18n_app_pattern
+from qordoba.settings import get_localization_files, get_i18n_app_pattern
 from qordoba.commands.i18n_base import BaseClass, FilesNotFound
 
 class FindClass(BaseClass):
@@ -19,7 +19,7 @@ class FindClass(BaseClass):
 
     def i18n_find_command(self, curdir, config, keyword=None):
 
-        pattern = get_i18n_find_key_pattern(config)
+        pattern = get_localization_files(config)
         i18n_app_path = get_i18n_app_pattern(config)
         files = []
 

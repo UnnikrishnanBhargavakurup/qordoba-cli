@@ -1,0 +1,83 @@
+filename,startLineNumber,startCharIdx,endLineNumber,endCharIdx,text,key
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_footer.html.erb,1,14,1,21,footer,_override_link_account.bundle_signin.username
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_footer.html.erb,3,12,3,38,http://railstutorial.org/,link_account.cancel
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_footer.html.erb,8,22,8,28,About,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_footer.html.erb,9,22,9,30,Contact,link_account.aria_show
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_footer.html.erb,10,18,10,49,http://news.railstutorial.org/,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_header.html.erb,1,14,1,53,navbar navbar-fixed-top navbar-inverse,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_header.html.erb,2,13,2,26,navbar-inner,link_account.create.create_password
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_header.html.erb,3,15,3,25,container,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_header.html.erb,4,18,4,29,sample app,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_header.html.erb,4,47,4,52,logo,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_header.html.erb,6,18,6,33,nav pull-right,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_header.html.erb,7,26,7,31,Home,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_header.html.erb,8,26,8,31,Help,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_header.html.erb,10,28,10,34,Users,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_header.html.erb,11,19,11,28,fat-menu,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_header.html.erb,11,36,11,45,dropdown,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_header.html.erb,12,22,12,24,#,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_header.html.erb,12,32,12,48,dropdown-toggle,link_account.create.create_password_to_connect
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_header.html.erb,12,62,12,71,dropdown,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_header.html.erb,13,33,13,39,caret,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_header.html.erb,15,24,15,38,dropdown-menu,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_header.html.erb,16,32,16,40,Profile,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_header.html.erb,17,32,17,41,Settings,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_header.html.erb,18,26,18,34,divider,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_header.html.erb,20,30,20,39,Sign out,_override_link_account.bundle_signin.password
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_header.html.erb,20,64,20,71,delete,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_header.html.erb,25,28,25,36,Sign in,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/_shim.html.erb,2,12,2,63,http://html5shim.googlecode.com/svn/trunk/html5.js,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/application.html.erb,5,28,5,40,application,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/application.html.erb,5,50,5,54,all,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/application.html.erb,6,43,6,65,data-turbolinks-track,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/application.html.erb,7,31,7,43,application,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/application.html.erb,7,46,7,68,data-turbolinks-track,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/application.html.erb,9,15,9,28,layouts/shim,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/application.html.erb,12,15,12,30,layouts/header,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/application.html.erb,13,15,13,25,container,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/application.html.erb,15,19,15,42,alert alert-<%= key %>,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/application.html.erb,18,17,18,32,layouts/footer,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,3,22,3,31,keyPairs,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,3,49,3,62,txt.app_name,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,4,28,4,40,application,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,6,16,6,83,link_account.forgot_password.generic.errors.cant_use_same_password,link_account.forgot_password.generic.errors.cant_use_same_password
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,8,10,8,21,blank_wrap,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,10,18,10,25,locale,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,10,110,10,129,this.form.submit(),
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,13,13,13,18,page,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,14,22,14,37,txt.main_title,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,14,50,14,56,claim,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,14,69,14,83,txt.sub_title,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,15,15,15,26,navigation,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,16,19,16,48,margin:0; margin-bottom:5px;,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,16,61,16,74,txt.contents,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,18,34,18,71,link_account.signin.incorrect_signin,link_account.signin.incorrect_signin
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,18,86,18,92,index,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,19,34,19,71,link_account.signin.incorrect_signin,link_account.signin.incorrect_signin
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,19,86,19,92,about,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,20,34,20,71,link_account.signin.incorrect_signin,link_account.signin.incorrect_signin
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,20,86,20,92,setup,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,21,34,21,71,link_account.signin.incorrect_signin,link_account.signin.incorrect_signin
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,21,86,21,99,date_formats,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,22,34,22,71,link_account.signin.incorrect_signin,link_account.signin.incorrect_signin
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,22,86,22,99,time_formats,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,23,27,23,38,DateHelper,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,23,52,23,64,date_helper,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,24,27,24,46,ActiveRecordHelper,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,24,60,24,81,active_record_helper,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,25,27,25,40,NumberHelper,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,25,54,25,68,Mindestens 6 Zeichen,link_account.forgot_password.create_new_password_page.helper_text
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,28,15,28,23,content,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,30,20,30,87,link_account.forgot_password.generic.errors.cant_use_same_password,link_account.forgot_password.generic.errors.cant_use_same_password
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,31,15,31,22,footer,_override_link_account.bundle_signin.username
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,32,23,32,38,txt.main_title,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,32,56,32,87,link_account.BAM.incorrect_BAM,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,33,55,33,74,clemens@railway.at,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,34,49,34,56,others,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,34,70,34,76,about,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,35,24,35,57,www.railway.at - welcome aboard!,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,35,60,35,82,http://www.railway.at,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,36,18,36,62,position:absolute; bottom:25px; right:25px;,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,36,86,36,143,http://i.creativecommons.org/l/by-nc-sa/2.0/at/88x31.png,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,36,147,36,200,http://creativecommons.org/licenses/by-nc-sa/2.0/at/,
+/Users/franzi/Desktop/i18n/qordoba-cli/tests/test_i18n/sample_app_rails_4/app/views/layouts/i18n_body.html.erb,38,16,38,83,link_account.forgot_password.generic.errors.cant_use_same_password,link_account.forgot_password.generic.errors.cant_use_same_password

@@ -66,16 +66,14 @@ def page_search_response(curdir):
 @pytest.fixture
 def config(monkeypatch, curdir):
     root = os.path.abspath(curdir)
-    monkeypatch.setattr('qordoba.settings.SETTING_PATHS', (os.path.join(root, 'fixtures', '.qordoba.yml'), ))
+    monkeypatch.setattr('qordoba.settings.SETTING_PATHS', (os.path.join(root, 'fixtures', 'nonon.yml'), ))
     return load_settings()
-
 
 @pytest.fixture
 def mock_input(monkeypatch):
     input_mock = MagicMock()
     monkeypatch.setattr('qordoba.commands.utils.ask_simple', input_mock)
     return input_mock
-
 
 @pytest.fixture
 def curdir():

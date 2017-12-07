@@ -20,7 +20,8 @@ CONTENT_TYPE_CODES['XLIFF1.2'] = ('xliff', 'xlf')
 CONTENT_TYPE_CODES['xmlAndroid'] = ('xml',)
 CONTENT_TYPE_CODES['PO'] = ('po',)
 CONTENT_TYPE_CODES['POT'] = ('pot',)
-CONTENT_TYPE_CODES['stringsI18nProperties'] = ('properties',)
+CONTENT_TYPE_CODES['propertiesJava'] = ('properties',)
+CONTENT_TYPE_CODES['YAML'] = ('yml', 'yaml')
 CONTENT_TYPE_CODES['YAMLi18n'] = ('yml', 'yaml')
 CONTENT_TYPE_CODES['YAML'] = ('yml', 'yaml')
 CONTENT_TYPE_CODES['iosStringsDict'] = ('stringsdict', )
@@ -40,7 +41,8 @@ ALLOWED_EXTENSIONS = dict(
 )
 
 ADJUST_EXTENSION = {
-    # "resx": "regex",
+    "resx": "regex",
+
 }
 
 MIMETYPES = {
@@ -169,12 +171,12 @@ pull_pattern_validate_regexp = re.compile('\<({})\>'.format('|'.join(PatternVari
 
 
 def validate_push_pattern(pattern):
-    '''uncommenting allows users to configure the config.yml so they can push files with the same name'''
+    """uncommenting allows users to configure the config.yml so they can push files with the same name"""
     # if not glob.has_magic(pattern):
     #     raise PatternNotValid('Push pattern is not valid. Pattern should contain one of the values: *,?')
     pass
 
-def create_target_path_by_pattern(curdir, language, version_tag, source_name,  pattern=None, distinct=False, content_type_code=None):
+def create_target_path_by_pattern(curdir, language,  source_name, version_tag=False, pattern=None, distinct=False, content_type_code=None):
 
     if not distinct and pattern is not None and not pull_pattern_validate_regexp.search(pattern):
         raise PatternNotValid(
@@ -331,13 +333,5 @@ def get_content_type_code(path, remote_content_type_codes):
 
         if content_set:
 
-            if not final_content_type:
-                raise FileExtensionNotAllowed("File format `{}` not in allowed list of file formats: {}. Or not specified as file format in your project (supported filefomats are: {})"
-                                          .format(path_ext, ', '.join(ALLOWED_EXTENSIONS), remote_content_types_list))
-
-            return final_content_type
-
-        else:
-
-            continue
+    return ALLOWED_EXTENSIONS[path_ext]
 

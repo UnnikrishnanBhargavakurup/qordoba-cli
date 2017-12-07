@@ -2,6 +2,12 @@ import os
 
 import pytest
 <<<<<<< HEAD
+
+@pytest.fixture
+def valid_extension():
+    filename = 'this.is.a.json'
+=======
+<<<<<<< HEAD
 from qordoba.strategies import Extension, Shebang
 =======
 from qordoba.strategies import Extension
@@ -15,3 +21,4 @@ def valid_extension():
 =======
     assert Extension.find(filename) == "JSON"
 >>>>>>> origin
+>>>>>>> develop

@@ -1,9 +1,10 @@
-from buildtools import update
+# from buildtools import update
 
 # from mock.mock import self
 
 from qordoba.commands.i18n_base import BaseClass, IGNOREFILES
-from qordoba.settings import get_i18n_move_key_pattern, get_i18n_app_pattern
+from qordoba.settings import get_localization_files, get_i18n_app_pattern
+
 
 import logging
 import pprint
@@ -173,7 +174,8 @@ class MoveClass(BaseClass):
 
     def i18n_move_command(self, curdir, config, run=False, exact_match=False, source=None, target=None):
 
-        pattern = get_i18n_move_key_pattern(config)
+        pattern = get_localization_files(config)
+
         i18n_app_path = get_i18n_app_pattern(config)
 
         for file_path in pattern:

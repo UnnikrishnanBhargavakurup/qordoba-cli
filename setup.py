@@ -3,7 +3,19 @@
 from codecs import open
 from setuptools import setup
 
-__version__ = '1.5.2'
+<<<<<<< HEAD
+#  Example version releases:
+# 1.2.0.dev1  # Development release
+# 1.2.0a1     # Alpha Release
+# 1.2.0b1     # Beta Release
+# 1.2.0rc1    # Release Candidate
+# 1.2.0       # Final Release
+# 1.2.0.post1 # Post Release
+# 15.10       # Date based release
+# 23          # Serial release
+
+__version__ = '0.1.2a1'
+
 
 packages = [
     'qordoba',
@@ -31,7 +43,9 @@ setup(
     zip_safe=False,
     packages=packages,
     include_package_data=True,
-    package_data={},
+    package_data={
+         # 'qordoba': ['resources/*'],
+    },
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
