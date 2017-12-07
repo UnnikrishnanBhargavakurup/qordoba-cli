@@ -1,9 +1,0 @@
-ignore:
-  - /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_files/boom.baaa
-  - /Users/franzi/Workspace/artifacts_stringExtractor/testing/test_files/test/
-key_format:
-  js: '{NEW KEY}'
-  cs: 'i18n >>> KEY <<<'
-lexer: # lexer short names
-  erb: Nonjucks
-  js: python

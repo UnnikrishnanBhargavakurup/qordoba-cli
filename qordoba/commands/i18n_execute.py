@@ -123,7 +123,7 @@ def execute(curdir, input_dir=None, report_dir=None, key_format=None):
         except ValueError:
             log.info("Could not parse report `{}`".format(report))
             continue
-            
+
         # files_in_report are the files which are named in the report where StringLiterals have been extracted
         files_paths_in_report = get_files_in_report(report)
         files_paths_in_report = filter_config_files(files_paths_in_report)

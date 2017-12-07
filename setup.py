@@ -13,7 +13,7 @@ from setuptools import setup
 # 15.10       # Date based release
 # 23          # Serial release
 
-__version__ = '0.1.3a0'
+__version__ = '0.1.5a0'
 
 packages = [
     'qordoba',

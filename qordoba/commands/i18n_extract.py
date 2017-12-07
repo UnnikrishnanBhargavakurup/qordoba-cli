@@ -37,10 +37,10 @@ LEXER_STRINGS["<class 'pygments.lexers.ruby.RubyLexer'>"] = (
 LEXER_STRINGS["<pygments.lexers.RubyLexer with {'stripall': True}>"] = (
 "Token.Literal.String.Other", "Token.Literal.String.Double",)
 #C sharp
-LEXER_STRINGS["<class 'pygments.lexers.csharp.CSharpLexer'>"] = ("Token.Literal.String",)
+LEXER_STRINGS["<class 'pygments.lexers.dotnet.CSharpLexer'>"] = ("Token.Literal.String",)
 LEXER_STRINGS["<pygments.lexers.CSharpLexer with {'stripall': True}>"] = ("Token.Literal.String",)
 
-
+# Token.Literal.String
 
 # 'pygments.lexers.javascript.JavascriptLexer'
 
@@ -57,7 +57,7 @@ def get_lexer(file_name, code, lexer_custom=None):
         lexer = guess_lexer(file_name)
 
     if lexer_custom:  # if custom lexer is given e.g. pygments "html" or custom e.g. "nonjunk"
-        rel_path = "../pygments_custom/" + lexer_custom + ".py"
+        rel_path = "../custom_lexers/" + lexer_custom + ".py"
         path_to_custom_lexer = get_root_path(rel_path)
         path_to_custom_lexer_clean = path_to_custom_lexer.replace("commands/../", '')
         try:
@@ -72,7 +72,8 @@ def get_lexer(file_name, code, lexer_custom=None):
         log.info(
             "Custom Lexer defined: `{lexer_custom}`. File `{file}`.".format(lexer_custom=lexer_custom, file=file_name))
 
-    log.info("Lexer is {lexer} for file `{file}`.".format(lexer=lexer, file=file_name))
+    lexer_log = str(lexer).split(".")[-1]
+    log.info("Lexer is {lexer} for file `{file}`.".format(lexer=lexer_log, file=file_name))
     return lexer
 
 
