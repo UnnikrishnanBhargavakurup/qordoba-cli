@@ -40,9 +40,8 @@ LEXER_STRINGS["<pygments.lexers.RubyLexer with {'stripall': True}>"] = (
 LEXER_STRINGS["<class 'pygments.lexers.dotnet.CSharpLexer'>"] = ("Token.Literal.String",)
 LEXER_STRINGS["<pygments.lexers.CSharpLexer with {'stripall': True}>"] = ("Token.Literal.String",)
 
-# Token.Literal.String
+LEXER_STRINGS["<pygments.lexers.xslt_text_tag with {'stripall': True}>"] = ("Text.Tag",)
 
-# 'pygments.lexers.javascript.JavascriptLexer'
 
 
 def get_lexer(file_name, code, lexer_custom=None):
