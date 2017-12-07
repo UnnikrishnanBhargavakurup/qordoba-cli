@@ -21,6 +21,13 @@ def prepare_milestones(milestones):
 
 DEFAULT_HEADERS = ('LOCALE', '#WORDS', '#SEGMENTS')
 
+def status_command_json(config):
+    """
+    as the other status command is a generator, no other returns are allowed. This def is created instead.
+        """
+    api = ProjectAPI(config)
+    report = api.get_report_progress()['languages']
+    return report
 
 def status_command(config):
     """

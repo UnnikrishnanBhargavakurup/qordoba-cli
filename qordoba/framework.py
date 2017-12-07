@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function
 from qordoba.utils import get_data
+
 import os
 import yaml
 import re
@@ -13,6 +14,7 @@ class Framework(object):
         self.framework_strategies = {}
         framework_path = get_data('resources/framework.yml')
         with open(framework_path, 'r') as stream:
+
             try:
                 self.framework_strategies = yaml.load(stream)
             except yaml.YAMLError as exc:

@@ -1,4 +1,5 @@
 from qordoba.settings import get_localization_files
+
 import json
 import yaml
 import pandas as pd
@@ -18,6 +19,7 @@ class RemoveClass(BaseClass):
     def i18n_remove_command(self, curdir, config, keyword=None):
         command = 'i18n_remove'
         pattern = get_localization_files(config)
+
         files = []
         for file_path in pattern:
 

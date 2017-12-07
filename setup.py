@@ -3,6 +3,7 @@
 from codecs import open
 from setuptools import setup
 
+<<<<<<< HEAD
 #  Example version releases:
 # 1.2.0.dev1  # Development release
 # 1.2.0a1     # Alpha Release
@@ -14,6 +15,7 @@ from setuptools import setup
 # 23          # Serial release
 
 __version__ = '0.1.2a1'
+
 
 packages = [
     'qordoba',

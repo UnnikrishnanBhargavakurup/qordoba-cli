@@ -13,29 +13,36 @@ log = logging.getLogger('qordoba')
 
 DEFAULT_PATTERN = '<language_code>.<extension>'
 
-CONTENT_TYPE_CODES = OrderedDict()
+CONTENT_TYPE_CODES = dict()
 CONTENT_TYPE_CODES['excel'] = ('xlsx',)
 CONTENT_TYPE_CODES['xliff'] = ('xliff', 'xlf')
 CONTENT_TYPE_CODES['XLIFF1.2'] = ('xliff', 'xlf')
 CONTENT_TYPE_CODES['xmlAndroid'] = ('xml',)
-CONTENT_TYPE_CODES['macStrings'] = ('strings',)
 CONTENT_TYPE_CODES['PO'] = ('po',)
 CONTENT_TYPE_CODES['POT'] = ('pot',)
 CONTENT_TYPE_CODES['propertiesJava'] = ('properties',)
 CONTENT_TYPE_CODES['YAML'] = ('yml', 'yaml')
 CONTENT_TYPE_CODES['YAMLi18n'] = ('yml', 'yaml')
+CONTENT_TYPE_CODES['YAML'] = ('yml', 'yaml')
+CONTENT_TYPE_CODES['iosStringsDict'] = ('stringsdict', )
+CONTENT_TYPE_CODES['macStrings'] = ('strings',)
 CONTENT_TYPE_CODES['csv'] = ('csv',)
 CONTENT_TYPE_CODES['JSON'] = ('json',)
 CONTENT_TYPE_CODES['SRT'] = ('srt',)
 CONTENT_TYPE_CODES['md'] = ('md', 'text')
-CONTENT_TYPE_CODES['html'] = ('html',)
+CONTENT_TYPE_CODES['stringsHtml'] = ('html', 'htm')
+CONTENT_TYPE_CODES['stringsResx'] = ('resx',)
+CONTENT_TYPE_CODES['stringsDocx'] = ('docx',)
 
-ALLOWED_EXTENSIONS = OrderedDict(
+# .xlsx, .pptx idml ts
+
+ALLOWED_EXTENSIONS = dict(
     {extension: k for k, extensions in CONTENT_TYPE_CODES.items() for extension in extensions}
 )
 
 ADJUST_EXTENSION = {
     "resx": "regex",
+
 }
 
 MIMETYPES = {
@@ -51,7 +58,6 @@ CUSTOM_LANGUAGE_CODE = {
 
 def get_mimetype(content_type):
     return MIMETYPES.get(content_type, 'application/octet-stream')
-
 
 class PatternNotValid(Exception):
     pass
@@ -165,7 +171,7 @@ pull_pattern_validate_regexp = re.compile('\<({})\>'.format('|'.join(PatternVari
 
 
 def validate_push_pattern(pattern):
-    '''uncommenting allows users to configure the config.yml so they can push files with the same name'''
+    """uncommenting allows users to configure the config.yml so they can push files with the same name"""
     # if not glob.has_magic(pattern):
     #     raise PatternNotValid('Push pattern is not valid. Pattern should contain one of the values: *,?')
     pass
@@ -300,12 +306,32 @@ def get_content_type_code(path, remote_content_type_codes):
     :param qordoba.sources.TranslationFile path:
     :return:
     """
+    remote_content_types_list = list()
+    for content_type in remote_content_type_codes:
+        remote_content_types_list.append(content_type['content_type_code'])
+
     path_ext = path.extension
+
+
     if path_ext not in ALLOWED_EXTENSIONS:
         raise FileExtensionNotAllowed("File format `{}` not in allowed list of file formats: {}"
                                       .format(path_ext, ', '.join(ALLOWED_EXTENSIONS)))
 
-    if path_ext in ADJUST_EXTENSION:
-        return ADJUST_EXTENSION[path_ext]
+    final_content_type = None
+    content_set = False
+
+    for k, v in CONTENT_TYPE_CODES.items():
+
+        for value in v:
+            if value == path_ext:
+                final_content_type = k
+                content_set = True
+
+        if final_content_type in remote_content_types_list:
+            final_content_type = k
+            content_set = True
+
+        if content_set:
 
     return ALLOWED_EXTENSIONS[path_ext]
+

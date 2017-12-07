@@ -5,6 +5,7 @@
 from qordoba.commands.i18n_base import BaseClass, IGNOREFILES
 from qordoba.settings import get_localization_files, get_i18n_app_pattern
 
+
 import logging
 import pprint
 import os
@@ -174,6 +175,7 @@ class MoveClass(BaseClass):
     def i18n_move_command(self, curdir, config, run=False, exact_match=False, source=None, target=None):
 
         pattern = get_localization_files(config)
+
         i18n_app_path = get_i18n_app_pattern(config)
 
         for file_path in pattern:

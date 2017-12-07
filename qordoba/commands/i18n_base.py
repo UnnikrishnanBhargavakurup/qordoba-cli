@@ -25,7 +25,6 @@ IGNOREFILES = [
     ".gitignore",
     ".git"
 ]
-
 OUTPUT = dict()
 
 class FilesNotFound(Exception):
@@ -174,8 +173,8 @@ class BaseClass(object):
 
             yield path
 
-
     def delete_keys_from_dict(self, dict_del, lst_keys):
+
         for k in lst_keys:
             try:
                 del dict_del[k]
@@ -187,7 +186,6 @@ class BaseClass(object):
                 self.delete_keys_from_dict(v, lst_keys)
 
         return dict_del
-
 
     def get_line(self, filepath, i18n_keys_values):
         try:

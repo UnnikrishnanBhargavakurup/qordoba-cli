@@ -7,10 +7,11 @@ import yaml.parser
 
 log = logging.getLogger('qordoba')
 
-DEFAULT_SETTING_PATH = os.path.abspath(os.path.join(os.getcwd(), '.qordoba.yml'))
+DEFAULT_SETTING_PATH = os.path.abspath(os.path.join(os.getcwd(), 'config.yml'))
 
 SETTING_PATHS = (
     DEFAULT_SETTING_PATH,
+
 )
 
 
@@ -79,7 +80,6 @@ def dump_settings(path, data):
 
 
 def load_settings(**kwargs):
-    log.info('Loading Qordoba config...')
 
     settings = None
     loaded = False
@@ -154,6 +154,7 @@ def get_qorignore(directory=None):
     except IOError:
         return
 
+
 def get_project_file_formats(config, default=None):
     try:
         return config['file_formats']
@@ -180,6 +181,7 @@ def get_localization_files(config):
                 config = yaml.load(info)
         except IOError:
             log.info('No `nonon.yml` file, needs infos to continue')
+
     try:
         return [pattern_row for pattern_row in config['qordoba']['push']['sources']]
     except (KeyError, IndexError):

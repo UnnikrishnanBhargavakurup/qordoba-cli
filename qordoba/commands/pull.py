@@ -119,6 +119,7 @@ def pull_command(curdir, config, files=(), force=False, bulk=False, workflow=Fal
         pattern_list = [None]
 
     # based on the configuration in nonon.yml the destination for the pulled files will be set. Default path is '.qordoba-cli/qordoba/'
+
     for pattern in pattern_list:
         for language in languages:
             status_filter = [PageStatus.enabled, ]
