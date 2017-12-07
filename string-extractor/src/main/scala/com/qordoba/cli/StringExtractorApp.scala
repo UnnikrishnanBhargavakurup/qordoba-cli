@@ -8,6 +8,7 @@ import java.io.{BufferedWriter, File, FileWriter, StringWriter}
 import org.antlr.v4.runtime.{CharStream, CharStreams, CommonTokenStream, Token}
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
+import scala.io.Source
 
 /**
   * Application that uses a precompiled ANTLR grammar to extract string literals from a given file

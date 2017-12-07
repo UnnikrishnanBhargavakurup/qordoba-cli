@@ -1,0 +1,13 @@
+'timestamp: 2017-08-25T17:20:09.087298'
+'Source filename: source_localization_file_one.json'
+I18n.t 'link_account.signin.incorrect_signin':
+  /Users/franzi/Desktop/i18n/i18n_demo_app/app/views/pages/setup.html.erb:
+  - 12
+  - 40
+I18n.t('link_account.signin.incorrect_signin'):
+  /Users/franzi/Desktop/i18n/i18n_demo_app/app/views/pages/setup.html.erb:
+  - 41
+  - 46
+t("link_account.signin.incorrect_signin"):
+  /Users/franzi/Desktop/i18n/i18n_demo_app/app/views/pages/setup.html.erb:
+  - 42
