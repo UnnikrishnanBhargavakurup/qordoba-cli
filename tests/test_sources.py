@@ -97,6 +97,7 @@ def test_create_target_path_by_pattern_invalid(invalid_pattern, projectdir):
     (PATTERN5, LANGUAGE_FR, to_native('folder3/strings.French')),
     (PATTERN6, LANGUAGE_FR, 'FRENCH.locale')
 ])
+
 def test_create_target_path_by_pattern(mock_lang_storage, pattern, target_language, expected):
     res = create_target_path_by_pattern('', target_language, None, pattern=pattern)
     assert res.native_path == expected
@@ -107,8 +108,9 @@ def test_create_target_path_by_pattern(mock_lang_storage, pattern, target_langua
     ('./sources/*/*', ['./sources/C/sampleC.json', './sources/D/sampleD.json']),
     ('./sources/*/sample[A,C].json', ['./sources/C/sampleC.json', ])
 ])
+
 def test_find_files_by_pattern(mock_change_dir, mock_lang_storage, pattern, expected):
-    paths = list(find_files_by_pattern(mock_change_dir, pattern, LANGUAGE_EN))
+    paths = list(find_files_by_pattern(mock_change_dir, pattern, LANGUAGE_EN, remote_content_type_codes))
 
     assert len(paths) == len(expected)
     for path in paths:
