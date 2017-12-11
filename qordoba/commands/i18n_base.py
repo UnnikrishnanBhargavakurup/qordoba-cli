@@ -133,6 +133,9 @@ def filter_config_files(files):
             files = [f for f in files if path not in f]
         if path.startswith("."):
             files = [f for f in files if not f.endswith(path)]
+        if path.startswith("*"):
+            ext = path.split("*")[-1]
+            files = [f for f in files if not path.endswith(ext)]
         if not path.startswith(".") and not path.endswith("/"):
             try:
                 files.remove(path)
