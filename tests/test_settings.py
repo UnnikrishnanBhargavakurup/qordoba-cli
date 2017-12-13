@@ -44,11 +44,14 @@ def test_load_settings_env(mock_env_config_path):
 def test_load_settings_not_exist():
     test_access_token = '22'
     test_project_id = 33
+    test_org_id = 300
 
     config, loaded = load_settings(access_token=test_access_token, project_id=test_project_id)
     # assert loaded == False
+
     assert config['access_token'] == test_access_token
     assert config['project_id'] == test_project_id
+    assert config['organization_id'] == test_org_id
 
 
 # def test_load_settings_error():

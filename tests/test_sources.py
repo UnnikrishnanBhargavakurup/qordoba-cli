@@ -103,6 +103,7 @@
 #     assert res.native_path == expected
 #
 #
+
 # @pytest.mark.parametrize('pattern,expected', [
 #     ('./sources/*', ['./sources/sampleA.json', './sources/sampleB.json']),
 #     ('./sources/*/*', ['./sources/C/sampleC.json', './sources/D/sampleD.json']),
@@ -117,6 +118,7 @@
 #         assert path.posix_path in expected
 #
 #
+
 # @pytest.mark.parametrize('path,expected', [
 #     ('./path/some-path/Resource.Name.resx', 'resx'),
 #     ('./path/some-path/Resource.json', 'json'),
@@ -138,3 +140,4 @@
 #     assert result['resx'] == 'resx'
 #     assert result['txt'] == 'plaintext'
 #
+
