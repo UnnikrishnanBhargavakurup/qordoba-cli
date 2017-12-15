@@ -124,7 +124,10 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
             if any(x in str(token) for x in token_format) and not re.match(r'\n', value) and value.strip() != '':
 
                 pos_start, token, value = item
-                value = value.decode('utf-8').strip()
+                try:
+                    value = value.decode('utf-8').strip()
+                except UnicodeDecodeError:
+                    pass
                 # calculating fileline of string based on character position of entire file
                 file_chunk = code[:pos_start]
                 start_line = file_chunk.count("\n")
@@ -135,7 +138,7 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
 
         log.info("Strings extracted!  (pygments-token: {}) ".format(token_format[0]))
         if not bulk_report:
-            file_path = report_dir + '/qordoba-report-' + file_name + "-" + date + '.json'
+            file_path = report_dir + '/qordoba-report-' + file_ + "-" + date + '.json'
             save_dict_to_JSON(file_path, json_report)
             log.info("Report saved in: `{}`".format(file_path))
             log.info("")

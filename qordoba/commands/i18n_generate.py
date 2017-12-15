@@ -1,5 +1,6 @@
 from i18n_base import get_files_in_dir_with_subdirs, ignore_files, iterate_items, convert_to_unicode, save_dict_to_JSON
 import pandas as pd
+import re
 import requests
 import json
 import logging
@@ -23,6 +24,11 @@ def generate_new_key(value):
     except ValueError:
         generate_new_key(value)
     key = '.'.join(keywords)
+    if not key:
+        word_list = re.findall(r"[\w']+", value)
+        bi_word =  sorted(word_list, key=lambda x: len(x))[-2:]
+        key = ".".join(bi_word)
+        log.info("Key type 2 {}".format(key))
     return key
 
 

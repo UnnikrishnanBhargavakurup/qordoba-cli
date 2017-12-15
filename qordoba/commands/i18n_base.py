@@ -76,6 +76,9 @@ def get_files_in_dir_no_subdirs(directory):
     for file_ in os.listdir(directory):
         if file_ in IGNOREFILES or file_.startswith('.'):
             continue
+        if file_.endswith(".zip"):
+            log.info("Zip file can't be processed {}".format(file_))
+            continue
         files.append(directory + '/' + file_)
     return files
 
@@ -85,6 +88,7 @@ def get_files_in_dir_with_subdirs(path):
     for root, dirnames, filenames in os.walk(path):
         for filename in filenames:
             files.append(os.path.join(root, filename))
+    files = [f for f in files if not f.endswith((".zip"))]
     return files
 
 
