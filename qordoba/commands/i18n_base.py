@@ -95,7 +95,15 @@ def get_files_in_dir_with_subdirs(path):
 def save_str_list_to_file(file_path, file_content):
     with open(file_path, 'w') as output_file:
         for line in file_content:
-            output_file.write(line)
+            try:
+                output_file.write(line)
+            except UnicodeEncodeError:
+                line = line.encode("utf-8")
+                output_file.write(line)
+            except UnicodeDecodeError:
+                line = line.decode("utf-8")
+                output_file.write(line)
+
         output_file.close()
 
 

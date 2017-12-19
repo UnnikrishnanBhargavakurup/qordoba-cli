@@ -5,6 +5,7 @@ import requests
 import json
 import logging
 import os
+from pandas import compat
 
 log = logging.getLogger('qordoba')
 
@@ -14,21 +15,22 @@ KEY_COUNT = 0
 2. in index_lookup. instead of == could say 99%match. e.g. "Ruby is fun." vs "Ruby is fun"
 """
 
+i18n_PAIRS = dict()
 
 def generate_new_key(value):
     global KEY_COUNT
     KEY_COUNT += 1
-    r = requests.post('https://qordoba-devel.appspot.com/convert', data={'text': value})
+    r = requests.post('https://us-central1-qordoba-devel.cloudfunctions.net/keys-extractor', data={'text': value})
     try:
-        keywords = r.json()["keywords"]
+        key = r.text
     except ValueError:
         generate_new_key(value)
-    key = '.'.join(keywords)
-    if not key:
+
+    if not key.split("_")[-1]:
         word_list = re.findall(r"[\w']+", value)
-        bi_word =  sorted(word_list, key=lambda x: len(x))[-2:]
-        key = ".".join(bi_word)
-        log.info("Key type 2 {}".format(key))
+        bi_word = sorted(word_list, key=lambda x: len(x))[-2:]
+        key_end = "_".join(bi_word)
+        key = key + key_end
     return key
 
 
@@ -175,7 +177,13 @@ def generate(_curdir, report_dir=None, existing_i18nfiles=None):
                 try:
                     # stripping quotes from start and end of string
                     value_stripped = strip_qoutes(df[column][i]["value"])
-                    key = generate_new_key(value_stripped)
+
+                    # make sure key is not duplicated
+                    key = i18n_PAIRS.get(value_stripped)
+                    if not key:
+                        key = generate_new_key(value_stripped)
+                        i18n_PAIRS[value_stripped] = key
+
                     df[column][i]["generated_key"] = {"key": key}
                 except TypeError:
                     continue
@@ -184,7 +192,13 @@ def generate(_curdir, report_dir=None, existing_i18nfiles=None):
 
         log.info("\nProcess completed. " + u"\U0001F680" + u"\U0001F4A5")
         log.info("old report replaced by new report with keys")
+
         # replace report
         os.remove(single_report_path)
-        data = df.to_dict()
+
+        def to_dict_dropna(data):
+            return dict((k, v.dropna().to_dict()) for k, v in compat.iteritems(data))
+
+        data = to_dict_dropna(df)
+        # data = df.to_dict()
         save_dict_to_JSON(single_report_path, data)

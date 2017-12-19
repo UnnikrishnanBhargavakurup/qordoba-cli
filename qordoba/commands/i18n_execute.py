@@ -1,5 +1,6 @@
 from i18n_base import get_files_in_dir_with_subdirs, ignore_files, save_str_list_to_file, save_dict_to_JSON, get_config_key_format, filter_config_files
 
+import numpy
 import os
 import pandas as pd
 import json
@@ -55,20 +56,48 @@ def transform_keys(key, key_format):
 
 
 def final_replace(key, picked_line, stringliteral, key_format):
+    stringliteral = stringliteral.encode("utf-8")
     key_new = transform_keys(key, key_format)
     NEW_I18N_FILE[key] = stringliteral
-    picked_line_1 = picked_line.replace("'" + stringliteral + "'", key_new)
-    picked_line_2 = picked_line_1.replace('"' + stringliteral + '"', key_new)
-    picked_line_3 = picked_line_2.replace('%{' + stringliteral + '}', key_new)  # ruby specific %{}
-    picked_line_4 = picked_line_3.replace(stringliteral, key)
-    return picked_line_4
+    try:
+        picked_line_1 = picked_line.replace("'" + stringliteral + "'", key_new)
+        picked_line_2 = picked_line_1.replace('"' + stringliteral + '"', key_new)
+        picked_line_3 = picked_line_2.replace('%{' + stringliteral + '}', key_new)  # ruby specific %{}
+        picked_line_4 = picked_line_3.replace(stringliteral, key)
+        return picked_line_4
+
+    except UnicodeDecodeError:
+        stringliteral = stringliteral.decode("utf-8")
+        picked_line_1 = picked_line.replace("'" + stringliteral + "'", key_new)
+        picked_line_2 = picked_line_1.replace('"' + stringliteral + '"', key_new)
+        picked_line_3 = picked_line_2.replace('%{' + stringliteral + '}', key_new)  # ruby specific %{}
+        picked_line_4 = picked_line_3.replace(stringliteral, key)
+        return picked_line_4
+
+    except UnicodeEncodeError:
+        stringliteral = stringliteral.encode("utf-8")
+        picked_line_1 = picked_line.replace("'" + stringliteral + "'", key_new)
+        picked_line_2 = picked_line_1.replace('"' + stringliteral + '"', key_new)
+        picked_line_3 = picked_line_2.replace('%{' + stringliteral + '}', key_new)  # ruby specific %{}
+        picked_line_4 = picked_line_3.replace(stringliteral, key)
+        return picked_line_4
+
 
 
 def replace_strings_for_keys(singel_file_stringliterals, old_file_all_lines_into_dict, key_format):
     # file is list of strings. replaces strings in list
+    print(singel_file_stringliterals)
 
     for i in range(len(singel_file_stringliterals.index)):
-        stringliteral = singel_file_stringliterals[i]["value"]
+
+        if not singel_file_stringliterals[i] or singel_file_stringliterals[i] == "NaN" or singel_file_stringliterals[i] is numpy.nan:
+            continue
+
+        try:
+          stringliteral = singel_file_stringliterals[i]["value"]
+        except TypeError:
+          continue
+
         idx_start = singel_file_stringliterals[i]["start_line"]
         idx_end = singel_file_stringliterals[i]["end_line"]
 
@@ -88,15 +117,19 @@ def replace_strings_for_keys(singel_file_stringliterals, old_file_all_lines_into
         # One-line StringLiteral
         if idx_start == idx_end:
             picked_line = old_file_all_lines_into_dict[idx_start]
+            print("Picked line single {}".format(picked_line.encode("utf-8")))
             replaced_line = final_replace(key, picked_line, stringliteral, key_format)
             old_file_all_lines_into_dict[idx_start] = replaced_line
 
         # Multi-line StringLiteral
         if idx_start < idx_end:
+
             picked_lines = list()
 
             for i in range(idx_start, idx_end + 1):
                 picked_lines.append(old_file_all_lines_into_dict[i])
+            print("Picked line multi {}".format(picked_lines))
+
             joined_lines = ''.join(picked_lines)
 
             replaced_line = final_replace(key, joined_lines, stringliteral, key_format)
@@ -120,6 +153,10 @@ def execute(curdir, input_dir=None, report_dir=None, key_format=None):
     for report in reports:
         try:
             df = pd.read_json(report)
+        except ValueError:
+            with open(report) as f:
+                data = json.load(f)
+            df = pd.DataFrame(data)
         except ValueError:
             log.info("Could not parse report `{}`".format(report))
             continue
@@ -154,6 +191,9 @@ def execute(curdir, input_dir=None, report_dir=None, key_format=None):
 
             """ Replace old file """
             log.info("Replacing old file with stringliterals by new file with keys. File: `{}`".format(single_file_path))
+            with open("qordoba-processed-files.yml", "a") as myfile:
+                myfile.write(single_file_path)
+                myfile.close()
             # remove old file, dump new
             os.remove(single_file_path)
             save_str_list_to_file(single_file_path, new_file_all_lines_into_dict)
@@ -170,4 +210,3 @@ def execute(curdir, input_dir=None, report_dir=None, key_format=None):
     new_i18n_file = report_dir + '/qordoba_i18n_file.json'
     log.info("Creating new i18n file.`{}`".format(new_i18n_file))
     save_dict_to_JSON(new_i18n_file, NEW_I18N_FILE)
-
