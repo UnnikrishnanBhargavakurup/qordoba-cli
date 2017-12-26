@@ -118,6 +118,7 @@ class nunjucks(HtmlLexer):
 
     def get_tokens_unprocessed(self, text):
         for index, token, value in HtmlLexer.get_tokens_unprocessed(self, text):
+            value = value.strip()
             if re.match('{%/?([^}]*)/?%}?', value):
 
                 nunjucks_list = re.findall('{%/?([^}]*)/?%}?', value)
@@ -126,7 +127,7 @@ class nunjucks(HtmlLexer):
                 try:
                     for i in range(max_len):
                         yield index, "nunjucks", nunjucks_list[i]
-                        yield index, token, filtered_str[i]
+                        yield index, "Token.Text.nunjucks", filtered_str[i]
                 except IndexError:
                     pass
 
@@ -145,6 +146,6 @@ class nunjucks(HtmlLexer):
             else:
                 yield index, token, value
 
-    def analyse_text(text):
-        if looks_like_xml(text) and '<xsl' in text:
-            return 0.8
+    # def analyse_text(text):
+    #     if looks_like_xml(text) and '<xsl' in text:
+    #         return 0.8

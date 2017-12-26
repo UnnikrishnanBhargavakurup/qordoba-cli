@@ -42,6 +42,8 @@ LEXER_STRINGS["<pygments.lexers.CSharpLexer with {'stripall': True}>"] = ("Token
 
 LEXER_STRINGS["<pygments.lexers.xslt_text_tag with {'stripall': True}>"] = ("Text.Tag",)
 
+LEXER_STRINGS["<pygments.lexers.nunjucks with {'stripall': True}>"] = ("Token.Text", "Token.Text.nunjucks",)
+
 
 
 def get_lexer(file_name, code, lexer_custom=None):
@@ -113,15 +115,26 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
             results_generator = lexer().get_tokens_unprocessed(code)
 
         token_format = None
+        additional_lines = 0
+
         for item in results_generator:  # unpacking content of generator
 
             pos, token, value = item
+
+            if "\n" in value and additional_lines == 0 and lexer_custom == 'nunjucks' and token == 'Token.Text.nunjucks':
+                additional_lines = value.count("\n")
+
             '''filter for stringliterals. 
             Scala's token is e.g. Stringliteral,but for Python it is Token.text
             For some languages custom filters are applyied. Default is token.text'''
             lexer_stringliteral_def = str(lexer)
             token_format = LEXER_STRINGS.get(lexer_stringliteral_def, ("Token.Text",))
-            if any(x in str(token) for x in token_format) and not re.match(r'\n', value) and value.strip() != '':
+
+            # if any(x in str(token) for x in token_format) and not re.match(r'\n', value) and value.strip() != '':
+            if any(x in str(token) for x in token_format) and value.strip() != '':
+
+                if "{% endblock %}" in value:
+                    log.info("HUHU")
 
                 pos_start, token, value = item
                 try:
@@ -130,18 +143,20 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
                     pass
                 # calculating fileline of string based on character position of entire file
                 file_chunk = code[:pos_start]
-                start_line = file_chunk.count("\n")
+
+                #adding lines in case of nunjucks
+
+                start_line = file_chunk.count("\n") + additional_lines
                 multilinestring = value.count("\n")
                 end_line = start_line + multilinestring
+
                 json_report[file_][count] = {"value": value, "start_line": start_line + 1, "end_line": end_line + 1}
                 count += 1
 
-        log.info("Strings extracted!  (pygments-token: {}) ".format(token_format[0]))
+        log.info("Strings extracted!  (token: {}) ".format(token_format[0]))
         if not bulk_report:
-            print(file_)
             file_path_name = "_".join(file_.split("/"))
             file_path = report_dir + '/qordoba-report-' + file_path_name + "-" + date + '.json'
-            print(file_path)
             save_dict_to_JSON(file_path, json_report)
             log.info("Report saved in: `{}`".format(file_path))
             log.info("")
