@@ -89,6 +89,7 @@ def get_files_in_dir_with_subdirs(path):
         for filename in filenames:
             files.append(os.path.join(root, filename))
     files = [f for f in files if not f.endswith((".zip"))]
+    files = [f for f in files if not any(w in f for w in IGNOREFILES)]
     return files
 
 

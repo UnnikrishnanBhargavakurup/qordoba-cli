@@ -117,7 +117,6 @@ def replace_strings_for_keys(singel_file_stringliterals, old_file_all_lines_into
         # One-line StringLiteral
         if idx_start == idx_end:
             picked_line = old_file_all_lines_into_dict[idx_start]
-            print("Picked line single {}".format(picked_line.encode("utf-8")))
             replaced_line = final_replace(key, picked_line, stringliteral, key_format)
             old_file_all_lines_into_dict[idx_start] = replaced_line
 
@@ -127,11 +126,11 @@ def replace_strings_for_keys(singel_file_stringliterals, old_file_all_lines_into
             picked_lines = list()
 
             for i in range(idx_start, idx_end + 1):
+                if not old_file_all_lines_into_dict[i]:
+                    continue
                 picked_lines.append(old_file_all_lines_into_dict[i])
-            print("Picked line multi {}".format(picked_lines))
 
             joined_lines = ''.join(picked_lines)
-
             replaced_line = final_replace(key, joined_lines, stringliteral, key_format)
             old_file_all_lines_into_dict[idx_start] = replaced_line
             # adding to the lost indexes none, so df is not fucked up for later
