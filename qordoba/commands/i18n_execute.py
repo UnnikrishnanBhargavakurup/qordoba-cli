@@ -130,6 +130,7 @@ def replace_strings_for_keys(singel_file_stringliterals, old_file_all_lines_into
                     continue
                 picked_lines.append(old_file_all_lines_into_dict[i])
 
+            picked_lines = [x for x in picked_lines if x is not None]
             joined_lines = ''.join(picked_lines)
             replaced_line = final_replace(key, joined_lines, stringliteral, key_format)
             old_file_all_lines_into_dict[idx_start] = replaced_line
