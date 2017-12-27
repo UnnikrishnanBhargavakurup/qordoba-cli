@@ -189,3 +189,10 @@ def get_lexer_from_config(path):
         return None
 
     return lexer
+
+def convert_dir_path(path):
+    if not path.endswith("/"):
+        converted_path = path + "/"
+        return converted_path
+    else:
+        return path

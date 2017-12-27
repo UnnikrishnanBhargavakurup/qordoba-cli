@@ -1,4 +1,4 @@
-from i18n_base import get_files_in_dir_with_subdirs, ignore_files, iterate_items, convert_to_unicode, save_dict_to_JSON
+from i18n_base import get_files_in_dir_with_subdirs, ignore_files, iterate_items, convert_to_unicode, save_dict_to_JSON, convert_dir_path
 import pandas as pd
 import re
 import requests
@@ -131,7 +131,7 @@ def add_existing_i18n_keys_to_df(i18n_file_list, df):
     return df
 
 
-def generate(_curdir, report_dir=None, existing_i18nfiles=None):
+def generate(_curdir, report_dir=None, export_dir=None, existing_i18nfiles=None):
     """ Given localization files exists, gives back existing keys.
     Further, generating new keys for values
     """
@@ -194,11 +194,24 @@ def generate(_curdir, report_dir=None, existing_i18nfiles=None):
         log.info("old report replaced by new report with keys")
 
         # replace report
-        os.remove(single_report_path)
+        if not export_dir:
+            os.remove(single_report_path)
 
-        def to_dict_dropna(data):
-            return dict((k, v.dropna().to_dict()) for k, v in compat.iteritems(data))
+            def to_dict_dropna(data):
+                return dict((k, v.dropna().to_dict()) for k, v in compat.iteritems(data))
 
-        data = to_dict_dropna(df)
-        # data = df.to_dict()
-        save_dict_to_JSON(single_report_path, data)
+            data = to_dict_dropna(df)
+            # data = df.to_dict()
+            save_dict_to_JSON(single_report_path, data)
+        else:
+            def to_dict_dropna(data):
+                return dict((k, v.dropna().to_dict()) for k, v in compat.iteritems(data))
+
+            new_filename = "key-" + single_report_path.split("/")[-1]
+            export_dir = convert_dir_path(export_dir)
+            new_filepath = export_dir + new_filename
+            data = to_dict_dropna(df)
+            log.info("Saving report in export directory `{}`".format(new_filepath))
+            # data = df.to_dict()
+            save_dict_to_JSON(new_filepath, data)
+            os.remove(single_report_path)

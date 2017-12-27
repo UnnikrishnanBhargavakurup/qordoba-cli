@@ -330,11 +330,12 @@ class GenerateHandler(BaseHandler):
         fix_parser_titles(parser)
         parser.set_defaults(_handler=cls)
         parser.add_argument("-r", "--report_dir", type=str, required=True)
+        parser.add_argument("-e", "--export_dir", type=str, required=True)
         parser.add_argument("--existing_i18nfiles", type=str, required=False)
 
     def main(self):
         log.info('Starting generation of keys...')
-        generate(self._curdir, report_dir=self.report_dir, existing_i18nfiles=self.existing_i18nfiles)
+        generate(self._curdir, report_dir=self.report_dir, export_dir=self.export_dir, existing_i18nfiles=self.existing_i18nfiles)
 
 class ExecuteHandler(BaseHandler):
     name = 'i18n-execute'

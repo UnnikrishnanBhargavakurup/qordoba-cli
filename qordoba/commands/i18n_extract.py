@@ -45,7 +45,6 @@ LEXER_STRINGS["<pygments.lexers.xslt_text_tag with {'stripall': True}>"] = ("Tex
 LEXER_STRINGS["<pygments.lexers.nunjucks with {'stripall': True}>"] = ("Token.Text", "Token.Text.nunjucks",)
 
 
-
 def get_lexer(file_name, code, lexer_custom=None):
     # finding the right lexer for filename otherwise guess
     lexer = find_lexer_class_for_filename(file_name)
@@ -121,6 +120,7 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
 
             pos, token, value = item
 
+            # adding lines for custom framework nunjucks lexer
             if "\n" in value and additional_lines == 0 and lexer_custom == 'nunjucks' and token == 'Token.Text.nunjucks':
                 additional_lines = value.count("\n")
 
