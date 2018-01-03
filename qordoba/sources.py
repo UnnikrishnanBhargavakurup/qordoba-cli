@@ -152,6 +152,7 @@ class PatternVariables(object):
     language_name_allcap = 'language_name_allcap'
     language_lang_code = 'language_lang_code'
     local_capitalized = 'local_capitalized'
+    language_code_country_capitalized = 'language_code_country_capitalized'
 
     filename = 'filename'
     extension = 'extension'
@@ -179,6 +180,16 @@ def local_capitalize(language_code):
     cap_local = language_code.split("-")[-1].upper()
     return cap_local
 
+def language_code_country_capitalize(language):
+    language_code, local_code = str(language).split("-")
+    language_code_country_capitalized = language_code + "-" + local_code.upper()
+
+    if local_code == "int" or local_code == "INT":
+        return language_code
+
+    return language_code_country_capitalized
+
+
 def create_target_path_by_pattern(curdir, language, version_tag, source_name,  pattern=None, distinct=False, content_type_code=None):
 
     if not distinct and pattern is not None and not pull_pattern_validate_regexp.search(pattern):
@@ -189,13 +200,14 @@ def create_target_path_by_pattern(curdir, language, version_tag, source_name,  p
     if pattern is None:
         pattern = language.code + '-' + source_name
         if version_tag:
-            pattern = language.code + '-' + version_tag + '_' +source_name
+            pattern = language.code + '-' + version_tag + '_' + source_name
 
     pattern = pattern or DEFAULT_PATTERN
 
     if 'lproj' in pattern and str(language) in CUSTOM_LANGUAGE_CODE.keys():
         target_path = pattern.replace('<{}>'.format(PatternVariables.language_code), custom_language(language))
         target_path = target_path.replace('<{}>'.format(PatternVariables.local_capitalized), local_capitalize(language.code))
+        target_path = target_path.replace('<{}>'.format(PatternVariables.language_code_country_capitalized), language_code_country_capitalize(language))
         target_path = target_path.replace('<{}>'.format(PatternVariables.language_lang_code), custom_language(language))
         target_path = target_path.replace('<{}>'.format(PatternVariables.language_name), custom_language(language))
         target_path = target_path.replace('<{}>'.format(PatternVariables.language_name_cap),
@@ -206,6 +218,7 @@ def create_target_path_by_pattern(curdir, language, version_tag, source_name,  p
     else:
         target_path = pattern.replace('<{}>'.format(PatternVariables.language_code), language.code)
         target_path = target_path.replace('<{}>'.format(PatternVariables.language_lang_code), language.lang)
+        target_path = target_path.replace('<{}>'.format(PatternVariables.language_code_country_capitalized), language_code_country_capitalize(language))
         target_path = target_path.replace('<{}>'.format(PatternVariables.local_capitalized), local_capitalize(language.code))
         target_path = target_path.replace('<{}>'.format(PatternVariables.language_name), language.name)
         target_path = target_path.replace('<{}>'.format(PatternVariables.language_name_cap),
