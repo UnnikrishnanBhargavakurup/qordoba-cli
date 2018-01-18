@@ -114,15 +114,15 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
             results_generator = lexer().get_tokens_unprocessed(code)
 
         token_format = None
-        additional_lines = 0
+        # additional_lines = 0
 
         for item in results_generator:  # unpacking content of generator
 
             pos, token, value = item
 
             # adding lines for custom framework nunjucks lexer
-            if "\n" in value and additional_lines == 0 and lexer_custom == 'nunjucks' and token == 'Token.Text.nunjucks':
-                additional_lines = value.count("\n")
+            # if "\n" in value and additional_lines == 0 and lexer_custom == 'nunjucks' and token == 'Token.Text.nunjucks':
+            #     additional_lines = value.count("\n")
 
             '''filter for stringliterals. 
             Scala's token is e.g. Stringliteral,but for Python it is Token.text
@@ -133,23 +133,24 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
             # if any(x in str(token) for x in token_format) and not re.match(r'\n', value) and value.strip() != '':
             if any(x in str(token) for x in token_format) and value.strip() != '':
 
-                if "{% endblock %}" in value:
-                    log.info("HUHU")
-
                 pos_start, token, value = item
+
+                if "{%" in value or "{#" in value or "#}" in value:
+                    continue
                 try:
                     value = value.decode('utf-8').strip()
                 except UnicodeDecodeError:
                     pass
+
                 # calculating fileline of string based on character position of entire file
                 file_chunk = code[:pos_start]
 
                 #adding lines in case of nunjucks
 
-                start_line = file_chunk.count("\n") + additional_lines
+                # start_line = file_chunk.count("\n") + additional_lines
+                start_line = file_chunk.count("\n")
                 multilinestring = value.count("\n")
                 end_line = start_line + multilinestring
-
                 json_report[file_][count] = {"value": value, "start_line": start_line + 1, "end_line": end_line + 1}
                 count += 1
 

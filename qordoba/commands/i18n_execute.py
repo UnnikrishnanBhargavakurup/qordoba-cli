@@ -16,6 +16,7 @@ shoudl I write existing keys to new i18n file?
 """
 global NEW_I18N_FILE
 NEW_I18N_FILE = dict()
+import datetime
 
 
 def get_files_in_report(report_path):
@@ -39,7 +40,7 @@ def get_filerows_as_list(file_path):
         return file_dict
 
     except IOError:
-        print("File '{}' does not exist.".format(file_path))
+        log.info("File '{}' does not exist.".format(file_path))
         pass
 
     return file_dict
@@ -55,8 +56,19 @@ def transform_keys(key, key_format):
     return key
 
 
-def final_replace(key, picked_line, stringliteral, key_format):
-    stringliteral = stringliteral.encode("utf-8")
+def final_replace(key, old_picked_line, old_stringliteral, key_format):
+
+    old_stringliteral = old_stringliteral.encode("utf-8")
+    stringlit_array = old_stringliteral.split("\n")
+    stringliteral_array = [x.strip() for x in stringlit_array]
+    stringliteral  = " ".join(stringliteral_array)
+
+    old_picked_line = old_picked_line.encode("utf-8")
+    pickedLine_array = old_picked_line.split("\n")
+    pickedLine_array = [x.strip() for x in pickedLine_array]
+    picked_line = " ".join(pickedLine_array)
+
+
     key_new = transform_keys(key, key_format)
     NEW_I18N_FILE[key] = stringliteral
     try:
@@ -86,8 +98,6 @@ def final_replace(key, picked_line, stringliteral, key_format):
 
 def replace_strings_for_keys(singel_file_stringliterals, old_file_all_lines_into_dict, key_format):
     # file is list of strings. replaces strings in list
-    print(singel_file_stringliterals)
-
     for i in range(len(singel_file_stringliterals.index)):
 
         if not singel_file_stringliterals[i] or singel_file_stringliterals[i] == "NaN" or singel_file_stringliterals[i] is numpy.nan:
@@ -124,18 +134,22 @@ def replace_strings_for_keys(singel_file_stringliterals, old_file_all_lines_into
         if idx_start < idx_end:
 
             picked_lines = list()
-
             for i in range(idx_start, idx_end + 1):
                 if not old_file_all_lines_into_dict[i]:
                     continue
                 picked_lines.append(old_file_all_lines_into_dict[i])
 
-            picked_lines = [x for x in picked_lines if x is not None]
+            # picked_lines = [x for x in picked_lines if x is not None]
             joined_lines = ''.join(picked_lines)
+
+            """
+            SOMETHING IS WRONG HERE
+            
+            """
             replaced_line = final_replace(key, joined_lines, stringliteral, key_format)
             old_file_all_lines_into_dict[idx_start] = replaced_line
             # adding to the lost indexes none, so df is not fucked up for later
-            for i in range(idx_start, idx_end):
+            for i in range(idx_start+1, idx_end+1):
                 old_file_all_lines_into_dict[i] = None
 
     file_array_list = list()
@@ -148,8 +162,13 @@ def replace_strings_for_keys(singel_file_stringliterals, old_file_all_lines_into
 def execute(curdir, input_dir=None, report_dir=None, key_format=None):
     """Input is the input-directory and qordoba reports.
     Output is a replaced input directory - stringliterals for keys - plus a i18n JSON file which contains the new keys"""
+
     reports = get_files_in_dir_with_subdirs(report_dir)
     reports = ignore_files(reports)
+
+    now = datetime.datetime.now()
+    date = now.strftime("%Y%m%d%H%M")
+
     for report in reports:
         try:
             df = pd.read_json(report)
@@ -184,16 +203,17 @@ def execute(curdir, input_dir=None, report_dir=None, key_format=None):
 
             # replacing StringLiterals for keys
             log.info("Replacing StringLiterals with keys in temp file")
-            temp_file_all_lines_into_dict = replace_strings_for_keys(singel_file_stringliterals,
+            try:
+                temp_file_all_lines_into_dict = replace_strings_for_keys(singel_file_stringliterals,
                                                                      old_file_all_lines_into_dict, key_format)
-            # removing empty multi-line lines from file dictionary
-            new_file_all_lines_into_dict = [x.strip('"') for x in temp_file_all_lines_into_dict if x != None]
+                # removing empty multi-line lines from file dictionary
+                new_file_all_lines_into_dict = [x.strip('"') for x in temp_file_all_lines_into_dict if x != None]
+            except KeyError:
+                log.info("Could it be that you already executed the report on this file `{}`? ".format(single_file_path))
+                continue
 
             """ Replace old file """
             log.info("Replacing old file with stringliterals by new file with keys. File: `{}`".format(single_file_path))
-            with open("qordoba-processed-files.yml", "a") as myfile:
-                myfile.write(single_file_path)
-                myfile.close()
             # remove old file, dump new
             os.remove(single_file_path)
             save_str_list_to_file(single_file_path, new_file_all_lines_into_dict)
@@ -207,6 +227,6 @@ def execute(curdir, input_dir=None, report_dir=None, key_format=None):
             # path = "/".join(single_file_path.split("/")[:-1]) + "/example.js"
 
     """ create new i18n file in output folder """
-    new_i18n_file = report_dir + '/qordoba_i18n_file.json'
+    new_i18n_file = report_dir + '/qordoba_i18n_file' + date + '.json'
     log.info("Creating new i18n file.`{}`".format(new_i18n_file))
     save_dict_to_JSON(new_i18n_file, NEW_I18N_FILE)
