@@ -32,6 +32,7 @@ CONTENT_TYPE_CODES['md'] = ('md', 'text')
 CONTENT_TYPE_CODES['stringsHtml'] = ('html', 'htm')
 CONTENT_TYPE_CODES['stringsResx'] = ('resx',)
 CONTENT_TYPE_CODES['stringsDocx'] = ('docx',)
+CONTENT_TYPE_CODES['dita'] = ('dita',)
 
 # .xlsx, .pptx idml ts
 
