@@ -56,18 +56,19 @@ def transform_keys(key, key_format):
     return key
 
 
-def final_replace(key, old_picked_line, old_stringliteral, key_format):
+def final_replace(line_type, key, old_picked_line, old_stringliteral, key_format):
 
+    # normalizing indentation
     old_stringliteral = old_stringliteral.encode("utf-8")
     stringlit_array = old_stringliteral.split("\n")
     stringliteral_array = [x.strip() for x in stringlit_array]
-    stringliteral  = " ".join(stringliteral_array)
+    stringliteral = " ".join(stringliteral_array)
 
-    old_picked_line = old_picked_line.encode("utf-8")
-    pickedLine_array = old_picked_line.split("\n")
-    pickedLine_array = [x.strip() for x in pickedLine_array]
-    picked_line = " ".join(pickedLine_array)
-
+    if type == "multiline":
+        old_picked_line = [x.encode("utf-8").strip() for x in old_picked_line]
+        picked_line = " ".join(old_picked_line)
+    else:
+        picked_line = old_picked_line
 
     key_new = transform_keys(key, key_format)
     NEW_I18N_FILE[key] = stringliteral
@@ -76,7 +77,9 @@ def final_replace(key, old_picked_line, old_stringliteral, key_format):
         picked_line_2 = picked_line_1.replace('"' + stringliteral + '"', key_new)
         picked_line_3 = picked_line_2.replace('%{' + stringliteral + '}', key_new)  # ruby specific %{}
         picked_line_4 = picked_line_3.replace(stringliteral, key)
-        return picked_line_4
+        picked_line_5 = picked_line_4.replace(stringliteral[1:-1], key)
+
+        return picked_line_5
 
     except UnicodeDecodeError:
         stringliteral = stringliteral.decode("utf-8")
@@ -125,32 +128,30 @@ def replace_strings_for_keys(singel_file_stringliterals, old_file_all_lines_into
             key = existing_key["key"]
 
         # One-line StringLiteral
+        """ONE LINE"""
         if idx_start == idx_end:
             picked_line = old_file_all_lines_into_dict[idx_start]
-            replaced_line = final_replace(key, picked_line, stringliteral, key_format)
+            type = None
+            replaced_line = final_replace(type, key, picked_line, stringliteral, key_format)
             old_file_all_lines_into_dict[idx_start] = replaced_line
 
         # Multi-line StringLiteral
+        """MULTILINE"""
         if idx_start < idx_end:
 
             picked_lines = list()
-            for i in range(idx_start, idx_end + 1):
-                if not old_file_all_lines_into_dict[i]:
+            for h in range(idx_start, idx_end + 1):
+                if not old_file_all_lines_into_dict[h]:
                     continue
-                picked_lines.append(old_file_all_lines_into_dict[i])
+                picked_lines.append(old_file_all_lines_into_dict[h])
 
-            # picked_lines = [x for x in picked_lines if x is not None]
-            joined_lines = ''.join(picked_lines)
-
-            """
-            SOMETHING IS WRONG HERE
-            
-            """
-            replaced_line = final_replace(key, joined_lines, stringliteral, key_format)
-            old_file_all_lines_into_dict[idx_start] = replaced_line
+            picked_lines = [x for x in picked_lines if x is not None]
+            type = "multiline"
+            replaced_line = final_replace(type, key, picked_lines, stringliteral, key_format)
             # adding to the lost indexes none, so df is not fucked up for later
-            for i in range(idx_start+1, idx_end+1):
-                old_file_all_lines_into_dict[i] = None
+            for k in range(idx_start, idx_end):
+                old_file_all_lines_into_dict[idx_end] = replaced_line
+                old_file_all_lines_into_dict[k] = None
 
     file_array_list = list()
     for i in range(len(old_file_all_lines_into_dict)):
