@@ -56,7 +56,7 @@ def transform_keys(key, key_format):
     return key
 
 
-def final_replace(line_type, key, old_picked_line, old_stringliteral, key_format):
+def final_replace(type, key, old_picked_line, old_stringliteral, key_format):
 
     # normalizing indentation
     old_stringliteral = old_stringliteral.encode("utf-8")
@@ -64,7 +64,7 @@ def final_replace(line_type, key, old_picked_line, old_stringliteral, key_format
     stringliteral_array = [x.strip() for x in stringlit_array]
     stringliteral = " ".join(stringliteral_array)
 
-    if type == "multiline":
+    if type is "multiline":
         old_picked_line = [x.encode("utf-8").strip() for x in old_picked_line]
         picked_line = " ".join(old_picked_line)
     else:
@@ -76,8 +76,8 @@ def final_replace(line_type, key, old_picked_line, old_stringliteral, key_format
         picked_line_1 = picked_line.replace("'" + stringliteral + "'", key_new)
         picked_line_2 = picked_line_1.replace('"' + stringliteral + '"', key_new)
         picked_line_3 = picked_line_2.replace('%{' + stringliteral + '}', key_new)  # ruby specific %{}
-        picked_line_4 = picked_line_3.replace(stringliteral, key)
-        picked_line_5 = picked_line_4.replace(stringliteral[1:-1], key)
+        picked_line_4 = picked_line_3.replace(stringliteral, key_new)
+        picked_line_5 = picked_line_4.replace(stringliteral[1:-1], key_new)
 
         return picked_line_5
 
@@ -87,6 +87,7 @@ def final_replace(line_type, key, old_picked_line, old_stringliteral, key_format
         picked_line_2 = picked_line_1.replace('"' + stringliteral + '"', key_new)
         picked_line_3 = picked_line_2.replace('%{' + stringliteral + '}', key_new)  # ruby specific %{}
         picked_line_4 = picked_line_3.replace(stringliteral, key)
+        picked_line_5 = picked_line_4.replace(stringliteral[1:-1], key_new)
         return picked_line_4
 
     except UnicodeEncodeError:
@@ -94,7 +95,8 @@ def final_replace(line_type, key, old_picked_line, old_stringliteral, key_format
         picked_line_1 = picked_line.replace("'" + stringliteral + "'", key_new)
         picked_line_2 = picked_line_1.replace('"' + stringliteral + '"', key_new)
         picked_line_3 = picked_line_2.replace('%{' + stringliteral + '}', key_new)  # ruby specific %{}
-        picked_line_4 = picked_line_3.replace(stringliteral, key)
+        picked_line_4 = picked_line_3.replace(stringliteral, key_new)
+        picked_line_5 = picked_line_4.replace(stringliteral[1:-1], key_new)
         return picked_line_4
 
 
@@ -131,7 +133,7 @@ def replace_strings_for_keys(singel_file_stringliterals, old_file_all_lines_into
         """ONE LINE"""
         if idx_start == idx_end:
             picked_line = old_file_all_lines_into_dict[idx_start]
-            type = None
+            type = "Single"
             replaced_line = final_replace(type, key, picked_line, stringliteral, key_format)
             old_file_all_lines_into_dict[idx_start] = replaced_line
 
