@@ -1,2 +1,2 @@
 key_format:
-  html: '{KEY}'
+  html: '{{KEY}}'

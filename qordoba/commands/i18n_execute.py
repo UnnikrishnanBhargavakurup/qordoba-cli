@@ -1,6 +1,7 @@
-from i18n_base import get_files_in_dir_with_subdirs, ignore_files, save_str_list_to_file, save_dict_to_JSON, get_config_key_format, filter_config_files
+from i18n_base import get_files_in_dir_with_subdirs, ignore_files, save_str_list_to_file, save_dict_to_JSON, get_config_key_format, filter_config_files, u_converter
 
 import numpy
+import re
 import os
 import pandas as pd
 import json
@@ -58,6 +59,10 @@ def transform_keys(key, key_format):
 
 def final_replace(type, key, old_picked_line, old_stringliteral, key_format):
 
+    if re.search ('\\\u[0-9A-Fa-f]{4}', old_stringliteral):
+        print(old_stringliteral)
+        old_stringliteral = u_converter(old_stringliteral)
+
     # normalizing indentation
     old_stringliteral = old_stringliteral.encode("utf-8")
     stringlit_array = old_stringliteral.split("\n")
@@ -78,27 +83,28 @@ def final_replace(type, key, old_picked_line, old_stringliteral, key_format):
         picked_line_3 = picked_line_2.replace('%{' + stringliteral + '}', key_new)  # ruby specific %{}
         picked_line_4 = picked_line_3.replace(stringliteral, key_new)
         picked_line_5 = picked_line_4.replace(stringliteral[1:-1], key_new)
-
         return picked_line_5
 
     except UnicodeDecodeError:
         stringliteral = stringliteral.decode("utf-8")
+        picked_line = u_converter(picked_line)
+        picked_line = picked_line.decode("utf-8")
         picked_line_1 = picked_line.replace("'" + stringliteral + "'", key_new)
         picked_line_2 = picked_line_1.replace('"' + stringliteral + '"', key_new)
         picked_line_3 = picked_line_2.replace('%{' + stringliteral + '}', key_new)  # ruby specific %{}
         picked_line_4 = picked_line_3.replace(stringliteral, key)
         picked_line_5 = picked_line_4.replace(stringliteral[1:-1], key_new)
-        return picked_line_4
+        return picked_line_5
 
     except UnicodeEncodeError:
         stringliteral = stringliteral.encode("utf-8")
+        picked_line = picked_line.encode("utf-8")
         picked_line_1 = picked_line.replace("'" + stringliteral + "'", key_new)
         picked_line_2 = picked_line_1.replace('"' + stringliteral + '"', key_new)
         picked_line_3 = picked_line_2.replace('%{' + stringliteral + '}', key_new)  # ruby specific %{}
         picked_line_4 = picked_line_3.replace(stringliteral, key_new)
         picked_line_5 = picked_line_4.replace(stringliteral[1:-1], key_new)
-        return picked_line_4
-
+        return picked_line_5
 
 
 def replace_strings_for_keys(singel_file_stringliterals, old_file_all_lines_into_dict, key_format):

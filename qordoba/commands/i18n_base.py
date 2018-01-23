@@ -2,6 +2,7 @@ import os
 import json
 import sys
 import yaml
+import re
 import logging
 from qordoba.settings import load_i18n_config
 
@@ -43,6 +44,44 @@ IGNOREFILES = [
     "__init__.pyc",
     "__init__.py",
 ]
+
+
+def u_converter( string = "\u5982\u679c\u7231" ):
+    """
+    Simple handler for converting a str type string with pure unicode
+    code point (that is it has '\u' in string but no 'u' prefix) to
+    an unicode type string.
+
+    Actually, this method has the same effect with 'u' prefix. But differently,
+    it allows you to pass a variable of code points string as well as a constant
+    one.
+    """
+
+    chars = string.split(" ")
+    array = list()
+
+    for char in chars:
+
+        if re.search('\\\u[0-9A-Fa-f]{4}', char):
+            m = re.search('\\\u[0-9A-Fa-f]{4}', char)
+            uni_char_u = m.group(0)
+            uni_char = uni_char_u[2:]
+            if len(uni_char):
+                try:
+                    ncode = int(uni_char,16)
+                except ValueError:
+                    continue
+                try:
+                    uchar = unichr(ncode)
+                except ValueError:
+                    continue
+                if uchar:
+                    fin = char.replace(uni_char_u, uchar)
+                    array.append(fin)
+                else:
+                    array.append(char)
+
+    return " ".join(array)
 
 
 def convert_to_unicode(input):
