@@ -396,7 +396,7 @@ class ProjectAPI(object):
         resp = self.do_post(upload_url, files={'file': (str(file_name), stream, mimetype)}, data=values)
         return resp.json()
 
-    def upload_anytype_file(self, stream, file_name, content_type_code,
+    def upload_anytype_file(self, stream, file_name, file_path_name,  content_type_code,
                             mimetype='application/octet-stream', force=False, **kwargs):
         """
         Upload file to qordoba app.
@@ -434,7 +434,8 @@ class ProjectAPI(object):
         upload_url = self.build_url(*params, **query)
 
         values = {
-            'file_names': json.dumps([])
+            'file_names': json.dumps([]),
+            'file_path': file_path_name
         }
 
         resp = self.do_post(upload_url, files={'file': (str(file_name), stream, mimetype)}, data=values)

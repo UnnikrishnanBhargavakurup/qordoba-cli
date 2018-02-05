@@ -205,6 +205,8 @@ class PullHandler(BaseHandler):
         parser.add_argument('-d', '--distinct', dest='distinct', action='store_true',
                             help="Allows you to pull distinct filenames.")
         parser.add_argument('--version', dest='version', default=None, type=str, help="Set version tag.")
+        parser.add_argument('--file-path-pattern', dest='file_path_pattern', default=None,
+                            help="Pick from")
         group = parser.add_mutually_exclusive_group()
         group.add_argument('--skip', dest='skip', action='store_true', help='Skip downloading if file exists.')
         group.add_argument('--replace', dest='replace', action='store_true', help='Replace existing file.')
@@ -231,7 +233,7 @@ class PullHandler(BaseHandler):
             languages.extend(self.languages)
 
         pull_command(self._curdir, config, files=self.files, languages=set(itertools.chain(*languages)),
-                     in_progress=self.in_progress, update_action=self.get_update_action(), force=self.force, custom=self.custom, bulk=self.bulk, version=self.version, workflow=self.workflow, workflow_all=self.workflow_all, distinct=self.distinct)
+                     in_progress=self.in_progress, update_action=self.get_update_action(), force=self.force, custom=self.custom, bulk=self.bulk, version=self.version, workflow=self.workflow, workflow_all=self.workflow_all, distinct=self.distinct, file_path_pattern=self.file_path_pattern)
 
 
 class PushHandler(BaseHandler):
@@ -250,13 +252,14 @@ class PushHandler(BaseHandler):
         parser = super(PushHandler, cls).register(*args, **kwargs)
         parser.add_argument('files', nargs='*', metavar='PATH', default=None, type=FilePathType(), help="")
         parser.add_argument('--update', dest='update', default=False, action='store_true', help="Force to update file.")
+        parser.add_argument('--file-path', dest='file_path', default=False, action='store_true', help="Force to upload filepath.")
         parser.add_argument('--version', dest='version', default=None, type=str, help="Set version tag.")
         return parser
 
     def main(self):
         log.info('Loading Qordoba config...')
         config = self.load_settings()
-        push_command(self._curdir, config, update=self.update, version=self.version, files=self.files)
+        push_command(self._curdir, config, update=self.update, file_path=self.file_path, version=self.version, files=self.files)
 
 class ListHandler(BaseHandler):
     name = 'ls'
@@ -347,7 +350,6 @@ def main():
             traceback.print_exc()
 
         sys.exit(1)
-
 
 if __name__ == '__main__':
     main()

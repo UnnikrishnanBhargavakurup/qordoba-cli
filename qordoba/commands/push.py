@@ -83,15 +83,18 @@ def select_source_columns(columns):
     }
 
 
-def upload_file(api, path, remote_content_type_codes, version=None, **kwargs):
+def upload_file(api, path, remote_content_type_codes, file_path, version=None, **kwargs):
     log.info('Uploading {}'.format(path.native_path))
 
+    file_path_name = None
+    if file_path:
+        file_path_name = 'file_' + '/'.join(path.path_parts[:-1]) + '/'
     file_name = path.unique_name
     content_type_code = get_content_type_code(path, remote_content_type_codes)
     version_tag = version
 
     with open(path.native_path, 'rb') as f:
-        resp = api.upload_anytype_file(f, file_name, content_type_code, mimetype=get_mimetype(content_type_code),
+        resp = api.upload_anytype_file(f, file_name, file_path_name, content_type_code, mimetype=get_mimetype(content_type_code),
                                        **kwargs)
     log.debug('File `{}` uploaded. Name - `{}`. Adding to the project...'.format(path.native_path, file_name))
 
@@ -130,6 +133,7 @@ def update_file(api, path, remote_files, version=None):
 
     log.info('Updated {} successfully.'.format(file_name))
 
+
 def find_directories(pattern):
     directory = pattern.split('/')
     del directory[-1]
@@ -139,7 +143,8 @@ def find_directories(pattern):
     directory_listing = [x[0] for x in os.walk(directory)]
     return directory_listing
 
-def final_push(project, curdir, pattern, api,  update, version, remote_content_type_codes):
+
+def final_push(project, curdir, pattern, api,  update, version, remote_content_type_codes, file_path):
 
     source_lang = get_source_language(project)
     lang = next(get_destination_languages(project))
@@ -149,6 +154,7 @@ def final_push(project, curdir, pattern, api,  update, version, remote_content_t
         log.info('Files for the given push pattern `{}` do not exists.' .format(pattern))
 
     for file in files:
+
         path = validate_path(curdir, file, source_lang)
 
         file_name = path.unique_name
@@ -158,10 +164,10 @@ def final_push(project, curdir, pattern, api,  update, version, remote_content_t
         if remote_file_pages and update:
             update_file(api, path, remote_file_pages, version=version)
         else:
-            upload_file(api, path, remote_content_type_codes, version=version)
+            upload_file(api, path, remote_content_type_codes, file_path, version=version)
 
 
-def push_command(curdir, config, update, version=None, files=()):
+def push_command(curdir, config, update, file_path=False, version=None, files=()):
     api = ProjectAPI(config)
     project = api.get_project()
     remote_content_type_codes = project['content_type_codes']
@@ -186,6 +192,6 @@ def push_command(curdir, config, update, version=None, files=()):
             directory_list = find_directories(pattern)
             for dir_ in directory_list:
                 dir_ = dir_ + '/' + pattern_extension
-                final_push(project, curdir, dir_, api,  update, version, remote_content_type_codes)
+                final_push(project, curdir, dir_, api,  update, version, remote_content_type_codes, file_path)
         else:
-            final_push(project, curdir, pattern, api, update, version, remote_content_type_codes)
+            final_push(project, curdir, pattern, api, update, version, remote_content_type_codes, file_path)

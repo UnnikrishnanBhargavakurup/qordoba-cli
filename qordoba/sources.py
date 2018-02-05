@@ -145,7 +145,6 @@ def validate_path(curdir, path, lang):
 
     return path
 
-
 class PatternVariables(object):
     language_code = 'language_code'
     language_name = 'language_name'
@@ -160,7 +159,19 @@ class PatternVariables(object):
 
     all = language_code, language_name, language_name_cap, language_name_allcap, language_lang_code, local_capitalized, filename, extension
 
-#
+def file_path_language_code(language, pattern):
+    target_path = pattern.replace ('<{}>'.format (PatternVariables.language_code), language.code)
+    target_path = target_path.replace ('<{}>'.format (PatternVariables.language_lang_code), language.lang)
+    target_path = target_path.replace ('<{}>'.format (PatternVariables.language_code_country_capitalized),
+                                       language_code_country_capitalize (language))
+    target_path = target_path.replace ('<{}>'.format (PatternVariables.local_capitalized),
+                                       local_capitalize (language.code))
+    target_path = target_path.replace ('<{}>'.format (PatternVariables.language_name), language.name)
+    target_path = target_path.replace ('<{}>'.format (PatternVariables.language_name_cap),
+                                       language.name.capitalize ())
+    target_path = target_path.replace ('<{}>'.format (PatternVariables.language_name_allcap),
+                                       language.name.upper ())
+    return target_path
 def custom_language(language):
     return CUSTOM_LANGUAGE_CODE[str(language)]
 
