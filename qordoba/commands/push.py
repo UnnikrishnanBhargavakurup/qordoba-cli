@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function
 
 import logging
 import os
+import threading
 from qordoba.commands.utils import ask_question, ask_select_multiple, ask_select
 from qordoba.languages import get_source_language, init_language_storage, get_destination_languages
 from qordoba.project import ProjectAPI
@@ -143,8 +144,14 @@ def find_directories(pattern):
     directory_listing = [x[0] for x in os.walk(directory)]
     return directory_listing
 
+def hello():
+    log.info("Waiting for file to upload/update")
 
 def final_push(project, curdir, pattern, api,  update, version, remote_content_type_codes, file_path):
+    """"Sleep functionality is waiting to upload each file step by step.
+    This will prevent file to overwrite each other if many files are pushed in a very short time frame"""
+    sleep = threading.Timer(0.3, hello)
+    sleep.start()
 
     source_lang = get_source_language(project)
     lang = next(get_destination_languages(project))
@@ -187,7 +194,7 @@ def push_command(curdir, config, update, file_path=False, version=None, files=()
 
     for pattern in pattern_list:
         assert len(pattern_list) != 0
-        if pattern[-1:] == '*':
+        if pattern[-2:] == '/*':
             pattern_extension = pattern.split('/')[-1]
             directory_list = find_directories(pattern)
             for dir_ in directory_list:
