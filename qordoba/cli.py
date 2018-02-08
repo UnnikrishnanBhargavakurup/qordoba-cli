@@ -249,8 +249,6 @@ class PullHandler(BaseHandler):
         pull_command(self._curdir, config, files=self.files, languages=set(itertools.chain(*languages)),
                      in_progress=self.in_progress, update_action=self.get_update_action(), force=self.force, custom=self.custom, bulk=self.bulk, version=self.version, workflow=self.workflow, workflow_all=self.workflow_all, distinct=self.distinct, file_path_pattern=self.file_path_pattern)
 
-
-
 class PushHandler(BaseHandler):
     name = 'push'
     help = """

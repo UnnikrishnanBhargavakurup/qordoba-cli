@@ -191,9 +191,11 @@ def validate_push_pattern(pattern):
     #     raise PatternNotValid('Push pattern is not valid. Pattern should contain one of the values: *,?')
     pass
 
+
 def local_capitalize(language_code):
     cap_local = language_code.split("-")[-1].upper()
     return cap_local
+
 
 def language_code_country_capitalize(language):
     language_code, local_code = str(language).split("-")

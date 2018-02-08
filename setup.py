@@ -3,7 +3,8 @@
 from codecs import open
 from setuptools import setup
 
-__version__ = '1.5.9'
+__version__ = '1.6.1'
+
 
 packages = [
     'qordoba',
