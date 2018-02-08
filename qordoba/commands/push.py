@@ -138,7 +138,7 @@ def update_file(api, path, remote_files, version=None):
 def find_directories(pattern):
     directory = pattern.split('/')
     del directory[-1]
-    directory = '/'.join(directory) + '/'
+    directory = '/'.join(directory)
     directory_list = list()
     directory_list.append(directory)
     directory_listing = [x[0] for x in os.walk(directory)]
@@ -150,7 +150,7 @@ def hello():
 def final_push(project, curdir, pattern, api,  update, version, remote_content_type_codes, file_path):
     """"Sleep functionality is waiting to upload each file step by step.
     This will prevent file to overwrite each other if many files are pushed in a very short time frame"""
-    sleep = threading.Timer(0.3, hello)
+    sleep = threading.Timer(0.5, hello)
     sleep.start()
 
     source_lang = get_source_language(project)
@@ -194,11 +194,11 @@ def push_command(curdir, config, update, file_path=False, version=None, files=()
 
     for pattern in pattern_list:
         assert len(pattern_list) != 0
-        if pattern[-2:] == '/*':
+        if pattern[-2:] == '/*' or pattern[-1:] == '*':
             pattern_extension = pattern.split('/')[-1]
             directory_list = find_directories(pattern)
             for dir_ in directory_list:
-                dir_ = dir_ + '/' + pattern_extension
+                dir_ = dir_ + "/" + pattern_extension
                 final_push(project, curdir, dir_, api,  update, version, remote_content_type_codes, file_path)
         else:
             final_push(project, curdir, pattern, api, update, version, remote_content_type_codes, file_path)
