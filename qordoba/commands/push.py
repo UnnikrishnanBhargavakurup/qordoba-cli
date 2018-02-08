@@ -187,7 +187,7 @@ def push_command(curdir, config, update, file_path=False, version=None, files=()
 
     for pattern in pattern_list:
         assert len(pattern_list) != 0
-        if pattern[-2:] == '/*':
+        if pattern[-1:] == '*':
             pattern_extension = pattern.split('/')[-1]
             directory_list = find_directories(pattern)
             for dir_ in directory_list:
