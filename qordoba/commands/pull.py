@@ -17,7 +17,7 @@ from qordoba.commands.utils import mkdirs, ask_select, ask_question
 from qordoba.languages import get_destination_languages, get_source_language, init_language_storage, normalize_language
 from qordoba.project import ProjectAPI, PageStatus
 from qordoba.settings import get_pull_pattern
-from qordoba.sources import create_target_path_by_pattern
+from qordoba.sources import create_target_path_by_pattern, file_path_language_code
 
 log = logging.getLogger('qordoba')
 
@@ -95,7 +95,7 @@ def pull_bulk(api, src_to_dest_paths, dest_languages_page_ids, dest_languages_id
     log.info('Finished with bulk download. Saved in "qordoba-cli/qordoba/bulkDownload/"')
 
 
-def pull_command(curdir, config, files=(), force=False, bulk=False, workflow=False, workflow_all=None, version=None, distinct=False, languages=(),
+def pull_command(curdir, config, files=(), force=False, bulk=False, workflow=False, workflow_all=None, version=None, distinct=False, file_path_pattern=None, languages=(),
                  in_progress=False, update_action=None, custom=False, **kwargs):
     api = ProjectAPI(config)
     init_language_storage(api)
@@ -148,6 +148,34 @@ def pull_command(curdir, config, files=(), force=False, bulk=False, workflow=Fal
                     milestone = page_status['status']['id']
                     version_tag  = page_status['version_tag']
                     filename = page['url']
+
+                    """If file_path is given. Convert the filepath to a pattern"""
+                    if file_path_pattern:
+                        file_path_pattern_complete = "<" + file_path_pattern + ">"
+                        pattern = None
+                        pattern_list = None
+                        source_lang_code = file_path_language_code(src_language, file_path_pattern_complete)
+
+                        filename_path = page['page_folder_path']
+                        generic_file_path = filename_path.replace(source_lang_code, file_path_pattern_complete)
+                        if '/' in generic_file_path:
+                            cut_generic_file_path = '/'.join(generic_file_path.split('/')[:-1])
+                            very_generic_file_path = cut_generic_file_path + "/<filename>.<extension>"
+                        else:
+                            cut_generic_file_path = '\\'.join (generic_file_path.split ('\\')[:-1])
+                            very_generic_file_path = cut_generic_file_path + "\\<language_code>-<filename>.<extension>"
+                        pattern = very_generic_file_path
+                        if file_path_pattern == 'default':
+                            filename_path = page['page_folder_path']
+                            if '/' in filename_path:
+                                cut_generic_file_path = '/'.join (filename_path.split ('/')[:-1])
+                                very_generic_file_path = cut_generic_file_path + "/<language_code>-<filename>.<extension>"
+                            else:
+                                cut_generic_file_path = '\\'.join (filename_path.split ('\\')[:-1])
+                                very_generic_file_path = cut_generic_file_path + "\\<language_code>-<filename>.<extension>"
+
+                            pattern = very_generic_file_path
+
 
                     if str(version_tag) != str(version) and version is not None:
                         print("dismissing file `{}` with wrong version {}".format(filename, version_tag))

@@ -33,6 +33,7 @@ CONTENT_TYPE_CODES['md'] = ('md', 'text')
 CONTENT_TYPE_CODES['stringsHtml'] = ('html', 'htm')
 CONTENT_TYPE_CODES['stringsResx'] = ('resx',)
 CONTENT_TYPE_CODES['stringsDocx'] = ('docx',)
+CONTENT_TYPE_CODES['dita'] = ('dita',)
 
 # .xlsx, .pptx idml ts
 
@@ -146,7 +147,6 @@ def validate_path(curdir, path, lang):
 
     return path
 
-
 class PatternVariables(object):
     language_code = 'language_code'
     language_name = 'language_name'
@@ -161,7 +161,20 @@ class PatternVariables(object):
 
     all = language_code, language_name, language_name_cap, language_name_allcap, language_lang_code, local_capitalized, filename, extension
 
-#
+def file_path_language_code(language, pattern):
+    target_path = pattern.replace ('<{}>'.format (PatternVariables.language_code), language.code)
+    target_path = target_path.replace ('<{}>'.format (PatternVariables.language_lang_code), language.lang)
+    target_path = target_path.replace ('<{}>'.format (PatternVariables.language_code_country_capitalized),
+                                       language_code_country_capitalize (language))
+    target_path = target_path.replace ('<{}>'.format (PatternVariables.local_capitalized),
+                                       local_capitalize (language.code))
+    target_path = target_path.replace ('<{}>'.format (PatternVariables.language_name), language.name)
+    target_path = target_path.replace ('<{}>'.format (PatternVariables.language_name_cap),
+                                       language.name.capitalize ())
+    target_path = target_path.replace ('<{}>'.format (PatternVariables.language_name_allcap),
+                                       language.name.upper ())
+    return target_path
+
 def custom_language(language):
     return CUSTOM_LANGUAGE_CODE[str(language)]
 
@@ -192,7 +205,7 @@ def language_code_country_capitalize(language):
     return language_code_country_capitalized
 
 
-def create_target_path_by_pattern(curdir, language,  source_name, version_tag=False, pattern=None, distinct=False, content_type_code=None):
+def create_target_path_by_pattern(curdir, language, version_tag, source_name,  pattern=None, distinct=False, content_type_code=None):
 
     if not distinct and pattern is not None and not pull_pattern_validate_regexp.search(pattern):
         raise PatternNotValid(

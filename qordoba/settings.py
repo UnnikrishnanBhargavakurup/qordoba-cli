@@ -112,6 +112,7 @@ def save_settings(config):
 
     return config
 
+
 def get_find_new_pattern(config):
     try:
         return [pattern_row for pattern_row in config['search']['paths']]
