@@ -7,6 +7,7 @@ import re
 from collections import OrderedDict
 
 from qordoba.languages import normalize_language, LanguageNotFound
+from qordoba.settings import backslash
 from qordoba.utils import python_2_unicode_compatible
 
 log = logging.getLogger('qordoba')
@@ -57,6 +58,8 @@ CUSTOM_LANGUAGE_CODE = {
      'zh-cn' : 'zh-CN',
 }
 
+slash = backslash()
+
 def get_mimetype(content_type):
     return MIMETYPES.get(content_type, 'application/octet-stream')
 
@@ -71,7 +74,7 @@ class FileExtensionNotAllowed(Exception):
 
 
 def to_posix(filepath):
-    return filepath if os.altsep is None else filepath.replace(os.altsep, '/').replace(os.sep, '/')
+    return filepath if os.altsep is None else filepath.replace(os.altsep, slash).replace(os.sep, slash)
 
 
 def to_native(filepath):
@@ -295,7 +298,6 @@ def files_in_project(curpath, return_absolute_path=True):
         )
         for removal in removals:
             dirs.remove(removal)
-
 
 
 def _ishidden(path):

@@ -3,14 +3,13 @@
 from codecs import open
 from setuptools import setup
 
-__version__ = '1.6.1'
+__version__ = '1.6.3.oa'
 
 
 packages = [
     'qordoba',
     'qordoba.commands'
 ]
-
 
 def get_requirements(filename):
     with open(filename, 'r', encoding='UTF-8') as f:

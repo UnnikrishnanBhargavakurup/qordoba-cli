@@ -6,11 +6,13 @@ import threading
 from qordoba.commands.utils import ask_question, ask_select_multiple, ask_select
 from qordoba.languages import get_source_language, init_language_storage, get_destination_languages
 from qordoba.project import ProjectAPI
-from qordoba.settings import get_push_pattern, get_project_file_formats
+from qordoba.settings import get_push_pattern, get_project_file_formats, backslash
 from qordoba.sources import find_files_by_pattern, validate_path, validate_push_pattern, get_content_type_code, \
     get_mimetype, add_project_file_formats
 
 log = logging.getLogger('qordoba')
+
+slash = backslash()
 
 class FilesNotFound(Exception):
     """
@@ -89,7 +91,8 @@ def upload_file(api, path, remote_content_type_codes, file_path, version=None, *
 
     file_path_name = None
     if file_path:
-        file_path_name = 'file_' + '/'.join(path.path_parts[:-1]) + '/'
+        file_path_name = 'file_' + str(slash).join(path.path_parts[:-1]) + slash
+
     file_name = path.unique_name
     content_type_code = get_content_type_code(path, remote_content_type_codes)
     version_tag = version
@@ -135,10 +138,10 @@ def update_file(api, path, remote_files, version=None):
     log.info('Updated {} successfully.'.format(file_name))
 
 
-def find_directories(pattern):
-    directory = pattern.split('/')
+def find_directories(pattern, slash):
+    directory = pattern.split(slash)
     del directory[-1]
-    directory = '/'.join(directory) + '/'
+    directory = slash.join(directory) + slash
     directory_list = list()
     directory_list.append(directory)
     directory_listing = [x[0] for x in os.walk(directory)]
@@ -150,8 +153,6 @@ def hello():
 def final_push(project, curdir, pattern, api,  update, version, remote_content_type_codes, file_path):
     """"Sleep functionality is waiting to upload each file step by step.
     This will prevent file to overwrite each other if many files are pushed in a very short time frame"""
-    sleep = threading.Timer(0.3, hello)
-    sleep.start()
 
 
     source_lang = get_source_language(project)
@@ -162,6 +163,9 @@ def final_push(project, curdir, pattern, api,  update, version, remote_content_t
         log.info('Files for the given push pattern `{}` do not exists.' .format(pattern))
 
     for file in files:
+        sleep = threading.Timer(0.5, hello)
+        sleep.start()
+
 
         path = validate_path(curdir, file, source_lang)
 
@@ -170,7 +174,7 @@ def final_push(project, curdir, pattern, api,  update, version, remote_content_t
         remote_file_pages = list(api.page_search(language_id=lang.id, search_string=file_name))
 
         if remote_file_pages and update:
-            update_file(api, path, remote_file_pages, version=version)
+            update_file(api, path, remote_file_pages,  version=version)
         else:
             upload_file(api, path, remote_content_type_codes, file_path, version=version)
 
@@ -186,7 +190,7 @@ def push_command(curdir, config, update, file_path=False, version=None, files=()
         pattern_list = get_push_pattern(config)
         if pattern_list is None:
             log.info("No push pattern found in config. Taking files from current directory")
-            pass
+            pattern_list = [curdir]
 
     if files:
         pattern_list = []
@@ -195,11 +199,12 @@ def push_command(curdir, config, update, file_path=False, version=None, files=()
 
     for pattern in pattern_list:
         assert len(pattern_list) != 0
-        if pattern[-1:] == '*':
-            pattern_extension = pattern.split('/')[-1]
-            directory_list = find_directories(pattern)
+        if pattern[-2:] == slash + '*':
+            pattern_extension = pattern.split(slash)[-1]
+            directory_list = find_directories(pattern, slash)
             for dir_ in directory_list:
-                dir_ = dir_ + '/' + pattern_extension
+                dir_ = dir_ + slash + pattern_extension
+
                 final_push(project, curdir, dir_, api,  update, version, remote_content_type_codes, file_path)
         else:
             final_push(project, curdir, pattern, api, update, version, remote_content_type_codes, file_path)

@@ -129,8 +129,8 @@ def get_push_pattern(config):
     try:
         return config['push']['sources']
     except (KeyError, IndexError):
-        raise PatternNotFound('Pattern not found for source files')
-
+        # log.info('Pattern not found for source files')
+        return
 
 def get_pull_pattern(config, default=NOTDEFINED):
     try:
@@ -162,35 +162,40 @@ def get_project_file_formats(config, default=None):
     except (KeyError, IndexError):
         return None
 
+def backslash():
+    if os.name == 'nt':
+        return "\\"
+    else:
+        return "/"
 
-def get_find_new_pattern(config):
-    try:
-        return [pattern_row for pattern_row in config['qordoba']['search']['paths']]
-    except (KeyError, IndexError):
-        raise PatternNotFound('Pattern not found for source files')
-
-
-def get_find_new_blacklist_pattern(config):
-    exclude_list = config['qordoba']['search'].get('exclude', [])
-    return [exception_row for exception_row in exclude_list]
-
-
-def get_localization_files(config):
-    if not config or config is None:
-        try:
-            with open('../nonon.yml') as info:
-                config = yaml.load(info)
-        except IOError:
-            log.info('No `nonon.yml` file, needs infos to continue')
-
-    try:
-        return [pattern_row for pattern_row in config['qordoba']['push']['sources']]
-    except (KeyError, IndexError):
-        raise PatternNotFound('Pattern not found for source files')
+# def get_find_new_pattern(config):
+#     try:
+#         return [pattern_row for pattern_row in config['qordoba']['search']['paths']]
+#     except (KeyError, IndexError):
+#         raise PatternNotFound('Pattern not found for source files')
 
 
-def get_i18n_app_pattern(config):
-    try:
-        return [pattern_row for pattern_row in config['qordoba']['search']['paths']]
-    except (KeyError, IndexError):
-        raise PatternNotFound('Pattern not found for source files')
+# def get_find_new_blacklist_pattern(config):
+#     exclude_list = config['qordoba']['search'].get('exclude', [])
+#     return [exception_row for exception_row in exclude_list]
+
+
+# def get_localization_files(config):
+#     if not config or config is None:
+#         try:
+#             with open('../nonon.yml') as info:
+#                 config = yaml.load(info)
+#         except IOError:
+#             log.info('No `nonon.yml` file, needs infos to continue')
+
+#     try:
+#         return [pattern_row for pattern_row in config['qordoba']['push']['sources']]
+#     except (KeyError, IndexError):
+#         raise PatternNotFound('Pattern not found for source files')
+
+
+# def get_i18n_app_pattern(config):
+#     try:
+#         return [pattern_row for pattern_row in config['qordoba']['search']['paths']]
+#     except (KeyError, IndexError):
+#         raise PatternNotFound('Pattern not found for source files')
