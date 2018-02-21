@@ -1,11 +1,11 @@
 import os
 import json
 import sys
-import yaml
 import re
 import logging
-from qordoba.settings import load_i18n_config
+from qordoba.settings import load_i18n_config, backslash
 
+slash = backslash()
 log = logging.getLogger('qordoba')
 
 
@@ -39,6 +39,8 @@ Onboarding
 
 IGNOREFILES = [
     ".DS_Store",
+    ".qordoba.yml",
+    ".i18n-ml.yml",
     ".gitignore",
     ".git",
     "__init__.pyc",
@@ -118,7 +120,7 @@ def get_files_in_dir_no_subdirs(directory):
         if file_.endswith(".zip"):
             log.info("Zip file can't be processed {}".format(file_))
             continue
-        files.append(directory + '/' + file_)
+        files.append(directory + slash + file_)
     return files
 
 
@@ -160,8 +162,9 @@ def get_root_path(path):
 
 
 def ignore_files(files):
-    cleaned_files = [file for file in files if file.split("/")[-1] not in IGNOREFILES]
-    return cleaned_files
+    cleaned_files = [file for file in files if file.split(slash)[-1] not in IGNOREFILES]
+    final_files = [file for file in files if not file.startswith(".")]
+    return final_files
 
 
 def filter_config_files(files):
@@ -181,11 +184,11 @@ def filter_config_files(files):
     for path in ignore_list:
         if not path:
             continue
-        if path.endswith("/"):
+        if path.endswith(slash):
             files = [f for f in files if path not in f]
         if path.startswith("."):
             files = [f for f in files if not f.endswith(path)]
-        if not path.startswith(".") and not path.endswith("/"):
+        if not path.startswith(".") and not path.endswith(slash):
             try:
                 files.remove(path)
             except ValueError:
@@ -230,8 +233,8 @@ def get_lexer_from_config(path):
     return lexer
 
 def convert_dir_path(path):
-    if not path.endswith("/"):
-        converted_path = path + "/"
+    if not path.endswith(slash):
+        converted_path = path + slash
         return converted_path
     else:
         return path

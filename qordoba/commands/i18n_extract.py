@@ -1,18 +1,13 @@
 from i18n_base import get_files_in_dir_with_subdirs, save_dict_to_JSON, get_root_path, ignore_files, filter_config_files, get_lexer_from_config
-
+from qordoba.settings import backslash
+from collections import defaultdict
 import codecs
-import re
-
 import datetime
-
 now = datetime.datetime.now()
 date = now.strftime("%Y%m%d%H%M")
-from collections import defaultdict
 import logging
 log = logging.getLogger('qordoba')
-
 import pygments
-import os
 from pygments.lexers import get_lexer_by_name, guess_lexer, get_all_lexers, \
     load_lexer_from_file, get_lexer_for_filename, find_lexer_class_for_filename
 
@@ -78,6 +73,7 @@ def get_lexer(file_name, code, lexer_custom=None):
 
 
 def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_report=False):
+    slash = backslash()
     # first getting all files in directory, than iteration
     no_files = False
     files = get_files_in_dir_with_subdirs(input_dir)
@@ -100,9 +96,10 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
         count = 0
         f = codecs.open(file_, 'r')
         code = f.read()
-        file_name = file_.split('/')[-1]
+        file_name = file_.split(slash)[-1]
 
-        if not lexer_custom: # cmd line input prioritized
+        if not lexer_custom:
+            # if lexer not defined in command, look in config file. otherwise return None
             lexer_custom = get_lexer_from_config(file_)
 
         lexer = get_lexer(file_name, code, lexer_custom=lexer_custom)
@@ -114,7 +111,7 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
             results_generator = lexer().get_tokens_unprocessed(code)
 
         token_format = None
-        # additional_lines = 0
+        # additional_lines = 0mm
 
         for item in results_generator:  # unpacking content of generator
 
@@ -124,9 +121,8 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
             # if "\n" in value and additional_lines == 0 and lexer_custom == 'nunjucks' and token == 'Token.Text.nunjucks':
             #     additional_lines = value.count("\n")
 
-            '''filter for stringliterals. 
-            Scala's token is e.g. Stringliteral,but for Python it is Token.text
-            For some languages custom filters are applyied. Default is token.text'''
+            '''filter for strings. Token name differs: Scala's token is Stringliteral. Python it is Token.text
+             custom lexer. Default is token.text'''
             lexer_stringliteral_def = str(lexer)
             token_format = LEXER_STRINGS.get(lexer_stringliteral_def, ("Token.Text",))
 
@@ -134,8 +130,7 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
             if any(x in str(token) for x in token_format) and value.strip() != '':
 
                 pos_start, token, value = item
-
-                if "{%" in value or "{#" in value or "#}" in value:
+                if "{%" in value or "{#" in value or "#}" in value or "%}" in value:
                     continue
                 try:
                     value = value.decode('utf-8').strip()
@@ -146,12 +141,19 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
                 file_chunk = code[:pos_start]
 
                 #adding lines in case of nunjucks
-
                 # start_line = file_chunk.count("\n") + additional_lines
+
                 start_line = file_chunk.count("\n")
                 multilinestring = value.count("\n")
                 end_line = start_line + multilinestring
-                json_report[file_][count] = {"value": value, "start_line": start_line + 1, "end_line": end_line + 1}
+
+                #create snippet based on lines
+                code_list = code.split('\n')
+                if start_line == end_line:
+                    snippet = code_list[start_line]
+                else:
+                    snippet = '\n'.join(code_list[start_line:end_line+1])
+                json_report[file_][count] = {"value": value, "start_line": start_line + 1, "end_line": end_line + 1, "snippet": snippet}
                 count += 1
 
         log.info("Strings extracted!  (token: {}) ".format(token_format[0]))

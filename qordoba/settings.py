@@ -182,3 +182,10 @@ def load_i18n_config():
             data = None
             pass
     return data
+
+
+def backslash():
+    if os.name == 'nt':
+        return "\\"
+    else:
+        return "/"
