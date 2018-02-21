@@ -177,25 +177,14 @@ def pull_command(curdir, config, files=(), force=False, bulk=False, workflow=Fal
                         pattern = None
                         pattern_list = None
                         source_lang_code = file_path_language_code(src_language, file_path_pattern_complete)
-
-                        filename_path = page['page_folder_path']
-                        generic_file_path = filename_path.replace(source_lang_code, file_path_pattern_complete)
-                        if '/' in generic_file_path:
-                            cut_generic_file_path = '/'.join(generic_file_path.split('/')[:-1])
-                            very_generic_file_path = cut_generic_file_path + "/<filename>.<extension>"
-                        else:
-                            cut_generic_file_path = '\\'.join (generic_file_path.split ('\\')[:-1])
-                            very_generic_file_path = cut_generic_file_path + "\\<language_code>-<filename>.<extension>"
+                        generic_file_path = filename_path.replace(source_lang_code + slash, file_path_pattern_complete + slash)
+                        cut_generic_file_path = str(slash).join(generic_file_path.split(slash)[:-1])
+                        very_generic_file_path = cut_generic_file_path + slash + "<filename>.<extension>"
                         pattern = very_generic_file_path
-                        if file_path_pattern == 'default':
-                            filename_path = page['page_folder_path']
-                            if '/' in filename_path:
-                                cut_generic_file_path = '/'.join (filename_path.split ('/')[:-1])
-                                very_generic_file_path = cut_generic_file_path + "/<language_code>-<filename>.<extension>"
-                            else:
-                                cut_generic_file_path = '\\'.join (filename_path.split ('\\')[:-1])
-                                very_generic_file_path = cut_generic_file_path + "\\<language_code>-<filename>.<extension>"
 
+                        if file_path_pattern == 'default':
+                            cut_generic_file_path = slash.join (filename_path.split (slash)[:-1])
+                            very_generic_file_path = cut_generic_file_path + slash + "<language_code>-<filename>.<extension>"
                             pattern = very_generic_file_path
 
 

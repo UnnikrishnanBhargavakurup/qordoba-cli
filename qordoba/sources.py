@@ -318,6 +318,7 @@ def find_files_by_pattern(curpath, pattern, lang, remote_content_type_codes):
 
         try:
             _ = get_content_type_code(path, remote_content_type_codes)
+
         except FileExtensionNotAllowed as e:
             log.info('File path ignored: {}'.format(e))
             continue
@@ -348,11 +349,15 @@ def get_content_type_code(path, remote_content_type_codes):
         remote_content_types_list.append(content_type['content_type_code'])
 
     path_ext = path.extension
+    matching_type_extension = False
+    for remote_content in remote_content_types_list:
+        if path_ext in CONTENT_TYPE_CODES[remote_content]:
+            matching_type_extension = True
 
-
-    if path_ext not in ALLOWED_EXTENSIONS:
+    if path_ext not in ALLOWED_EXTENSIONS or not matching_type_extension:
         raise FileExtensionNotAllowed("File format `{}` not in allowed list of file formats: {}"
                                       .format(path_ext, ', '.join(ALLOWED_EXTENSIONS)))
+
 
     final_content_type = None
     content_set = False
@@ -369,6 +374,13 @@ def get_content_type_code(path, remote_content_type_codes):
             content_set = True
 
         if content_set:
+            if not final_content_type:
+                raise FileExtensionNotAllowed("File format `{}` not in allowed list of file formats: {}. Or not specified as file format in your project (supported filefomats are: {})"
+                                          .format(path_ext, ', '.join(ALLOWED_EXTENSIONS), remote_content_types_list))
+            return final_content_type
+        else:
+            continue
 
-    return ALLOWED_EXTENSIONS[path_ext]
+
+#     return ALLOWED_EXTENSIONS[path_ext]
 

@@ -92,7 +92,6 @@ def upload_file(api, path, remote_content_type_codes, file_path, version=None, *
     file_path_name = None
     if file_path:
         file_path_name = 'file_' + str(slash).join(path.path_parts[:-1]) + slash
-
     file_name = path.unique_name
     content_type_code = get_content_type_code(path, remote_content_type_codes)
     version_tag = version
@@ -150,11 +149,9 @@ def find_directories(pattern, slash):
 def hello():
     log.info("Waiting for file to upload/update")
 
-def final_push(project, curdir, pattern, api,  update, version, remote_content_type_codes, file_path):
+    def final_push(project, curdir, pattern, api,  update, version, remote_content_type_codes, file_path):
     """"Sleep functionality is waiting to upload each file step by step.
     This will prevent file to overwrite each other if many files are pushed in a very short time frame"""
-
-
     source_lang = get_source_language(project)
     lang = next(get_destination_languages(project))
     files = list(find_files_by_pattern(curdir, pattern, source_lang, remote_content_type_codes))
@@ -165,7 +162,6 @@ def final_push(project, curdir, pattern, api,  update, version, remote_content_t
     for file in files:
         sleep = threading.Timer(0.5, hello)
         sleep.start()
-
 
         path = validate_path(curdir, file, source_lang)
 
@@ -190,7 +186,9 @@ def push_command(curdir, config, update, file_path=False, version=None, files=()
         pattern_list = get_push_pattern(config)
         if pattern_list is None:
             log.info("No push pattern found in config. Taking files from current directory")
-            pattern_list = [curdir]
+            files = os.listdir(curdir)
+            files = [file for file in files if os.path.isfile(file) and not str(file).startswith(".") and not str(file).startswith("__")]
+
 
     if files:
         pattern_list = []
