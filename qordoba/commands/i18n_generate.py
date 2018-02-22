@@ -173,7 +173,9 @@ def generate(_curdir, report_dir=None, export_dir=None, existing_i18nfiles=None)
             reponse 200 are 5 keywords based on stringliteral"""
         df = pd.read_json(single_report_path)
         for column in df:
-            for i in range(len(df.index)+1):
+            maxi = df[column].keys().max()
+            """needs more attention"""
+            for i in range(maxi+1):
                 try:
                     # stripping quotes from start and end of string
                     value_stripped = strip_qoutes(df[column][i]["value"])

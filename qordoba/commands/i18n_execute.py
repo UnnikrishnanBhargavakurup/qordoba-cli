@@ -207,7 +207,8 @@ def execute(curdir, input_dir=None, report_dir=None, key_format=None):
                 temp_file_all_lines_into_dict = replace_strings_for_keys(singel_file_stringliterals,
                                                                      old_file_all_lines_into_dict, key_format)
                 # removing empty multi-line lines from file dictionary
-                new_file_all_lines_into_dict = [x.strip('"') for x in temp_file_all_lines_into_dict if x != None]
+                # new_file_all_lines_into_dict = [x.strip('"') for x in temp_file_all_lines_into_dict if x != None]
+                new_file_all_lines_into_dict = [x for x in temp_file_all_lines_into_dict if x != None]
             except KeyError:
                 log.info("Could it be that you already executed the report on this file `{}`? ".format(single_file_path))
                 continue
