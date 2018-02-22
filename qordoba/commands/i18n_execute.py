@@ -25,7 +25,8 @@ def get_files_in_report(report_path):
     takes the report path and gives back its input files """
     json_report = open(report_path).read()
     data = json.loads(json_report)
-    return data.keys()
+    df = pd.DataFrame.from_dict(data)
+    return data.keys(), df
 
 
 def get_filerows_as_list(file_path):
@@ -78,33 +79,33 @@ def final_replace(type, key, old_picked_line, old_stringliteral, key_format):
     key_new = transform_keys(key, key_format)
     NEW_I18N_FILE[key] = stringliteral
     try:
-        picked_line_1 = picked_line.replace("'" + stringliteral + "'", key_new)
-        picked_line_2 = picked_line_1.replace('"' + stringliteral + '"', key_new)
-        picked_line_3 = picked_line_2.replace('%{' + stringliteral + '}', key_new)  # ruby specific %{}
-        picked_line_4 = picked_line_3.replace(stringliteral, key_new)
-        picked_line_5 = picked_line_4.replace(stringliteral[1:-1], key_new)
-        return picked_line_5
+        # picked_line_1 = picked_line.replace("'" + stringliteral + "'", key_new)
+        # picked_line_2 = picked_line_1.replace('"' + stringliteral + '"', key_new)
+        # picked_line_3 = picked_line_2.replace('%{' + stringliteral + '}', key_new)  # ruby specific %{}
+        picked_line_1 = picked_line.replace(stringliteral, key_new)
+        picked_line_2 = picked_line_1.replace(stringliteral[1:-1], key_new)
+        return picked_line_2
 
     except UnicodeDecodeError:
         stringliteral = stringliteral.decode("utf-8")
         picked_line = u_converter(picked_line)
         picked_line = picked_line.decode("utf-8")
-        picked_line_1 = picked_line.replace("'" + stringliteral + "'", key_new)
-        picked_line_2 = picked_line_1.replace('"' + stringliteral + '"', key_new)
-        picked_line_3 = picked_line_2.replace('%{' + stringliteral + '}', key_new)  # ruby specific %{}
-        picked_line_4 = picked_line_3.replace(stringliteral, key)
-        picked_line_5 = picked_line_4.replace(stringliteral[1:-1], key_new)
-        return picked_line_5
+        # picked_line_1 = picked_line.replace("'" + stringliteral + "'", key_new)
+        # picked_line_2 = picked_line_1.replace('"' + stringliteral + '"', key_new)
+        # picked_line_3 = picked_line_2.replace('%{' + stringliteral + '}', key_new)  # ruby specific %{}
+        picked_line_1 = picked_line.replace(stringliteral, key)
+        picked_line_2 = picked_line_1.replace(stringliteral[1:-1], key_new)
+        return picked_line_2
 
     except UnicodeEncodeError:
         stringliteral = stringliteral.encode("utf-8")
         picked_line = picked_line.encode("utf-8")
-        picked_line_1 = picked_line.replace("'" + stringliteral + "'", key_new)
-        picked_line_2 = picked_line_1.replace('"' + stringliteral + '"', key_new)
-        picked_line_3 = picked_line_2.replace('%{' + stringliteral + '}', key_new)  # ruby specific %{}
-        picked_line_4 = picked_line_3.replace(stringliteral, key_new)
-        picked_line_5 = picked_line_4.replace(stringliteral[1:-1], key_new)
-        return picked_line_5
+        # picked_line_1 = picked_line.replace("'" + stringliteral + "'", key_new)
+        # picked_line_2 = picked_line_1.replace('"' + stringliteral + '"', key_new)
+        # picked_line_3 = picked_line_2.replace('%{' + stringliteral + '}', key_new)  # ruby specific %{}
+        picked_line_1 = picked_line.replace(stringliteral, key_new)
+        picked_line_2 = picked_line_1.replace(stringliteral[1:-1], key_new)
+        return picked_line_2
 
 
 def replace_strings_for_keys(singel_file_stringliterals, old_file_all_lines_into_dict, key_format):
@@ -179,18 +180,8 @@ def execute(curdir, input_dir=None, report_dir=None, key_format=None):
     date = now.strftime("%Y%m%d%H%M")
 
     for report in reports:
-        try:
-            df = pd.read_json(report)
-        except ValueError:
-            with open(report) as f:
-                data = json.load(f)
-            df = pd.DataFrame(data)
-        except ValueError:
-            log.info("Could not parse report `{}`".format(report))
-            continue
-
         # files_in_report are the files which are named in the report where StringLiterals have been extracted
-        files_paths_in_report = get_files_in_report(report)
+        files_paths_in_report, df = get_files_in_report(report)
         files_paths_in_report = filter_config_files(files_paths_in_report)
         for single_file_path in files_paths_in_report:
 

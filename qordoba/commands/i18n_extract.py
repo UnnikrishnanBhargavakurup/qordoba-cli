@@ -138,7 +138,8 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
                     pass
 
                 # calculating fileline of string based on character position of entire file
-                file_chunk = code[:pos_start]
+                # adding +1 to catch new line. Python will ignore new line otherwise
+                file_chunk = code[:pos_start+1]
 
                 #adding lines in case of nunjucks
                 # start_line = file_chunk.count("\n") + additional_lines
@@ -148,7 +149,7 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
                 end_line = start_line + multilinestring
 
                 #create snippet based on lines
-                code_list = code.split('\n')
+                code_list = code.split ('\n')
                 if start_line == end_line:
                     snippet = code_list[start_line]
                 else:

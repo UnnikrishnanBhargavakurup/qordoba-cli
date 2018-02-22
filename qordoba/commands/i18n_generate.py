@@ -173,7 +173,7 @@ def generate(_curdir, report_dir=None, export_dir=None, existing_i18nfiles=None)
             reponse 200 are 5 keywords based on stringliteral"""
         df = pd.read_json(single_report_path)
         for column in df:
-            for i in range(len(df.index)):
+            for i in range(len(df.index)+1):
                 try:
                     # stripping quotes from start and end of string
                     value_stripped = strip_qoutes(df[column][i]["value"])
@@ -185,11 +185,16 @@ def generate(_curdir, report_dir=None, export_dir=None, existing_i18nfiles=None)
                         i18n_PAIRS[value_stripped] = key
 
                     df[column][i]["generated_key"] = {"key": key}
+
+                    if KEY_COUNT % 20 == 0:
+                        log.info("{} keys created ".format(KEY_COUNT))
                 except TypeError:
                     continue
-                if KEY_COUNT % 20 == 0:
-                    log.info("{} keys created ".format(KEY_COUNT))
+                except KeyError:
+                    continue
 
+
+        log.info ("In total {} keys created ".format (KEY_COUNT))
         log.info("\nProcess completed. " + u"\U0001F680" + u"\U0001F4A5")
         log.info("old report replaced by new report with keys")
 
