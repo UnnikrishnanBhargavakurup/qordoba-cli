@@ -147,3 +147,10 @@ def get_project_file_formats(config, default=None):
         return config['file_formats']
     except (KeyError, IndexError):
         return None
+
+
+def backslash():
+    if os.name == 'nt':
+        return "\\"
+    else:
+        return "/"

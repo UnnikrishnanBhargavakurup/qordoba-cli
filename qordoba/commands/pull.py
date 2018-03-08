@@ -16,17 +16,18 @@ except ImportError:
 from qordoba.commands.utils import mkdirs, ask_select, ask_question
 from qordoba.languages import get_destination_languages, get_source_language, init_language_storage, normalize_language
 from qordoba.project import ProjectAPI, PageStatus
-from qordoba.settings import get_pull_pattern
+from qordoba.settings import get_pull_pattern, backslash
+
 from qordoba.sources import create_target_path_by_pattern, file_path_language_code
 
 log = logging.getLogger('qordoba')
 
+slash = backslash()
 
 def format_file_name(page):
     if page.get('version_tag'):
         return '{} [{}]'.format(page['url'], page['version_tag'])
     return page['url']
-
 
 class FileUpdateOptions(object):
     skip = 'Skip'
@@ -44,7 +45,6 @@ class FileUpdateOptions(object):
     @classmethod
     def get_action(cls, name):
         return cls._actions.get(name, None)
-
 
 class MilestoneOptions(object):
     def all(self, milestones):
@@ -88,7 +88,7 @@ def pull_bulk(api, src_to_dest_paths, dest_languages_page_ids, dest_languages_id
 
     # extract zip folder to root folder
     log.info('Downloading files...')
-    root = os.getcwd() + '/' + 'bulkDownload'
+    root = os.getcwd() + slash + 'bulkDownload'
     zip_files = z.namelist()
     z.extractall(root, zip_files)
 
@@ -118,7 +118,8 @@ def pull_command(curdir, config, files=(), force=False, bulk=False, workflow=Fal
     if pattern_list is None:
         pattern_list = [None]
 
-    # based on the configuration in .qordoba.yml the destination for the pulled files will be set. Default path is '.qordoba-cli/qordoba/'
+    # based on the configuration in nonon.yml the destination for the pulled files will be set. Default path is '.qordoba-cli/qordoba/'
+
     for pattern in pattern_list:
         for language in languages:
             status_filter = [PageStatus.enabled, ]
@@ -147,6 +148,11 @@ def pull_command(curdir, config, files=(), force=False, bulk=False, workflow=Fal
                     milestone = page_status['status']['id']
                     version_tag  = page_status['version_tag']
                     filename = page['url']
+                    filename_path = page['page_folder_path']
+
+                    #converts for windows and osx, depending how the filepath is stored in qordoba
+                    filename_path = filename_path.replace('/', slash)
+                    filename_path = filename_path.replace('\\', slash)
 
                     """If file_path is given. Convert the filepath to a pattern"""
                     if file_path_pattern:
@@ -154,25 +160,31 @@ def pull_command(curdir, config, files=(), force=False, bulk=False, workflow=Fal
                         pattern = None
                         pattern_list = None
                         source_lang_code = file_path_language_code(src_language, file_path_pattern_complete)
-
-                        filename_path = page['page_folder_path']
-                        generic_file_path = filename_path.replace(source_lang_code, file_path_pattern_complete)
-                        if '/' in generic_file_path:
-                            cut_generic_file_path = '/'.join(generic_file_path.split('/')[:-1])
-                            very_generic_file_path = cut_generic_file_path + "/<filename>.<extension>"
-                        else:
-                            cut_generic_file_path = '\\'.join (generic_file_path.split ('\\')[:-1])
-                            very_generic_file_path = cut_generic_file_path + "\\<language_code>-<filename>.<extension>"
+                        generic_file_path = filename_path.replace(source_lang_code + slash, file_path_pattern_complete + slash)
+                        cut_generic_file_path = str(slash).join(generic_file_path.split(slash)[:-1])
+                        very_generic_file_path = cut_generic_file_path + slash + "<filename>.<extension>"
                         pattern = very_generic_file_path
-                        if file_path_pattern == 'default':
-                            filename_path = page['page_folder_path']
-                            if '/' in filename_path:
-                                cut_generic_file_path = '/'.join (filename_path.split ('/')[:-1])
-                                very_generic_file_path = cut_generic_file_path + "/<language_code>-<filename>.<extension>"
-                            else:
-                                cut_generic_file_path = '\\'.join (filename_path.split ('\\')[:-1])
-                                very_generic_file_path = cut_generic_file_path + "\\<language_code>-<filename>.<extension>"
 
+                        if file_path_pattern == 'default':
+                            cut_generic_file_path = slash.join (filename_path.split (slash)[:-1])
+                            very_generic_file_path = cut_generic_file_path + slash + "<language_code>-<filename>.<extension>"
+                            pattern = very_generic_file_path
+
+
+                    """If file_path is given. Convert the filepath to a pattern"""
+                    if file_path_pattern:
+                        file_path_pattern_complete = "<" + file_path_pattern + ">"
+                        pattern = None
+                        pattern_list = None
+                        source_lang_code = file_path_language_code(src_language, file_path_pattern_complete)
+                        generic_file_path = filename_path.replace(source_lang_code + slash, file_path_pattern_complete + slash)
+                        cut_generic_file_path = str(slash).join(generic_file_path.split(slash)[:-1])
+                        very_generic_file_path = cut_generic_file_path + slash + "<filename>.<extension>"
+                        pattern = very_generic_file_path
+
+                        if file_path_pattern == 'default':
+                            cut_generic_file_path = slash.join (filename_path.split (slash)[:-1])
+                            very_generic_file_path = cut_generic_file_path + slash + "<language_code>-<filename>.<extension>"
                             pattern = very_generic_file_path
 
 
@@ -184,7 +196,7 @@ def pull_command(curdir, config, files=(), force=False, bulk=False, workflow=Fal
                         source_name = page_status['name']
                         tag = page_status['version_tag']
                         try:
-                            pattern_name = pattern.split('/')[-1]
+                            pattern_name = pattern.split(slash)[-1]
                         except AttributeError:
                             pattern_name = files[0]
 
@@ -229,7 +241,7 @@ def pull_command(curdir, config, files=(), force=False, bulk=False, workflow=Fal
                                                               )
 
                     if pattern is not None:
-                        stripped_dest_path = ((dest_path.native_path).rsplit('/', 1))[0]
+                        stripped_dest_path = ((dest_path.native_path).rsplit(slash, 1))[0]
                         src_to_dest_paths.append(tuple((language.code, stripped_dest_path)))
                     src_to_dest_paths.append(tuple((language.code, language.code)))
 
@@ -245,7 +257,7 @@ def pull_command(curdir, config, files=(), force=False, bulk=False, workflow=Fal
                                                                               )
 
                     if pattern is not None:
-                        stripped_dest_path_of_src_language = ((dest_path_of_src_language.native_path).rsplit('/', 1))[0]
+                        stripped_dest_path_of_src_language = ((dest_path_of_src_language.native_path).rsplit(slash, 1))[0]
                         src_to_dest_paths.append(tuple((src_language_code, stripped_dest_path_of_src_language)))
                     src_to_dest_paths.append(tuple((src_language_code, src_language_code)))
 
