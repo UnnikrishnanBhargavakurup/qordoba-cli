@@ -33,6 +33,8 @@ CONTENT_TYPE_CODES['stringsHtml'] = ('html', 'htm')
 CONTENT_TYPE_CODES['stringsResx'] = ('resx',)
 CONTENT_TYPE_CODES['stringsDocx'] = ('docx',)
 CONTENT_TYPE_CODES['dita'] = ('dita',)
+CONTENT_TYPE_CODES['ts'] = ('regex',)
+CONTENT_TYPE_CODES['regex'] = ('regex',)
 
 # .xlsx, .pptx idml ts
 
@@ -40,9 +42,7 @@ ALLOWED_EXTENSIONS = dict(
     {extension: k for k, extensions in CONTENT_TYPE_CODES.items() for extension in extensions}
 )
 
-ADJUST_EXTENSION = {
-    # "resx": "regex",
-}
+ADJUST_EXTENSION = dict(resx="regex", ts="regex", js="regex", txt="regex")
 
 MIMETYPES = {
     'excel': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -350,8 +350,13 @@ def get_content_type_code(path, remote_content_type_codes):
         if path_ext in CONTENT_TYPE_CODES[remote_content]:
             matching_type_extension = True
 
+
+
     if path_ext not in ALLOWED_EXTENSIONS or not matching_type_extension:
-        raise FileExtensionNotAllowed("File format `{}` not in allowed list of file formats: {}"
+        if 'regex' in remote_content_types_list:
+            path_ext = ADJUST_EXTENSION[path_ext]
+        else:
+            raise FileExtensionNotAllowed("File format `{}` not in allowed list of file formats: {}"
                                       .format(path_ext, ', '.join(ALLOWED_EXTENSIONS)))
 
 
