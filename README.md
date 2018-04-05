@@ -35,17 +35,62 @@ It is built for Python >= 2.7 for Mac OS X and Linux.
 - delete
 - status
 - ls
-- find-new
-- i18n-find
-- i18n-rm
-- i18n-mv
+- extract
+- generate
+- execute
 
+##Extract
+`qor i18n-extract -i input_dir -r report_dir -l customized_lexer`
+
+The extract command pulls all the files from the given directory path and its subdirectories. 
+Our lexer will parse your files and extract all the strings. The strings are saved in a generated JSON report.
+
+report elements:
+  * filename
+  * string
+  * start_line
+  * end_line
+  * code_snippet
+
+!! The report can be edited (delete values, add) at this step. Not later.
+
+##Generate
+`qor i18n-generate -r report_dir -e report_key_dir`
+
+The generate command will pick up your reports in the report_dir and generate new keys for every string by calling our API.
+Keys are added to a new report which is stored in a new directory. The reason: while processing many reports there may occur connectivity issues. This way you know which reports have been processed.
+
+Optional:
+Flag `--existing_i18nfiles directory_path`. 
+The generate command will look for JSON localization files in the directory_path and scan for existing keys or values.
+
+report elements:
+  * filename
+  * string
+  * start_line
+  * end_line
+  * code_snippet
+  * generated_key
+  * existing_key
+
+##Execute
+`qor i18n-execute -i input_dir -r report_key_dir -k key_format`
+
+key format:
+if keys should be replaced with a custom format, add it as a flag or within the configuration file.
+
+The "KEY" characters will be replaced by the generated key within your report:
+
+Option 1: 
+
+add a custom key flag to execute the command: -k {{KEY}}
+
+Option 2: 
+
+add a custom key format in your configuration file ".i18n-ml.yml"
 
 ## Testing
- N/A - in progress
-
-## Planned functionality
- N/A - in progress
+ pytest
 
 ## Versioning
 Q-CLI adheres to Semantic Versioning 2.0.0. If there is a violation of this scheme, report it as a bug. Specifically, if a patch or minor version is
