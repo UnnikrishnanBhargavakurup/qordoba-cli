@@ -529,6 +529,69 @@ class ProjectAPI(object):
         log.debug('Response body: {}'.format(resp.json()))
         return resp.json()
 
+    def status_single_key(self, upload_id, key):
+
+        params = (
+            'organizations',
+            str (self._config['organization_id']),
+            'projects',
+            str(self._config['project_id']),
+            'pages',
+            str(upload_id),
+            'key',
+            'status',
+
+        )
+
+        query = {
+            'key': unicode(key, "utf-8")
+        }
+
+        payload = {
+        }
+
+        upload_url = self.build_url(*params, **query)
+        print(upload_url)
+
+        resp = self.do_get(upload_url, json=[payload, ])
+        log.debug('Response body: {}'.format(resp.json ()))
+        return resp.json()
+
+    def unicode(self, key):
+        u = unicode(key, "utf-8")
+        return u
+
+    def upload_single_key(self, upload_id, key, value):
+        key = unicode(key)
+        value = unicode(value)
+        params = (
+            'organizations',
+            str (self._config['organization_id']),
+            'projects',
+            str(self._config['project_id']),
+            'pages',
+            str(upload_id),
+        )
+
+        query = {
+
+        }
+
+        payload ={
+         "doNotModify": False,
+         "reference": key,
+         "source": value,
+         "sourceReference": key,
+         "templateId": key,
+         "translations": {},
+         "unitId": key
+        }
+
+        upload_url = self.build_url(*params, **query)
+        resp = self.do_post(upload_url, json=payload)
+        log.debug('Response body: {}'.format(resp.json ()))
+        return resp.json()
+
     def _download_raw_file(self, token, filename):
         params = (
             'file',
@@ -978,6 +1041,7 @@ class ProjectAPI(object):
         if search_string:
             body['title'] = search_string
 
+        print("page_url: {}".format(page_url))
         resp = self.do_post(page_url, json=body)
         log.debug('ResponseContent: {}'.format(resp.content))
         return resp.json()

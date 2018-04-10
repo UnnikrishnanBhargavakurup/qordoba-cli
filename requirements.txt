@@ -1,3 +1,4 @@
+tabulate
 PyYAML==3.12
 requests==2.5.1
 terminaltables==3.1.0

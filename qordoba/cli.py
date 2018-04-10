@@ -16,7 +16,8 @@ from qordoba.commands.ls import ls_command
 from qordoba.commands.pull import pull_command
 from qordoba.commands.push import push_command
 from qordoba.commands.status import status_command, status_command_json
-from qordoba.settings import load_settings, SettingsError
+from qordoba.commands.addkey import addkey_command,  filelist
+from qordoba.settings import load_settings
 from qordoba.utils import with_metaclass, FilePathType, CommaSeparatedSet
 from qordoba.log import init
 
@@ -49,8 +50,8 @@ class ArgsHelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
 
 
 def fix_parser_titles(parser):
-    parser._positionals.title = 'Positional arguments'
-    parser._optionals.title = 'Optional arguments'
+    parser.positionals.title = 'Positional arguments'
+    parser.optionals.title = 'Optional arguments'
 
 
 class BaseHandler(with_metaclass(ABCMeta)):
@@ -80,7 +81,7 @@ class BaseHandler(with_metaclass(ABCMeta)):
         kwargs['add_help'] = False
 
         parser = root.add_parser(**kwargs)
-        fix_parser_titles(parser)
+        # fix_parser_titles(parser)
         parser.set_defaults(_handler=cls)
         parser.add_argument('--project-id', required=False, type=int, dest='project_id',
                             help='The ID of your Qordoba project.',
@@ -123,7 +124,8 @@ class InitHandler(BaseHandler):
         kwargs['add_help'] = False
 
         parser = root.add_parser(**kwargs)
-        fix_parser_titles(parser)
+        #
+        # fix_parser_titles(parser)
         parser.set_defaults(_handler=cls)
         parser.add_argument('--organization-id', type=int, required=False, dest='organization_id',
                             help='The ID of your Qordoba organization.')
@@ -261,6 +263,45 @@ class PushHandler(BaseHandler):
         config = self.load_settings()
         push_command(self._curdir, config, update=self.update, file_path=self.file_path, version=self.version, files=self.files)
 
+class AddkeyHandler(BaseHandler):
+    name = 'addkey'
+    help = """
+    Use the addkey command to add single keys to a project file.
+    """
+
+    def load_settings(self):
+        config = super(AddkeyHandler, self).load_settings()
+        config.validate(keys=('organization_id',))
+        return config
+
+    @classmethod
+    def register(cls, *args, **kwargs):
+        parser = super(AddkeyHandler, cls).register(*args, **kwargs)
+        # parser.add_argument('file', default=(), type=str,
+        #                     help="Define resource name or ID.")
+        parser.add_argument('-filelist', '--filelist', dest='filelist', type=str, required=False, help='show filelist of project')
+        parser.add_argument('--key', type=str, required=False, dest='key',
+                             help='The key that should be added to your Qordoba project.',
+                             default=None)
+        parser.add_argument('--value', type=str, required=False, dest='value',
+                             help='The valye that should be added to your Qordoba project.',
+                             default=None)
+        parser.add_argument('--fileid', type=int, required=False, dest='fileid',
+                             help='The fileid of the file where the key/value pair is added to.',
+                             default=None)
+        return parser
+
+    def main(self):
+        log.info('Loading Qordoba config...')
+        config = self.load_settings()
+        if self.filelist:
+            filelist(self._curdir, config, self.filelist)
+
+        if self.key and self.value and self.fileid:
+            addkey_command(self._curdir, config, self.key, self.value, self.fileid)
+        else:
+            log.info("To upload a new key you need to provide key, value and fileid. The fileid can be retrieved by `qor addkey --filelist`.")
+
 class ListHandler(BaseHandler):
     name = 'ls'
     help = """
@@ -271,7 +312,6 @@ class ListHandler(BaseHandler):
         log.info('Loading Qordoba config...')
         rows = [['ID', 'NAME', '#SEGMENTS', 'UPDATED_ON', 'STATUS'], ]
         rows.extend(ls_command(self.load_settings()))
-
         table = AsciiTable(rows).table
         print(table)
 
@@ -323,6 +363,7 @@ def parse_arguments():
     StatusHandler.register(subparsers, **args)
     PullHandler.register(subparsers, **args)
     PushHandler.register(subparsers, **args)
+    AddkeyHandler.register(subparsers, **args)
     ListHandler.register(subparsers, **args)
     DeleteHandler.register(subparsers, **args)
 
