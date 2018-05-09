@@ -86,16 +86,11 @@ class xslt_text_tag(XmlLexer):
     filenames = ['*.xsl', '*.xslt', '*.xpl']  # xpl is XProc
     mimetypes = ['application/xsl+xml', 'application/xslt+xml']
 
-    EXTRA_KEYWORDS = set((
-        'apply-imports', 'apply-templates', 'attribute',
-        'attribute-set', 'call-template', 'choose', 'comment',
-        'copy', 'copy-of', 'decimal-format', 'element', 'fallback',
-        'for-each', 'if', 'import', 'include', 'key', 'message',
-        'namespace-alias', 'number', 'otherwise', 'output', 'param',
-        'preserve-space', 'processing-instruction', 'sort',
-        'strip-space', 'stylesheet', 'template', 'text', 'transform',
-        'value-of', 'variable', 'when', 'with-param'
-    ))
+    EXTRA_KEYWORDS = {'apply-imports', 'apply-templates', 'attribute', 'attribute-set', 'call-template', 'choose',
+                      'comment', 'copy', 'copy-of', 'decimal-format', 'element', 'fallback', 'for-each', 'if', 'import',
+                      'include', 'key', 'message', 'namespace-alias', 'number', 'otherwise', 'output', 'param',
+                      'preserve-space', 'processing-instruction', 'sort', 'strip-space', 'stylesheet', 'template',
+                      'text', 'transform', 'value-of', 'variable', 'when', 'with-param'}
 
     def get_tokens_unprocessed(self, text):
         text_tag = False
@@ -128,3 +123,4 @@ class xslt_text_tag(XmlLexer):
     def analyse_text(text):
         if looks_like_xml(text) and '<xsl' in text:
             return 0.8
+

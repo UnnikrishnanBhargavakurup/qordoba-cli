@@ -127,7 +127,6 @@ def add_existing_i18n_keys_to_df(i18n_file_list, df):
                     df[column][i]["existing_key"] = {"key": key, "i18n_file": i18n_file}
             except TypeError:
                 continue
-        # df['existing_keys'], df['existing_localization_file'] = izip(*df.iloc[:, -1].apply(lambda x: self.index_lookup(x, localization_k_v)))
     return df
 
 

@@ -27,10 +27,8 @@ LEXER_STRINGS["<pygments.lexers.JavascriptLexer with {'stripall': True}>"] = ("T
 LEXER_STRINGS["<class 'pygments.lexers.scala.ScalaLexer'>"] = ("Token.Literal.String",)
 LEXER_STRINGS["<pygments.lexers.ScalaLexer with {'stripall': True}>"] = ("Token.Literal.String",)
 # Ruby
-LEXER_STRINGS["<class 'pygments.lexers.ruby.RubyLexer'>"] = (
-"Token.Literal.String.Other", "Token.Literal.String.Double")
-LEXER_STRINGS["<pygments.lexers.RubyLexer with {'stripall': True}>"] = (
-"Token.Literal.String.Other", "Token.Literal.String.Double",)
+LEXER_STRINGS["<class 'pygments.lexers.ruby.RubyLexer'>"] = ("Token.Literal.String.Other", "Token.Literal.String.Double")
+LEXER_STRINGS["<pygments.lexers.RubyLexer with {'stripall': True}>"] = ("Token.Literal.String.Other", "Token.Literal.String.Double",)
 #C sharp
 LEXER_STRINGS["<class 'pygments.lexers.dotnet.CSharpLexer'>"] = ("Token.Literal.String",)
 LEXER_STRINGS["<pygments.lexers.CSharpLexer with {'stripall': True}>"] = ("Token.Literal.String",)
@@ -126,7 +124,6 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
             lexer_stringliteral_def = str(lexer)
             token_format = LEXER_STRINGS.get(lexer_stringliteral_def, ("Token.Text",))
 
-            # if any(x in str(token) for x in token_format) and not re.match(r'\n', value) and value.strip() != '':
             if any(x in str(token) for x in token_format) and value.strip() != '':
 
                 pos_start, token, value = item
@@ -137,18 +134,11 @@ def extract(curdir, input_dir=None, report_dir=None, lexer_custom=None, bulk_rep
                 except UnicodeDecodeError:
                     pass
 
-                # calculating fileline of string based on character position of entire file
-                # adding +1 to catch new line. Python will ignore new line otherwise
                 file_chunk = code[:pos_start+1]
-
-                #adding lines in case of nunjucks
-                # start_line = file_chunk.count("\n") + additional_lines
-
                 start_line = file_chunk.count("\n")
                 multilinestring = value.count("\n")
                 end_line = start_line + multilinestring
 
-                #create snippet based on lines
                 code_list = code.split ('\n')
                 if start_line == end_line:
                     snippet = code_list[start_line]
