@@ -267,6 +267,7 @@ class AddkeyHandler(BaseHandler):
     name = 'addkey'
     help = """
     Use the addkey command to add single keys to a project file.
+    To upload a new key you need to provide key, value and fileid. The fileid can be retrieved by `qor addkey --filelist`.
     """
 
     def load_settings(self):
@@ -299,8 +300,6 @@ class AddkeyHandler(BaseHandler):
 
         if self.key and self.value and self.fileid:
             addkey_command(self._curdir, config, self.key, self.value, self.fileid)
-        else:
-            log.info("To upload a new key you need to provide key, value and fileid. The fileid can be retrieved by `qor addkey --filelist`.")
 
 class ListHandler(BaseHandler):
     name = 'ls'

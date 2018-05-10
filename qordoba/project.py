@@ -551,7 +551,6 @@ class ProjectAPI(object):
         }
 
         upload_url = self.build_url(*params, **query)
-        print(upload_url)
 
         resp = self.do_get(upload_url, json=[payload, ])
         log.debug('Response body: {}'.format(resp.json ()))

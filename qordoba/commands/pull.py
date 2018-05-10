@@ -272,10 +272,9 @@ def pull_command(curdir, config, files=(), force=False, bulk=False, workflow=Fal
                         if not custom and pattern and valid_extension != "<extension>" and valid_extension != file_extension:
                             continue
 
-
-                        log.info(
-                            'Starting Download of translation file(s) for src `{}`, language `{}` and pattern {}'.format(
-                                format_file_name(page), language.code, pattern))
+                        # log.info(
+                        #     'Starting Download of translation file(s) for src `{}`, language `{}`'.format(
+                        #         format_file_name(page), language.code))
 
                         if os.path.exists(dest_path.native_path) and not force:
                             log.warning('Translation file already exists. `{}`'.format(dest_path.native_path))
@@ -307,13 +306,18 @@ def pull_command(curdir, config, files=(), force=False, bulk=False, workflow=Fal
                                 if exc.errno != errno.EEXIST:
                                     pass
 
-                        with open(dest_path.native_path, 'wb') as f:
-                            shutil.copyfileobj(res.raw, f)
-
                         log.info(
-                            'Downloaded translation file `{}` for src `{}` and language `{}`'.format(dest_path.native_path,
+                            'Downloading translation file `{}` for src `{}` and language `{}`'.format(dest_path.native_path,
                                                                                                      format_file_name(page),
                                                                                                  language.code))
+                        try:
+                            with open(dest_path.native_path, 'wb') as f:
+                                shutil.copyfileobj(res.raw, f)
+
+                        except IOError:
+                            log.info("Skip: no permission to open file.")
+
+
             if not is_started and not bulk:
                 log.info(
                     'Nothing to download for language `{}`. Check if your file translation status is `completed`.'.format(
