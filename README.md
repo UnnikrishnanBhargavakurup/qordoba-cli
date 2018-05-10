@@ -4,7 +4,7 @@
 
 [Documentation](https://dev.qordoba.com/docs/q-cli)
 
-Current alpha version: qordoba==3.0a0
+Current StringExtractor alpha version: qordoba==3.0a0
 
 ## Introduction
 With the Q-CLI we at Qordoba provide our customers an easy to use command line tool to push and pull files to our platform.
