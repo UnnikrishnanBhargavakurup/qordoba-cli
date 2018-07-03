@@ -355,6 +355,12 @@ def get_content_type_code(path, remote_content_type_codes):
     if path_ext not in ALLOWED_EXTENSIONS or not matching_type_extension:
         if 'regex' in remote_content_types_list:
             path_ext = ADJUST_EXTENSION[path_ext]
+        elif not matching_type_extension:
+            remote_content_extensions_list = list()
+            for content_type in remote_content_type_codes:
+                remote_content_extensions_list.extend(content_type['extensions'])
+            raise FileExtensionNotAllowed("File format `{}` not specified as file format in your project (supported file fomats are: {})"
+                                      .format(path_ext, ', '.join(remote_content_extensions_list)))
         else:
             raise FileExtensionNotAllowed("File format `{}` not in allowed list of file formats: {}"
                                       .format(path_ext, ', '.join(ALLOWED_EXTENSIONS)))
@@ -381,7 +387,3 @@ def get_content_type_code(path, remote_content_type_codes):
             return final_content_type
         else:
             continue
-
-
-
-
