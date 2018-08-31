@@ -1040,7 +1040,6 @@ class ProjectAPI(object):
         if search_string:
             body['title'] = search_string
 
-        print("page_url: {}".format(page_url))
         resp = self.do_post(page_url, json=body)
         log.debug('ResponseContent: {}'.format(resp.content))
         return resp.json()

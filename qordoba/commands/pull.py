@@ -215,14 +215,30 @@ def pull_command(curdir, config, files=(), force=False, bulk=False, workflow=Fal
                         for i in milestones_resp:
                             milestone_dict[i['name']] = i['id']
                         if workflow:
-                            log.info('For file {} and language {} pick workflow step'.format(format_file_name(page),
-                                                                                             language))
-                            # takes the milestone answer from stdin
-                            pick = ask_select(MilestoneOptions().all(milestone_dict), prompt='Pick a milestone: ')
-                            milestone = milestone_dict[pick]
 
+                            # takes the milestone answer from stdin
+                            if files:
+                                log.info('pull from workflow step 2 for file {} and language {} '.format(format_file_name(page),
+                                                                                                 language))
+                                pick = int(files[0])
+                                milestone_pos = pick - 1
+                                try:
+                                    milestone_name = list(milestone_dict)[milestone_pos]
+                                    milestone = milestone_dict[milestone_name]
+                                    print("milestone {}, name {}, Position {}, dict {}".format(milestone, milestone_name, pick, milestone_dict))
+                                except IndexError:
+                                    print('not enough keys')
+                            else:
+                                log.info('For file {} and language {} pick workflow step'.format(format_file_name(page),
+                                                                                                 language))
+                                pick = ask_select(MilestoneOptions().all(milestone_dict), prompt='Pick a milestone: ')
+
+                                milestone = milestone_dict[pick]
+                                print("milestone2 {}".format(milestone))
                         if workflow_all:
-                            if milestone_dict[workflow_all]:
+                            if milestone:
+                                milestone = milestone
+                            elif milestone_dict[workflow_all] and not milestone:
                                 milestone = milestone_dict[workflow_all]
                             else:
                                 log.info("The given Milestone `{}` does not exists in your project".format(workflow_all))
@@ -292,7 +308,6 @@ def pull_command(curdir, config, files=(), force=False, bulk=False, workflow=Fal
                         if workflow:
                             log.info('- note: pulls only from workflowstep  `{}` '.format(pick))
                         if workflow_all:
-                            assert milestone_dict[workflow_all] == milestone
                             log.info('- note: pulls only from workflowstep  `{}` '.format(workflow_all))
 
                         res = api.download_file(page_status['id'], language.id, milestone=milestone)

@@ -1,4 +1,4 @@
-#!/Users/franzi/Workspace/qordoba-cli/venv/bin/python
+#!/Users/franzisophie/Documents/qordoba-cli/venv/bin/python
 
 import sys
 import getopt
